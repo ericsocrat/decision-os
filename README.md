@@ -9,11 +9,11 @@
 <br/>
 
 [![CI](https://github.com/ericsocrat/decision-os/actions/workflows/ci.yml/badge.svg)](https://github.com/ericsocrat/decision-os/actions)
-[![Deploy](https://img.shields.io/badge/Vercel-deployed-brightgreen?logo=vercel)](https://decision-os-hazel.vercel.app)
+[![Deploy](https://img.shields.io/badge/Vercel-deployed-brightgreen?logo=vercel)](https://decision-os-app.vercel.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)](tsconfig.json)
 
-[**Live Demo →**](https://decision-os-hazel.vercel.app) · [Scoring Model](docs/SCORING_MODEL.md) · [Architecture](docs/ARCHITECTURE.md) · [Roadmap](docs/ROADMAP.md)
+[**Live Demo →**](https://decision-os-app.vercel.app) · [Scoring Model](docs/SCORING_MODEL.md) · [Architecture](docs/ARCHITECTURE.md) · [Roadmap](docs/ROADMAP.md)
 
 </div>
 
@@ -33,7 +33,7 @@ No accounts. No backend. Everything stays in your browser.
 
 ## Screenshots
 
-> **To add real screenshots:** Open [https://decision-os-hazel.vercel.app](https://decision-os-hazel.vercel.app), take screenshots of each tab (Builder, Results, Sensitivity), save them as `docs/screenshots/builder.png`, `docs/screenshots/results.png`, `docs/screenshots/sensitivity.png`, and update the paths below.
+> **To add real screenshots:** Open [https://decision-os-app.vercel.app](https://decision-os-app.vercel.app), take screenshots of each tab (Builder, Results, Sensitivity), save them as `docs/screenshots/builder.png`, `docs/screenshots/results.png`, `docs/screenshots/sensitivity.png`, and update the paths below.
 
 | Decision Builder | Results | Sensitivity Analysis |
 |:---:|:---:|:---:|
@@ -41,7 +41,7 @@ No accounts. No backend. Everything stays in your browser.
 
 ## 30-Second Demo Walkthrough
 
-1. **Open** [decision-os-hazel.vercel.app](https://decision-os-hazel.vercel.app) — a demo decision loads instantly
+1. **Open** [decision-os-app.vercel.app](https://decision-os-app.vercel.app) — a demo decision loads instantly
 2. **Explore the Builder** — see 3 cities scored across 5 criteria with weights
 3. **Switch to Results** — Austin wins at 6.62; see the per-criterion breakdown
 4. **Check Sensitivity** — discover the winner stays robust across ±25% weight swings
@@ -148,7 +148,7 @@ See [docs/SCORING_MODEL.md](docs/SCORING_MODEL.md) for the full specification wi
 
 ## Deployment
 
-Decision OS is deployed at **[decision-os-hazel.vercel.app](https://decision-os-hazel.vercel.app)**.
+Decision OS is deployed at **[decision-os-app.vercel.app](https://decision-os-app.vercel.app)**.
 
 To deploy your own instance:
 
@@ -205,7 +205,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. Key rules:
 
 > **I built Decision OS** — an open-source structured decision-making tool that replaces gut-feel choices with data-driven analysis. It implements a deterministic weighted-sum scoring model with sensitivity analysis, all running client-side in the browser. The project demonstrates production engineering practices: TypeScript strict mode, 40+ unit tests, CI/CD pipeline, comprehensive documentation, and clean architecture with a pure scoring engine separated from the UI layer. Built with Next.js, Tailwind CSS, and deployed on Vercel.
 >
-> **Try it live:** [decision-os-hazel.vercel.app](https://decision-os-hazel.vercel.app)
+> **Try it live:** [decision-os-app.vercel.app](https://decision-os-app.vercel.app)
 >
 > **Source code:** [github.com/ericsocrat/decision-os](https://github.com/ericsocrat/decision-os)
 >
