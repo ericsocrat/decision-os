@@ -8,7 +8,7 @@
 
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { useDecision } from "./DecisionProvider";
 import {
   Dices,
@@ -19,11 +19,13 @@ import {
   Info,
   ChevronDown,
   ChevronUp,
+  X,
+  AlertTriangle,
 } from "lucide-react";
-import { runMonteCarloSimulation, DEFAULT_CONFIG } from "@/lib/monte-carlo";
+import { DEFAULT_CONFIG } from "@/lib/monte-carlo";
+import { useMonteCarloWorker } from "@/hooks/useMonteCarloWorker";
 import type {
   MonteCarloConfig,
-  MonteCarloResults,
   MonteCarloOptionResult,
   PerturbationDistribution,
 } from "@/lib/types";
@@ -104,9 +106,8 @@ export function MonteCarloView() {
   const [seed, setSeed] = useState(DEFAULT_CONFIG.seed);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  // Results state
-  const [mcResults, setMcResults] = useState<MonteCarloResults | null>(null);
-  const [isRunning, setIsRunning] = useState(false);
+  // Worker hook
+  const worker = useMonteCarloWorker();
 
   const hasOptions = results.optionResults.length >= 2;
 
@@ -115,15 +116,12 @@ export function MonteCarloView() {
     [numSimulations, perturbationRange, distribution, seed]
   );
 
-  const runSimulation = useCallback(() => {
-    setIsRunning(true);
-    // Use a microtask so the UI updates before blocking on compute
-    requestAnimationFrame(() => {
-      const result = runMonteCarloSimulation(decision, config);
-      setMcResults(result);
-      setIsRunning(false);
-    });
-  }, [decision, config]);
+  const runSimulation = () => {
+    worker.run(decision, config);
+  };
+
+  const mcResults = worker.results;
+  const isRunning = worker.status === "running";
 
   // Empty state
   if (!hasOptions) {
@@ -202,24 +200,25 @@ export function MonteCarloView() {
               </div>
             </div>
 
-            {/* Run button */}
-            <button
-              onClick={runSimulation}
-              disabled={isRunning}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-indigo-600 text-white font-medium shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isRunning ? (
-                <>
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  Running…
-                </>
-              ) : (
-                <>
-                  <Play className="h-4 w-4" />
-                  Run Simulation
-                </>
-              )}
-            </button>
+            {/* Run / Cancel button */}
+            {isRunning ? (
+              <button
+                onClick={() => worker.cancel()}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-red-600 text-white font-medium shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+              >
+                <X className="h-4 w-4" />
+                Cancel
+              </button>
+            ) : (
+              <button
+                onClick={runSimulation}
+                disabled={isRunning}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-indigo-600 text-white font-medium shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <Play className="h-4 w-4" />
+                Run Simulation
+              </button>
+            )}
           </div>
 
           {/* Advanced settings (collapsible) */}
@@ -280,6 +279,76 @@ export function MonteCarloView() {
           </div>
         </div>
       </section>
+
+      {/* ── Progress Bar (during simulation) ─────────────────── */}
+      {isRunning && (
+        <section
+          className="rounded-lg border border-indigo-200 bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-900/30 p-4"
+          role="progressbar"
+          aria-valuenow={Math.round(worker.progress * 100)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="Simulation progress"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-indigo-800 dark:text-indigo-300">
+              Running simulation…
+            </span>
+            <span className="text-sm tabular-nums text-indigo-700 dark:text-indigo-400">
+              {Math.round(worker.progress * 100)}% — {worker.completed.toLocaleString()} /{" "}
+              {worker.total.toLocaleString()}
+            </span>
+          </div>
+          <div className="h-3 bg-indigo-200 dark:bg-indigo-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-indigo-600 dark:bg-indigo-400 rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${Math.max(worker.progress * 100, 1)}%` }}
+            />
+          </div>
+          {!worker.workerSupported && (
+            <p className="mt-2 text-xs text-amber-700 dark:text-amber-400 flex items-center gap-1">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+              Running on main thread — UI may be temporarily unresponsive
+            </p>
+          )}
+        </section>
+      )}
+
+      {/* ── Cancelled state ──────────────────────────────────── */}
+      {worker.status === "cancelled" && (
+        <section className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/30 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                Simulation cancelled
+              </p>
+            </div>
+            <button
+              onClick={runSimulation}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+            >
+              <Play className="h-3.5 w-3.5" />
+              Restart
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* ── Error state ──────────────────────────────────────── */}
+      {worker.status === "error" && (
+        <section className="rounded-lg border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/30 p-4">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                Simulation failed
+              </p>
+              <p className="text-sm text-red-700 dark:text-red-400">{worker.error}</p>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Results Section ──────────────────────────────────── */}
       {mcResults && (

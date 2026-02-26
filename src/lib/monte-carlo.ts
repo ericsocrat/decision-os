@@ -30,6 +30,20 @@ import type {
 import { computeResults, roundDisplay } from "./scoring";
 
 // ---------------------------------------------------------------------------
+// Callback interface for progress reporting & cancellation
+// ---------------------------------------------------------------------------
+
+export interface SimulationCallbacks {
+  /** Called periodically with (completed, total) iteration counts. */
+  onProgress?: (completed: number, total: number) => void;
+  /** When aborted, the simulation stops at the next batch boundary. */
+  signal?: AbortSignal;
+}
+
+/** Batch size for progress reporting (every N iterations). */
+export const PROGRESS_BATCH_SIZE = 1_000;
+
+// ---------------------------------------------------------------------------
 // Defaults
 // ---------------------------------------------------------------------------
 
@@ -216,7 +230,8 @@ export function percentile(sorted: number[], p: number): number {
  */
 export function runMonteCarloSimulation(
   decision: Decision,
-  config: Partial<MonteCarloConfig> = {}
+  config: Partial<MonteCarloConfig> = {},
+  callbacks?: SimulationCallbacks
 ): MonteCarloResults {
   const cfg: MonteCarloConfig = { ...DEFAULT_CONFIG, ...config };
   const { numSimulations, perturbationRange, distribution, seed } = cfg;
@@ -253,7 +268,15 @@ export function runMonteCarloSimulation(
 
   // Run simulations -------------------------------------------------------
 
+  let completedSims = 0;
+
   for (let sim = 0; sim < numSimulations; sim++) {
+    // Check for cancellation at batch boundaries
+    if (callbacks?.signal?.aborted) {
+      completedSims = sim;
+      break;
+    }
+
     // Perturb weights
     const perturbedWeights = perturbWeights(baseWeights, rand, perturbationRange, distribution);
 
@@ -281,22 +304,37 @@ export function runMonteCarloSimulation(
         winCounts[winnerIdx]++;
       }
     }
+
+    completedSims = sim + 1;
+
+    // Report progress at batch boundaries
+    if (callbacks?.onProgress && completedSims % PROGRESS_BATCH_SIZE === 0) {
+      callbacks.onProgress(completedSims, numSimulations);
+    }
   }
+
+  // Final progress report (only if not already reported at a batch boundary)
+  if (callbacks?.onProgress && completedSims > 0 && completedSims % PROGRESS_BATCH_SIZE !== 0) {
+    callbacks.onProgress(completedSims, numSimulations);
+  }
+
+  // If cancelled, adjust array slices to only include completed sims
+  const effectiveSims = completedSims;
 
   // Build option results --------------------------------------------------
 
   const mcOptions: MonteCarloOptionResult[] = options.map((opt, idx) => {
-    const scores = Array.from(allScores[idx]);
+    const scores = Array.from(allScores[idx].subarray(0, effectiveSims));
     scores.sort((a, b) => a - b);
 
-    const mean = scores.reduce((s, v) => s + v, 0) / numSimulations;
-    const variance = scores.reduce((s, v) => s + (v - mean) ** 2, 0) / numSimulations;
+    const mean = scores.reduce((s, v) => s + v, 0) / (effectiveSims || 1);
+    const variance = scores.reduce((s, v) => s + (v - mean) ** 2, 0) / (effectiveSims || 1);
     const stdDev = Math.sqrt(variance);
 
     return {
       optionId: opt.id,
       optionName: opt.name,
-      winProbability: roundDisplay(winCounts[idx] / numSimulations),
+      winProbability: roundDisplay(winCounts[idx] / (effectiveSims || 1)),
       winCount: winCounts[idx],
       meanScore: roundDisplay(mean),
       stdDev: roundDisplay(stdDev),
@@ -313,13 +351,15 @@ export function runMonteCarloSimulation(
   mcOptions.sort((a, b) => b.winProbability - a.winProbability || b.meanScore - a.meanScore);
 
   const elapsedMs = roundDisplay(performance.now() - t0);
+  const cancelled = callbacks?.signal?.aborted ?? false;
 
   // Summary text
   const topOption = mcOptions[0];
+  const cancelNote = cancelled ? ` (cancelled after ${effectiveSims.toLocaleString()})` : "";
   const summary = topOption
     ? `"${topOption.optionName}" wins ${roundDisplay(topOption.winProbability * 100)}% of simulations ` +
       `(mean score ${topOption.meanScore}, 90% CI [${topOption.p5}–${topOption.p95}]). ` +
-      `${numSimulations.toLocaleString()} simulations completed in ${elapsedMs} ms.`
+      `${effectiveSims.toLocaleString()} simulations completed in ${elapsedMs} ms${cancelNote}.`
     : "No results.";
 
   return {
