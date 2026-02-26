@@ -124,7 +124,7 @@ describe("DecisionBuilder", () => {
   });
 
   it("expands description textarea when toggle clicked", async () => {
-    const { user } = renderWithProviders(<DecisionBuilder validation={emptyValidation} />);
+    renderWithProviders(<DecisionBuilder validation={emptyValidation} />);
     // Demo data auto-expands descriptions that are non-empty
     // Find a textarea (should be auto-expanded for demo descriptions)
     const textareas = screen.getAllByRole("textbox");
