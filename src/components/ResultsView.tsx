@@ -27,6 +27,7 @@ import type { ValidationResult } from "@/hooks/useValidation";
 import type { CompletenessResult } from "@/lib/completeness";
 import { BiasWarnings } from "./BiasWarnings";
 import { useBiasDetection } from "@/hooks/useBiasDetection";
+import { HybridResults } from "./HybridResults";
 
 const ScoreChart = lazy(() => import("./ScoreChart").then((m) => ({ default: m.ScoreChart })));
 const ParetoChart = lazy(() => import("./ParetoChart").then((m) => ({ default: m.ParetoChart })));
@@ -41,7 +42,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
   const { decision, results, topsisResults, regretResults } = useDecision();
   const [shareStatus, setShareStatus] = useState<string>("");
   const [bannerDismissed, setBannerDismissed] = useState(false);
-  const [scoringMethod, setScoringMethod] = useState<"wsm" | "topsis" | "minimax-regret">("wsm");
+  const [scoringMethod, setScoringMethod] = useState<"wsm" | "topsis" | "minimax-regret" | "consensus">("wsm");
   const biasDetection = useBiasDetection(decision);
 
   // Agreement / disagreement between WSM, TOPSIS, and Minimax Regret
@@ -254,6 +255,18 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
               >
                 Regret
               </button>
+              <button
+                role="radio"
+                aria-checked={scoringMethod === "consensus"}
+                onClick={() => setScoringMethod("consensus")}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset ${
+                  scoringMethod === "consensus"
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                }`}
+              >
+                Consensus
+              </button>
             </div>
             <button
               onClick={handleExportJson}
@@ -342,6 +355,13 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
           <WsmRankings results={results} decision={decision} maxScore={maxScore} />
         ) : scoringMethod === "topsis" ? (
           <TopsisRankings topsisResults={topsisResults} decision={decision} />
+        ) : scoringMethod === "consensus" ? (
+          <HybridResults
+            results={results}
+            topsisResults={topsisResults}
+            regretResults={regretResults}
+            decision={decision}
+          />
         ) : (
           <RegretRankings regretResults={regretResults} decision={decision} />
         )}
