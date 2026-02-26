@@ -20,6 +20,7 @@ import { useState, lazy, Suspense, useMemo } from "react";
 import { buildShareLink } from "@/lib/share";
 import { normalizeWeights } from "@/lib/scoring";
 import type { TopsisResults } from "@/lib/topsis";
+import type { RegretResults } from "@/lib/regret";
 import type { Decision, DecisionResults } from "@/lib/types";
 import type { ValidationResult } from "@/hooks/useValidation";
 import type { CompletenessResult } from "@/lib/completeness";
@@ -35,28 +36,34 @@ interface ResultsViewProps {
 }
 
 export function ResultsView({ validation, completeness, onSwitchToBuilder }: ResultsViewProps) {
-  const { decision, results, topsisResults } = useDecision();
+  const { decision, results, topsisResults, regretResults } = useDecision();
   const [shareStatus, setShareStatus] = useState<string>("");
   const [bannerDismissed, setBannerDismissed] = useState(false);
-  const [scoringMethod, setScoringMethod] = useState<"wsm" | "topsis">("wsm");
+  const [scoringMethod, setScoringMethod] = useState<"wsm" | "topsis" | "minimax-regret">("wsm");
   const biasDetection = useBiasDetection(decision);
 
-  // Agreement / disagreement between WSM and TOPSIS
+  // Agreement / disagreement between WSM, TOPSIS, and Minimax Regret
   const methodAgreement = useMemo(() => {
     if (results.optionResults.length < 2 || topsisResults.rankings.length < 2) {
       return null;
     }
     const wsmWinner = results.optionResults[0].optionId;
     const topsisWinner = topsisResults.rankings[0].optionId;
-    const agree = wsmWinner === topsisWinner;
+    const regretWinner =
+      regretResults.rankings.length > 0 ? regretResults.rankings[0].optionId : null;
+    const allAgree =
+      wsmWinner === topsisWinner && (regretWinner === null || wsmWinner === regretWinner);
 
     // Compute rank-order similarity (Spearman-like)
     const wsmOrder = results.optionResults.map((r) => r.optionId);
     const topsisOrder = topsisResults.rankings.map((r) => r.optionId);
-    const fullAgreement = wsmOrder.every((id, i) => topsisOrder[i] === id);
+    const regretOrder = regretResults.rankings.map((r) => r.optionId);
+    const fullAgreement =
+      wsmOrder.every((id, i) => topsisOrder[i] === id) &&
+      (regretOrder.length === 0 || wsmOrder.every((id, i) => regretOrder[i] === id));
 
-    return { agree, fullAgreement, wsmWinner, topsisWinner };
-  }, [results, topsisResults]);
+    return { allAgree, fullAgreement, wsmWinner, topsisWinner, regretWinner };
+  }, [results, topsisResults, regretResults]);
 
   if (results.optionResults.length === 0) {
     return (
@@ -233,6 +240,18 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
               >
                 TOPSIS
               </button>
+              <button
+                role="radio"
+                aria-checked={scoringMethod === "minimax-regret"}
+                onClick={() => setScoringMethod("minimax-regret")}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset ${
+                  scoringMethod === "minimax-regret"
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                }`}
+              >
+                Regret
+              </button>
             </div>
             <button
               onClick={handleExportJson}
@@ -276,7 +295,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
             className={`text-sm mb-3 px-3 py-2 rounded-md flex items-center gap-2 ${
               methodAgreement.fullAgreement
                 ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300"
-                : methodAgreement.agree
+                : methodAgreement.allAgree
                   ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
                   : "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300"
             }`}
@@ -284,12 +303,12 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
           >
             {methodAgreement.fullAgreement ? (
               <>
-                <span className="font-medium">Full agreement:</span> WSM and TOPSIS produce the same
-                ranking order.
+                <span className="font-medium">Full agreement:</span> All three methods produce the
+                same ranking order. This is an exceptionally robust decision.
               </>
-            ) : methodAgreement.agree ? (
+            ) : methodAgreement.allAgree ? (
               <>
-                <span className="font-medium">Winner agrees:</span> Both methods pick the same
+                <span className="font-medium">Winner agrees:</span> All methods pick the same
                 winner, but differ on other ranks.
               </>
             ) : (
@@ -302,7 +321,15 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
                 <span className="font-semibold">
                   {decision.options.find((o) => o.id === methodAgreement.topsisWinner)?.name}
                 </span>
-                . Consider reviewing your criteria weights.
+                {methodAgreement.regretWinner && (
+                  <>
+                    , Minimax Regret picks{" "}
+                    <span className="font-semibold">
+                      {decision.options.find((o) => o.id === methodAgreement.regretWinner)?.name}
+                    </span>
+                  </>
+                )}
+                . This decision involves genuine trade-offs.
               </>
             )}
           </div>
@@ -311,8 +338,10 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
         {/* Rankings — render based on selected method */}
         {scoringMethod === "wsm" ? (
           <WsmRankings results={results} decision={decision} maxScore={maxScore} />
-        ) : (
+        ) : scoringMethod === "topsis" ? (
           <TopsisRankings topsisResults={topsisResults} decision={decision} />
+        ) : (
+          <RegretRankings regretResults={regretResults} decision={decision} />
         )}
       </section>
 
@@ -397,12 +426,20 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
               weight. Cost criteria are inverted (10 − score) so lower costs yield higher effective
               scores.
             </p>
-          ) : (
+          ) : scoringMethod === "topsis" ? (
             <p>
               <strong>How TOPSIS works:</strong> Scores are vector-normalized per criterion, then
               weighted. The ideal (best possible) and anti-ideal (worst possible) solutions are
               identified. Each option is ranked by how close it is to the ideal and how far from the
               anti-ideal (closeness coefficient C* ∈ [0,&nbsp;1]).
+            </p>
+          ) : (
+            <p>
+              <strong>How Minimax Regret works:</strong> For each criterion, regret measures how
+              much worse an option is compared to the best option on that criterion. The
+              &quot;maximum regret&quot; is the single worst regret across all criteria. The winner
+              is the option that minimizes its maximum regret — the option you&apos;ll least kick
+              yourself about.
             </p>
           )}
           {scoringMethod === "wsm" && results.optionResults.length > 0 && (
@@ -441,6 +478,25 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
                     topsisResults.rankings[1].closenessCoefficient
                   ).toFixed(2)}
                   .
+                </>
+              )}
+            </p>
+          )}
+          {scoringMethod === "minimax-regret" && regretResults.rankings.length > 0 && (
+            <p>
+              <strong>Winner:</strong>{" "}
+              <span className="text-blue-700 dark:text-blue-300 font-medium">
+                {regretResults.rankings[0].optionName}
+              </span>{" "}
+              has a maximum regret of {regretResults.rankings[0].maxRegret.toFixed(2)} (on{" "}
+              {decision.criteria.find((c) => c.id === regretResults.rankings[0].maxRegretCriterion)
+                ?.name ?? "unknown"}
+              ).
+              {regretResults.rankings.length > 1 && (
+                <>
+                  {" "}
+                  #{2} ({regretResults.rankings[1].optionName}) has max regret{" "}
+                  {regretResults.rankings[1].maxRegret.toFixed(2)}.
                 </>
               )}
             </p>
@@ -684,6 +740,229 @@ function TopsisRankings({ topsisResults, decision }: TopsisRankingsProps) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+//  Minimax Regret Rankings sub-component
+// ---------------------------------------------------------------------------
+
+interface RegretRankingsProps {
+  regretResults: RegretResults;
+  decision: Decision;
+}
+
+/**
+ * Color for a regret cell: green (0) → yellow (mid) → red (high).
+ */
+function regretCellColor(value: number, maxInMatrix: number): string {
+  if (maxInMatrix === 0)
+    return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200";
+  const ratio = value / maxInMatrix;
+  if (ratio < 0.25) return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200";
+  if (ratio < 0.5)
+    return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200";
+  if (ratio < 0.75)
+    return "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200";
+  return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200";
+}
+
+function RegretRankings({ regretResults, decision }: RegretRankingsProps) {
+  if (regretResults.rankings.length === 0) {
+    return (
+      <div className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">
+        Add at least 2 options to see regret analysis.
+      </div>
+    );
+  }
+
+  // Find max regret in the whole matrix for color scaling
+  const maxInMatrix = Math.max(...regretResults.rankings.map((r) => r.maxRegret), 0);
+
+  return (
+    <div className="space-y-4">
+      {/* Ranking cards */}
+      <div className="space-y-3">
+        {regretResults.rankings.map((r, index) => {
+          const isWinner = index === 0;
+          const optionDesc = decision.options.find((o) => o.id === r.optionId)?.description;
+          const maxRegretCritName =
+            decision.criteria.find((c) => c.id === r.maxRegretCriterion)?.name ?? "—";
+          // Bar width: winner has lowest regret → widest bar
+          const barWidth =
+            maxInMatrix > 0 ? ((maxInMatrix - r.maxRegret) / maxInMatrix) * 100 : 100;
+
+          return (
+            <div
+              key={r.optionId}
+              className={`rounded-lg border p-4 ${
+                isWinner
+                  ? "border-blue-200 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/30"
+                  : "border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold ${
+                      isWinner
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300"
+                    }`}
+                  >
+                    {r.rank}
+                  </span>
+                  <div>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                      {r.optionName}
+                    </span>
+                    {optionDesc && (
+                      <p
+                        className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[280px] sm:max-w-[400px]"
+                        title={optionDesc}
+                      >
+                        {optionDesc}
+                      </p>
+                    )}
+                  </div>
+                  {isWinner && (
+                    <span className="rounded-full bg-blue-100 dark:bg-blue-900 px-2 py-0.5 text-xs font-medium text-blue-800 dark:text-blue-200">
+                      Winner
+                    </span>
+                  )}
+                </div>
+                <div className="text-right">
+                  <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                    {r.maxRegret.toFixed(2)}
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">max regret</span>
+                </div>
+              </div>
+
+              {/* Inverse regret bar (lower regret = wider bar) */}
+              <div className="h-2 w-full rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    isWinner ? "bg-blue-600" : "bg-gray-400"
+                  }`}
+                  style={{ width: `${barWidth}%` }}
+                  role="progressbar"
+                  aria-valuenow={r.maxRegret}
+                  aria-valuemin={0}
+                  aria-valuemax={maxInMatrix}
+                  aria-label={`${r.optionName}: max regret ${r.maxRegret.toFixed(2)}`}
+                />
+              </div>
+
+              {/* Regret metrics */}
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded px-2 py-1">
+                  <span>Worst criterion</span>
+                  <span className="font-medium text-gray-900 dark:text-gray-200">
+                    {maxRegretCritName}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded px-2 py-1">
+                  <span>Avg regret</span>
+                  <span className="font-medium text-gray-900 dark:text-gray-200">
+                    {r.avgRegret.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Regret Matrix Table */}
+      <div className="overflow-x-auto" role="region" aria-label="Regret matrix">
+        <table
+          className="min-w-full text-sm border-collapse"
+          aria-label="Regret matrix — lower values mean less regret"
+        >
+          <thead>
+            <tr className="border-b border-gray-200 dark:border-gray-700">
+              <th className="text-left py-2 px-3 text-gray-700 dark:text-gray-300 font-medium">
+                Option
+              </th>
+              {decision.criteria.map((c) => (
+                <th
+                  key={c.id}
+                  className="text-center py-2 px-3 text-gray-700 dark:text-gray-300 font-medium"
+                >
+                  {c.name}
+                </th>
+              ))}
+              <th className="text-center py-2 px-3 text-gray-700 dark:text-gray-300 font-bold">
+                Max Regret
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {regretResults.rankings.map((r) => {
+              const isWinner = r.rank === 1;
+              return (
+                <tr
+                  key={r.optionId}
+                  className={`border-b border-gray-100 dark:border-gray-700 ${
+                    isWinner ? "bg-blue-50/50 dark:bg-blue-900/10" : ""
+                  }`}
+                >
+                  <td className="py-2 px-3 font-medium text-gray-900 dark:text-gray-100">
+                    {r.optionName}
+                    {isWinner && (
+                      <span className="ml-1 text-xs text-blue-600 dark:text-blue-400">
+                        ★ winner
+                      </span>
+                    )}
+                  </td>
+                  {decision.criteria.map((c) => {
+                    const val = regretResults.regretMatrix[r.optionId]?.[c.id] ?? 0;
+                    const isMaxForOption = c.id === r.maxRegretCriterion;
+                    return (
+                      <td
+                        key={c.id}
+                        className={`py-2 px-3 text-center font-mono text-sm ${regretCellColor(val, maxInMatrix)} ${
+                          isMaxForOption ? "ring-2 ring-inset ring-red-400 dark:ring-red-500" : ""
+                        }`}
+                      >
+                        {val.toFixed(2)}
+                      </td>
+                    );
+                  })}
+                  <td className="py-2 px-3 text-center font-bold text-gray-900 dark:text-gray-100">
+                    {r.maxRegret.toFixed(2)}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* "Why this ranking?" explanation */}
+      <details className="text-sm text-gray-600 dark:text-gray-400">
+        <summary className="cursor-pointer font-medium text-blue-600 dark:text-blue-400 hover:underline">
+          Why this ranking?
+        </summary>
+        <div className="mt-2 space-y-2 pl-2 border-l-2 border-blue-200 dark:border-blue-800">
+          <p>
+            <strong>Minimax Regret</strong> (Savage, 1951) asks: &quot;Which option minimizes my
+            maximum possible regret?&quot;
+          </p>
+          <p>
+            For each criterion, regret = (best score among all options) − (this option&apos;s
+            score), weighted by the criterion&apos;s importance. The &quot;max regret&quot; column
+            shows each option&apos;s single worst criterion gap.
+          </p>
+          <p>
+            The winner is the option whose worst gap is smallest — the choice you&apos;ll least
+            regret. This is ideal for risk-averse decisions where you can&apos;t accept a major
+            weakness even if other areas are strong.
+          </p>
+        </div>
+      </details>
     </div>
   );
 }
