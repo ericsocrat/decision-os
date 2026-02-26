@@ -15,6 +15,7 @@ import {
   AlertCircle,
   AlertTriangle,
   X,
+  Crosshair,
 } from "lucide-react";
 import { useState, lazy, Suspense, useMemo } from "react";
 import { buildShareLink } from "@/lib/share";
@@ -28,6 +29,7 @@ import { BiasWarnings } from "./BiasWarnings";
 import { useBiasDetection } from "@/hooks/useBiasDetection";
 
 const ScoreChart = lazy(() => import("./ScoreChart").then((m) => ({ default: m.ScoreChart })));
+const ParetoChart = lazy(() => import("./ParetoChart").then((m) => ({ default: m.ParetoChart })));
 
 interface ResultsViewProps {
   validation: ValidationResult;
@@ -366,6 +368,30 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
           </Suspense>
         </div>
       </section>
+
+      {/* Trade-Off Explorer (Pareto Frontier) */}
+      {decision.criteria.length >= 2 && decision.options.length >= 2 && (
+        <section aria-labelledby="pareto-heading" className="print:hidden">
+          <h2
+            id="pareto-heading"
+            className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3"
+          >
+            <Crosshair className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            Trade-Off Explorer
+          </h2>
+          <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+            <Suspense
+              fallback={
+                <div className="h-[200px] flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
+                  Loading chart…
+                </div>
+              }
+            >
+              <ParetoChart decision={decision} results={results} />
+            </Suspense>
+          </div>
+        </section>
+      )}
 
       {/* Top Drivers */}
       <section aria-labelledby="drivers-heading">
