@@ -9,6 +9,7 @@
 import type { Decision } from "./types";
 import { isDecision } from "./validation";
 import { getSupabase } from "./supabase";
+import { withRetry, enqueueWrite } from "./rate-limiter";
 
 // ─── Helpers ───────────────────────────────────────────────────────
 
@@ -33,18 +34,24 @@ export async function cloudGetDecisions(): Promise<Decision[]> {
   const userId = await currentUserId();
   if (!sb || !userId) return [];
 
-  const { data, error } = await sb
-    .from("decisions")
-    .select("data")
-    .eq("user_id", userId)
-    .order("updated_at", { ascending: false });
+  try {
+    return await withRetry(async () => {
+      const { data, error } = await sb
+        .from("decisions")
+        .select("data")
+        .eq("user_id", userId)
+        .order("updated_at", { ascending: false });
 
-  if (error) {
-    console.error("[DecisionOS:cloud] fetch decisions failed:", error.message);
+      if (error) throw new Error(error.message);
+
+      return (data ?? [])
+        .map((row) => row.data as unknown)
+        .filter((d): d is Decision => isDecision(d));
+    });
+  } catch (err) {
+    console.error("[DecisionOS:cloud] fetch decisions failed:", err);
     return [];
   }
-
-  return (data ?? []).map((row) => row.data as unknown).filter((d): d is Decision => isDecision(d));
 }
 
 /**
@@ -55,20 +62,24 @@ export async function cloudGetDecision(decisionId: string): Promise<Decision | n
   const userId = await currentUserId();
   if (!sb || !userId) return null;
 
-  const { data, error } = await sb
-    .from("decisions")
-    .select("data")
-    .eq("user_id", userId)
-    .eq("decision_id", decisionId)
-    .maybeSingle();
+  try {
+    return await withRetry(async () => {
+      const { data, error } = await sb
+        .from("decisions")
+        .select("data")
+        .eq("user_id", userId)
+        .eq("decision_id", decisionId)
+        .maybeSingle();
 
-  if (error) {
-    console.error("[DecisionOS:cloud] fetch decision failed:", error.message);
+      if (error) throw new Error(error.message);
+
+      const parsed = data?.data as unknown;
+      return isDecision(parsed) ? parsed : null;
+    });
+  } catch (err) {
+    console.error("[DecisionOS:cloud] fetch decision failed:", err);
     return null;
   }
-
-  const parsed = data?.data as unknown;
-  return isDecision(parsed) ? parsed : null;
 }
 
 /**
@@ -80,21 +91,25 @@ export async function cloudSaveDecision(decision: Decision): Promise<boolean> {
   const userId = await currentUserId();
   if (!sb || !userId) return false;
 
-  const { error } = await sb.from("decisions").upsert(
-    {
-      user_id: userId,
-      decision_id: decision.id,
-      data: decision as unknown as Record<string, unknown>,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "user_id,decision_id" }
-  );
+  try {
+    return await enqueueWrite(async () => {
+      const { error } = await sb.from("decisions").upsert(
+        {
+          user_id: userId,
+          decision_id: decision.id,
+          data: decision as unknown as Record<string, unknown>,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,decision_id" }
+      );
 
-  if (error) {
-    console.error("[DecisionOS:cloud] save decision failed:", error.message);
+      if (error) throw new Error(error.message);
+      return true;
+    });
+  } catch (err) {
+    console.error("[DecisionOS:cloud] save decision failed:", err);
     return false;
   }
-  return true;
 }
 
 /**
@@ -105,17 +120,21 @@ export async function cloudDeleteDecision(decisionId: string): Promise<boolean> 
   const userId = await currentUserId();
   if (!sb || !userId) return false;
 
-  const { error } = await sb
-    .from("decisions")
-    .delete()
-    .eq("user_id", userId)
-    .eq("decision_id", decisionId);
+  try {
+    return await enqueueWrite(async () => {
+      const { error } = await sb
+        .from("decisions")
+        .delete()
+        .eq("user_id", userId)
+        .eq("decision_id", decisionId);
 
-  if (error) {
-    console.error("[DecisionOS:cloud] delete decision failed:", error.message);
+      if (error) throw new Error(error.message);
+      return true;
+    });
+  } catch (err) {
+    console.error("[DecisionOS:cloud] delete decision failed:", err);
     return false;
   }
-  return true;
 }
 
 /**
@@ -134,11 +153,17 @@ export async function cloudSaveAllDecisions(decisions: Decision[]): Promise<bool
     updated_at: d.updatedAt ?? new Date().toISOString(),
   }));
 
-  const { error } = await sb.from("decisions").upsert(rows, { onConflict: "user_id,decision_id" });
+  try {
+    return await enqueueWrite(async () => {
+      const { error } = await sb
+        .from("decisions")
+        .upsert(rows, { onConflict: "user_id,decision_id" });
 
-  if (error) {
-    console.error("[DecisionOS:cloud] batch save failed:", error.message);
+      if (error) throw new Error(error.message);
+      return true;
+    });
+  } catch (err) {
+    console.error("[DecisionOS:cloud] batch save failed:", err);
     return false;
   }
-  return true;
 }

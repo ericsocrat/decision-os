@@ -20,6 +20,12 @@ vi.mock("@/lib/supabase", () => ({
   isCloudEnabled: () => true,
 }));
 
+// Bypass retry/backoff in cloud-storage tests — pass-through immediately
+vi.mock("@/lib/rate-limiter", () => ({
+  withRetry: <T>(fn: () => Promise<T>) => fn(),
+  enqueueWrite: <T>(fn: () => Promise<T>) => fn(),
+}));
+
 // Import AFTER mocking
 const {
   cloudGetDecisions,
