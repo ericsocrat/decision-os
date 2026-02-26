@@ -10,9 +10,11 @@ import { showToast } from "./Toast";
 import { formatRelativeTime } from "@/lib/utils";
 import type { CriterionType } from "@/lib/types";
 import type { ValidationResult } from "@/hooks/useValidation";
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { computeCompleteness } from "@/lib/completeness";
 import { CompletionRing } from "./CompletionRing";
+import { WeightSlider } from "./WeightSlider";
+import { WeightDistributionBar } from "./WeightDistributionBar";
 
 interface DecisionBuilderProps {
   validation: ValidationResult;
@@ -38,6 +40,42 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
 
   const gridRef = useRef<HTMLTableElement>(null);
   const completeness = useMemo(() => computeCompleteness(decision), [decision]);
+  const [autoNormalize, setAutoNormalize] = useState(false);
+
+  /** Find the criterion with the highest weight */
+  const highestWeightId = useMemo(() => {
+    if (decision.criteria.length === 0) return null;
+    return decision.criteria.reduce((max, c) => (c.weight > max.weight ? c : max)).id;
+  }, [decision.criteria]);
+
+  /** Handle weight change with optional auto-normalization */
+  const handleWeightChange = useCallback(
+    (critId: string, newWeight: number) => {
+      if (!autoNormalize) {
+        updateCriterion(critId, { weight: Math.max(0, Math.min(100, Math.round(newWeight))) });
+        return;
+      }
+      // Auto-normalize: redistribute delta among other criteria proportionally
+      const clamped = Math.max(0, Math.min(100, Math.round(newWeight)));
+      const current = decision.criteria.find((c) => c.id === critId);
+      if (!current) return;
+      const delta = clamped - current.weight;
+      if (delta === 0) return;
+      const others = decision.criteria.filter((c) => c.id !== critId);
+      const othersTotal = others.reduce((sum, c) => sum + c.weight, 0);
+      // Apply the change
+      updateCriterion(critId, { weight: clamped });
+      // Redistribute delta among others proportionally
+      if (othersTotal > 0) {
+        for (const other of others) {
+          const share = other.weight / othersTotal;
+          const adjusted = Math.max(0, Math.round(other.weight - delta * share));
+          updateCriterion(other.id, { weight: adjusted });
+        }
+      }
+    },
+    [autoNormalize, decision.criteria, updateCriterion]
+  );
 
   /** Arrow-key navigation within the score matrix (WAI-ARIA grid pattern) */
   const handleGridKeyDown = useCallback(
@@ -305,7 +343,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
               {validation.byField.get("weights")![0].message}
             </div>
           )}
-          {decision.criteria.map((crit) => {
+          {decision.criteria.map((crit, critIndex) => {
             const critIssues = validation.byId.get(crit.id);
             const critWarning = critIssues?.find((i) => i.severity === "warning");
             const critInfo = critIssues?.find((i) => i.severity === "info");
@@ -326,29 +364,6 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                     maxLength={80}
                     aria-invalid={!!critWarning || undefined}
                   />
-                  <div className="flex items-center gap-1">
-                    <label
-                      className="text-xs text-gray-500 w-12 text-right"
-                      htmlFor={`weight-${crit.id}`}
-                    >
-                      Weight
-                    </label>
-                    <input
-                      id={`weight-${crit.id}`}
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={crit.weight}
-                      onChange={(e) =>
-                        updateCriterion(crit.id, {
-                          weight: Math.max(0, Math.min(100, Number(e.target.value) || 0)),
-                        })
-                      }
-                      className="w-16 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 px-2 py-2 text-sm text-center focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      aria-label={`Weight for ${crit.name}`}
-                      aria-describedby="weight-range-desc"
-                    />
-                  </div>
                   <select
                     value={crit.type}
                     onChange={(e) =>
@@ -376,6 +391,14 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                     </button>
                   )}
                 </div>
+                <WeightSlider
+                  id={crit.id}
+                  name={crit.name}
+                  value={crit.weight}
+                  onChange={(v) => handleWeightChange(crit.id, v)}
+                  colorIndex={critIndex}
+                  isHighest={crit.id === highestWeightId}
+                />
                 {critWarning && (
                   <p className="mt-0.5 text-xs text-orange-600 dark:text-orange-400 flex items-center gap-1">
                     <AlertTriangle className="h-3 w-3 shrink-0" />
@@ -392,6 +415,20 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
             );
           })}
         </div>
+
+        {/* Weight Distribution Bar */}
+        <WeightDistributionBar criteria={decision.criteria} />
+
+        {/* Auto-Normalize Toggle */}
+        <label className="mt-3 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={autoNormalize}
+            onChange={(e) => setAutoNormalize(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          Auto-normalize weights to 100%
+        </label>
       </section>
 
       {/* Scores Matrix */}
