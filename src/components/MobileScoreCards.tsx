@@ -15,6 +15,7 @@ import type { Criterion, Decision, Option, ScoreValue } from "@/lib/types";
 import { resolveScoreValue, resolveConfidence } from "@/lib/scoring";
 import { ConfidenceDot } from "./ConfidenceDot";
 import { ReasoningPopover } from "./ReasoningPopover";
+import { ScoringPrompt } from "./ScoringPrompt";
 import type { Confidence } from "@/lib/types";
 
 interface MobileScoreCardsProps {
@@ -116,6 +117,10 @@ function OptionCard({
                 value={resolveScoreValue(scores[crit.id]) ?? 0}
                 onChange={(v) => updateScore(crit.id, v)}
                 label={`Score for ${option.name} on ${crit.name}`}
+              />
+              <ScoringPrompt
+                criterionType={crit.type}
+                promptId={`mobile-prompt-${option.id}-${crit.id}`}
               />
               {resolveConfidence(scores[crit.id]) && updateConfidence && (
                 <div className="mt-1 flex items-center gap-1.5">

@@ -29,6 +29,8 @@ import { CompletionRing } from "./CompletionRing";
 import { WeightSlider } from "./WeightSlider";
 import { WeightDistributionBar } from "./WeightDistributionBar";
 import { ReasoningPopover } from "./ReasoningPopover";
+import { ScoringPrompt } from "./ScoringPrompt";
+import type { CalibrationData } from "./ScoringPrompt";
 import { BiasWarnings } from "./BiasWarnings";
 import { useBiasDetection } from "@/hooks/useBiasDetection";
 import { MobileScoreCards } from "./MobileScoreCards";
@@ -61,6 +63,26 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
   const completeness = useMemo(() => computeCompleteness(decision), [decision]);
   const [autoNormalize, setAutoNormalize] = useState(false);
   const biasDetection = useBiasDetection(decision);
+
+  /** Track which score cell is focused (for guided scoring prompt) */
+  const [focusedCell, setFocusedCell] = useState<{
+    optionId: string;
+    criterionId: string;
+  } | null>(null);
+
+  /** Build calibration data for the focused cell */
+  const focusedCalibration = useMemo<CalibrationData | undefined>(() => {
+    if (!focusedCell) return undefined;
+    const allScores: number[] = [];
+    for (const opt of decision.options) {
+      const s = readScore(decision.scores, opt.id, focusedCell.criterionId);
+      if (s !== null) allScores.push(s);
+    }
+    return {
+      allScores,
+      currentScore: readScore(decision.scores, focusedCell.optionId, focusedCell.criterionId),
+    };
+  }, [focusedCell, decision.options, decision.scores]);
 
   /** Track which option/criterion descriptions are expanded */
   const [expandedDescs, setExpandedDescs] = useState<Set<string>>(() => {
@@ -622,6 +644,9 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                     const cellValue = readScore(decision.scores, opt.id, crit.id);
                     const isNull = cellValue === null;
                     const confidence = resolveConfidence(decision.scores[opt.id]?.[crit.id]);
+                    const isFocused =
+                      focusedCell?.optionId === opt.id && focusedCell?.criterionId === crit.id;
+                    const promptId = `scoring-prompt-${opt.id}-${crit.id}`;
                     return (
                       <td
                         key={crit.id}
@@ -646,6 +671,10 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                                 }
                               }
                             }}
+                            onFocus={() =>
+                              setFocusedCell({ optionId: opt.id, criterionId: crit.id })
+                            }
+                            onBlur={() => setFocusedCell(null)}
                             onKeyDown={(e) => handleGridKeyDown(e, rowIdx, colIdx)}
                             data-grid-row={rowIdx}
                             data-grid-col={colIdx}
@@ -655,7 +684,9 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                                 : "border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                             }`}
                             aria-label={`Score for ${opt.name} on ${crit.name}${isNull ? " (not scored)" : ""}`}
-                            aria-describedby="score-range-desc"
+                            aria-describedby={
+                              isFocused ? `score-range-desc ${promptId}` : "score-range-desc"
+                            }
                           />
                           {confidence && (
                             <ConfidenceDot
@@ -670,6 +701,13 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                             criterionName={crit.name}
                           />
                         </div>
+                        {isFocused && (
+                          <ScoringPrompt
+                            criterionType={crit.type}
+                            promptId={promptId}
+                            calibration={focusedCalibration}
+                          />
+                        )}
                       </td>
                     );
                   })}
