@@ -183,7 +183,7 @@ export function CoachmarkOverlay({ step, onNext, onDismiss }: CoachmarkOverlayPr
           {/* Close button (Skip tour) top-right */}
           <button
             onClick={onDismiss}
-            className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            className="absolute top-3 right-3 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             aria-label="Skip tour"
           >
             <X className="h-4 w-4" />
@@ -225,7 +225,7 @@ export function CoachmarkOverlay({ step, onNext, onDismiss }: CoachmarkOverlayPr
             <div className="flex items-center gap-2">
               <button
                 onClick={onDismiss}
-                className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               >
                 Skip tour
               </button>

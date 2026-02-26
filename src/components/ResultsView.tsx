@@ -263,7 +263,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
 
         {shareStatus && (
           <div
-            className={`text-sm mb-3 px-3 py-2 rounded-md ${shareStatus.includes("copied") ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}
+            className={`text-sm mb-3 px-3 py-2 rounded-md ${shareStatus.includes("copied") ? "bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300" : "bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300"}`}
             role="status"
           >
             {shareStatus}
@@ -322,13 +322,13 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
           id="chart-heading"
           className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3"
         >
-          <BarChart3 className="h-5 w-5 text-blue-600" />
+          <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           Score Visualization
         </h2>
         <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
           <Suspense
             fallback={
-              <div className="h-[200px] flex items-center justify-center text-sm text-gray-400">
+              <div className="h-[200px] flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
                 Loading chart…
               </div>
             }
@@ -344,7 +344,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
           id="drivers-heading"
           className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3"
         >
-          <TrendingUp className="h-5 w-5 text-green-600" />
+          <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
           Top Drivers
         </h2>
         <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
@@ -365,7 +365,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-32 h-2 rounded-full bg-gray-100 overflow-hidden">
+                  <div className="w-32 h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                     <div
                       className="h-full rounded-full bg-green-500"
                       style={{ width: `${driver.normalizedWeight * 100}%` }}
@@ -408,7 +408,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
           {scoringMethod === "wsm" && results.optionResults.length > 0 && (
             <p>
               <strong>Winner:</strong>{" "}
-              <span className="text-blue-700 font-medium">
+              <span className="text-blue-700 dark:text-blue-300 font-medium">
                 {results.optionResults[0].optionName}
               </span>{" "}
               scored {results.optionResults[0].totalScore.toFixed(2)} out of a maximum of 10.00.
@@ -427,7 +427,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
           {scoringMethod === "topsis" && topsisResults.rankings.length > 0 && (
             <p>
               <strong>Winner:</strong>{" "}
-              <span className="text-blue-700 font-medium">
+              <span className="text-blue-700 dark:text-blue-300 font-medium">
                 {topsisResults.rankings[0].optionName}
               </span>{" "}
               has a closeness coefficient of{" "}
@@ -550,7 +550,7 @@ function WsmRankings({ results, decision, maxScore }: WsmRankingsProps) {
             </div>
 
             {/* Score bar */}
-            <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
+            <div className="h-2 w-full rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${
                   isWinner ? "bg-blue-600" : "bg-gray-400"
@@ -652,7 +652,7 @@ function TopsisRankings({ topsisResults, decision }: TopsisRankingsProps) {
             </div>
 
             {/* Closeness bar */}
-            <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
+            <div className="h-2 w-full rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${
                   isWinner ? "bg-blue-600" : "bg-gray-400"

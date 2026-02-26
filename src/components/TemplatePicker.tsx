@@ -83,7 +83,7 @@ export function TemplatePicker({ onSelect, onClose }: TemplatePickerProps) {
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             aria-label="Close template picker"
           >
             <X className="h-5 w-5" />

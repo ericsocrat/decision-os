@@ -407,7 +407,7 @@ function AppContent() {
           <button
             ref={shortcutTriggerRef}
             onClick={() => setShowShortcuts(true)}
-            className="ml-auto text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors hidden sm:inline-flex items-center gap-1"
+            className="ml-auto text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors hidden sm:inline-flex items-center gap-1"
             aria-label="Show keyboard shortcuts"
           >
             <Keyboard className="h-3.5 w-3.5" />
@@ -487,7 +487,7 @@ function AppContent() {
           </span>
           <button
             onClick={onboarding.restart}
-            className="inline-flex items-center justify-center h-6 w-6 rounded-full text-gray-400 hover:text-blue-600 hover:bg-gray-100 dark:hover:text-blue-400 dark:hover:bg-gray-700 transition-colors"
+            className="inline-flex items-center justify-center h-6 w-6 rounded-full text-gray-400 dark:text-gray-500 hover:text-blue-600 hover:bg-gray-100 dark:hover:text-blue-400 dark:hover:bg-gray-700 transition-colors"
             aria-label="Replay onboarding tour"
             title="Replay tour"
           >
@@ -527,7 +527,7 @@ function AppContent() {
               <button
                 data-modal-close
                 onClick={closeModal}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 aria-label="Close shortcuts"
               >
                 <X className="h-5 w-5" />

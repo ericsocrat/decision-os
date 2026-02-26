@@ -189,7 +189,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
               htmlFor="decision-title"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
             >
-              Title <span className="text-red-500">*</span>
+              Title <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               id="decision-title"
@@ -292,7 +292,9 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
             return (
               <div key={opt.id}>
                 <div className="flex items-center gap-2">
-                  <span className="w-6 text-center text-xs font-medium text-gray-400">{label}</span>
+                  <span className="w-6 text-center text-xs font-medium text-gray-400 dark:text-gray-500">
+                    {label}
+                  </span>
                   <input
                     type="text"
                     value={opt.name}
@@ -316,7 +318,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                           action: { label: "Undo", onClick: undo },
                         });
                       }}
-                      className="rounded-md p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                      className="rounded-md p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
                       aria-label={`Remove option ${opt.name}`}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -328,7 +330,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                   <button
                     type="button"
                     onClick={() => toggleDesc(`opt-${opt.id}`)}
-                    className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    className="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                     aria-expanded={expandedDescs.has(`opt-${opt.id}`)}
                     aria-controls={`opt-desc-${opt.id}`}
                   >
@@ -352,7 +354,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                         maxLength={500}
                         aria-label={`Description for option ${opt.name}`}
                       />
-                      <p className="text-right text-[10px] text-gray-400 mt-0.5">
+                      <p className="text-right text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
                         {(opt.description ?? "").length}/500
                       </p>
                     </div>
@@ -384,7 +386,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
               Enter a value between 0 and 100
             </span>
             <div className="group relative">
-              <Info className="h-4 w-4 text-gray-400 cursor-help" />
+              <Info className="h-4 w-4 text-gray-400 dark:text-gray-500 cursor-help" />
               <div className="absolute left-0 top-6 z-10 hidden group-hover:block w-64 rounded-md bg-gray-900 px-3 py-2 text-xs text-white shadow-lg">
                 <p className="font-medium mb-1">Benefit vs Cost:</p>
                 <p>
@@ -455,7 +457,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                           action: { label: "Undo", onClick: undo },
                         });
                       }}
-                      className="rounded-md p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                      className="rounded-md p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
                       aria-label={`Remove criterion ${crit.name}`}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -475,7 +477,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                   <button
                     type="button"
                     onClick={() => toggleDesc(`crit-${crit.id}`)}
-                    className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    className="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                     aria-expanded={expandedDescs.has(`crit-${crit.id}`)}
                     aria-controls={`crit-desc-${crit.id}`}
                   >
@@ -501,7 +503,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                         maxLength={500}
                         aria-label={`Description for criterion ${crit.name}`}
                       />
-                      <p className="text-right text-[10px] text-gray-400 mt-0.5">
+                      <p className="text-right text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
                         {(crit.description ?? "").length}/500
                       </p>
                     </div>
@@ -533,7 +535,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
             type="checkbox"
             checked={autoNormalize}
             onChange={(e) => setAutoNormalize(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500"
           />
           Auto-normalize weights to 100%
         </label>
@@ -586,7 +588,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                       )}
                     </div>
                     <span
-                      className={`text-[10px] font-normal ${crit.type === "cost" ? "text-orange-600" : "text-green-600"}`}
+                      className={`text-[10px] font-normal ${crit.type === "cost" ? "text-orange-600 dark:text-orange-400" : "text-green-600 dark:text-green-400"}`}
                     >
                       {crit.type === "cost" ? "↓ cost" : "↑ benefit"}
                     </span>

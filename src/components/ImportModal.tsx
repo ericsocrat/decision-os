@@ -176,7 +176,7 @@ export const ImportModal = memo(function ImportModal({ onClose }: ImportModalPro
           </h2>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            className="rounded-md p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
             aria-label="Close import dialog"
           >
             <X className="h-5 w-5" />
@@ -214,7 +214,7 @@ export const ImportModal = memo(function ImportModal({ onClose }: ImportModalPro
                       JSON or CSV up to 1 MB
                     </p>
                   </div>
-                  <div className="flex gap-3 text-xs text-gray-400">
+                  <div className="flex gap-3 text-xs text-gray-400 dark:text-gray-500">
                     <span className="flex items-center gap-1">
                       <FileJson className="h-4 w-4" /> .json
                     </span>
