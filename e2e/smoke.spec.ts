@@ -115,4 +115,14 @@ test.describe("Decision OS — Smoke Tests", () => {
     await page.locator('button[aria-label="Copy share link"]').click();
     await expect(page.locator('text="Link copied to clipboard!"')).toBeVisible();
   });
+
+  test("Content-Security-Policy header is present", async ({ page }) => {
+    const response = await page.goto("/");
+    expect(response).not.toBeNull();
+    const csp = response!.headers()["content-security-policy"];
+    expect(csp).toBeDefined();
+    expect(csp).toContain("default-src 'self'");
+    expect(csp).toContain("script-src 'self' 'unsafe-inline'");
+    expect(csp).toContain("frame-ancestors 'none'");
+  });
 });
