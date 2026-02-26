@@ -44,6 +44,7 @@ Decision OS is a client-side web application built with Next.js (App Router) and
 | `import.ts`         | JSON/CSV import parsing, preview, validation, and file reading        |
 | `comparison.ts`     | Decision comparison engine (deltas, agreement score, heatmap)         |
 | `monte-carlo.ts`    | Monte Carlo simulation engine (PRNG, perturbation, distributions)     |
+| `share.ts`          | Compact share encoding/decoding (short keys, index-based scores)      |
 | `error-reporter.ts` | Production error telemetry with localStorage + Sentry forwarding      |
 
 ### `/src/components/` — React UI Components
@@ -65,6 +66,7 @@ Decision OS is a client-side web application built with Next.js (App Router) and
 | `ImportModal.tsx`      | File import dialog with CSV preview, drag-and-drop support                  |
 | `CompareView.tsx`      | Side-by-side decision comparison with divergence analysis                   |
 | `MonteCarloView.tsx`   | Monte Carlo simulation config, results, histograms, CIs                     |
+| `ShareView.tsx`        | Read-only presentation view for shared decisions                            |
 
 ### `/src/hooks/` — Custom React Hooks
 
@@ -74,13 +76,14 @@ Decision OS is a client-side web application built with Next.js (App Router) and
 
 ### `/src/app/` — Next.js App Router
 
-| File          | Responsibility                                           |
-| ------------- | -------------------------------------------------------- |
-| `layout.tsx`  | Root layout with metadata, fonts, FOUC-prevention script |
-| `page.tsx`    | Main page with tab navigation, keyboard shortcuts        |
-| `manifest.ts` | PWA web app manifest (name, icons, theme)                |
-| `sitemap.ts`  | Dynamic sitemap generation for SEO                       |
-| `globals.css` | Tailwind imports and CSS variables                       |
+| File             | Responsibility                                                |
+| ---------------- | ------------------------------------------------------------- |
+| `layout.tsx`     | Root layout with metadata, fonts, FOUC-prevention script      |
+| `page.tsx`       | Main page with tab navigation, keyboard shortcuts             |
+| `share/page.tsx` | Read-only share route — decodes and displays shared decisions |
+| `manifest.ts`    | PWA web app manifest (name, icons, theme)                     |
+| `sitemap.ts`     | Dynamic sitemap generation for SEO                            |
+| `globals.css`    | Tailwind imports and CSS variables                            |
 
 ## Design Decisions
 

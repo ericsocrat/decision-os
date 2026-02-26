@@ -67,8 +67,9 @@ src/
 │   ├── import.ts     # JSON/CSV import parsing and validation
 │   ├── comparison.ts # Decision comparison engine (deltas, agreement, heatmap)
 │   ├── monte-carlo.ts # Monte Carlo simulation engine (PRNG, perturbation)
+│   ├── share.ts      # Compact share encoding/decoding for /share route
 │   └── error-reporter.ts  # Production error telemetry
-└── __tests__/        # Unit tests (236 tests, 15 files)
+└── __tests__/        # Unit tests (259 tests, 16 files)
     ├── scoring.test.ts
     ├── validation.test.ts
     ├── utils.test.ts
@@ -78,6 +79,7 @@ src/
     ├── comparison.test.ts    # Comparison engine tests (33 tests)
     ├── error-reporter.test.ts  # Error reporter tests (9 tests)
     ├── monte-carlo.test.ts   # Monte Carlo engine tests (38 tests)
+    ├── share.test.ts         # Share encoding/decoding tests (23 tests)
     ├── test-utils.tsx        # renderWithProviders helper
     └── components/           # Component integration tests
         ├── DecisionProvider.test.tsx

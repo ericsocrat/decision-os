@@ -53,9 +53,10 @@
 
 ## v0.3.0 — Persistence & Sharing
 
+- [x] Shareable read-only links (`/share` route with compact encoding)
 - [ ] Supabase backend (behind feature flag)
 - [ ] User accounts (optional)
-- [ ] Shareable decision links (server-stored)
+- [ ] Shareable decision links (server-stored, short URLs)
 - [ ] Collaborative decision-making (real-time)
 - [ ] Decision history / versioning
 
