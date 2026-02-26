@@ -1,5 +1,6 @@
 /**
- * Header component with app branding, decision selector, and dark mode toggle.
+ * Header component with app branding, decision selector, dark mode toggle,
+ * authentication button, and cloud sync status.
  * Wrapped in React.memo — only re-renders when context values change.
  */
 
@@ -12,13 +13,19 @@ import { Plus, RotateCcw, Trash2, Sun, Moon, LayoutTemplate, Upload } from "luci
 import Image from "next/image";
 import { TemplatePicker, instantiateTemplate } from "./TemplatePicker";
 import { ImportModal } from "./ImportModal";
+import { AuthButton } from "./AuthButton";
+import { SyncStatus } from "./SyncStatus";
 import type { DecisionTemplate } from "@/lib/templates";
 import { saveDecision } from "@/lib/storage";
+import { useAuth } from "@/hooks/useAuth";
+import { useSync } from "@/hooks/useSync";
 
 export const Header = memo(function Header() {
   const { decision, decisions, loadDecision, createNewDecision, removeDecision, resetDemo } =
     useDecision();
   const { theme, toggleTheme } = useTheme();
+  const auth = useAuth();
+  const sync = useSync(!!auth.user);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showImport, setShowImport] = useState(false);
 
@@ -127,6 +134,12 @@ export const Header = memo(function Header() {
               <RotateCcw className="h-4 w-4" />
               <span className="hidden sm:inline">Reset Demo</span>
             </button>
+
+            {/* Cloud sync status */}
+            <SyncStatus sync={sync} isAuthenticated={!!auth.user} />
+
+            {/* Auth button */}
+            <AuthButton auth={auth} />
 
             <button
               onClick={toggleTheme}

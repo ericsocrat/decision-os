@@ -2,7 +2,7 @@
 
 ## Overview
 
-Decision OS is a client-side web application built with Next.js (App Router) and TypeScript. It uses a local-first architecture — all data lives in the browser's localStorage with no backend required for the MVP.
+Decision OS is a client-side web application built with Next.js (App Router) and TypeScript. It uses a local-first architecture — all data lives in the browser's localStorage by default, with optional Supabase-powered cloud sync for cross-device access.
 
 ## High-Level Diagram
 
@@ -38,6 +38,10 @@ Decision OS is a client-side web application built with Next.js (App Router) and
 | `scoring.ts`        | Deterministic scoring engine (weighted sum, sensitivity analysis)     |
 | `validation.ts`     | Input validation with structured error messages + runtime type guards |
 | `storage.ts`        | localStorage CRUD operations                                          |
+| `cloud-storage.ts`  | Supabase cloud CRUD operations (guarded, returns empty when offline)  |
+| `sync.ts`           | Bidirectional sync engine (local ↔ cloud, last-write-wins)            |
+| `supabase.ts`       | Supabase client singleton with feature-flag guard                     |
+| `supabase-types.ts` | Generated Supabase Database types for the decisions table             |
 | `demo-data.ts`      | Preloaded demo decision                                               |
 | `utils.ts`          | Utilities (ID generation, URL encoding/decoding, relative time)       |
 | `templates.ts`      | 8 pre-built decision templates with `instantiateTemplate()` factory   |
@@ -67,12 +71,17 @@ Decision OS is a client-side web application built with Next.js (App Router) and
 | `CompareView.tsx`      | Side-by-side decision comparison with divergence analysis                   |
 | `MonteCarloView.tsx`   | Monte Carlo simulation config, results, histograms, CIs                     |
 | `ShareView.tsx`        | Read-only presentation view for shared decisions                            |
+| `AuthButton.tsx`       | Sign in/out dropdown with GitHub and Google OAuth providers                 |
+| `SyncStatus.tsx`       | Cloud sync status indicator with manual retry                               |
+| `MigrationBanner.tsx`  | One-time localStorage → cloud migration prompt                              |
 
 ### `/src/hooks/` — Custom React Hooks
 
 | File               | Responsibility                                                            |
 | ------------------ | ------------------------------------------------------------------------- |
 | `useValidation.ts` | Real-time validation hook — returns errors, warnings, infos for inline UI |
+| `useAuth.ts`       | Supabase auth state hook — user, session, sign in/out, loading            |
+| `useSync.ts`       | Cloud sync status hook — auto-sync on mount/focus, manual trigger         |
 
 ### `/src/app/` — Next.js App Router
 
@@ -87,7 +96,7 @@ Decision OS is a client-side web application built with Next.js (App Router) and
 
 ## Design Decisions
 
-1. **Local-first**: No backend for MVP. All state in localStorage. This simplifies deployment and eliminates privacy concerns.
+1. **Local-first with optional cloud**: All state in localStorage by default. When Supabase env vars are set, auth + cloud sync activate. Saves always go to localStorage first (instant), then to cloud (async, best-effort). See ADR-002.
 
 2. **Pure scoring engine**: All scoring functions are pure (no side effects). This makes them easy to test and reason about.
 
@@ -114,9 +123,13 @@ User Input → DecisionProvider → Scoring Engine → Results
                     │
                     ▼
               localStorage (auto-save, 300ms debounce)
+                    │
+                    ▼ (if authenticated)
+              Supabase Cloud (async, best-effort)
 ```
 
-## Future Architecture (v0.3+)
+## Future Architecture
 
-- **Supabase backend**: Behind a feature flag for cloud persistence
 - **Web Workers**: Move scoring to a worker for large decisions
+- **Real-time collaboration**: Supabase Realtime for live multi-user editing
+- **Team workspaces**: Shared decision collections with role-based access

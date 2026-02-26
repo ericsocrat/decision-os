@@ -15,6 +15,7 @@ import { ResultsView } from "@/components/ResultsView";
 import { SensitivityView } from "@/components/SensitivityView";
 import { CompareView } from "@/components/CompareView";
 import { MonteCarloView } from "@/components/MonteCarloView";
+import { MigrationBanner } from "@/components/MigrationBanner";
 import { DecisionSkeleton } from "@/components/DecisionSkeleton";
 import { ImportModal } from "@/components/ImportModal";
 import { useValidation } from "@/hooks/useValidation";
@@ -31,6 +32,7 @@ import {
 import { ToastProvider, showToast } from "@/components/Toast";
 import { validateFile, readFileAsText, importFromJson } from "@/lib/import";
 import { saveDecision } from "@/lib/storage";
+import { useAuth } from "@/hooks/useAuth";
 import pkg from "../../package.json";
 
 const emptySubscribe = () => () => {};
@@ -62,6 +64,7 @@ function AppContent() {
   const announce = useAnnounce();
   const { decision, isLoading, undo, redo, loadDecision } = useDecision();
   const validation = useValidation(decision);
+  const auth = useAuth();
 
   // ── Global drag-and-drop for file import ──────────────────
   const [showDropOverlay, setShowDropOverlay] = useState(false);
@@ -293,6 +296,12 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Header />
+
+      {/* Cloud migration banner (shown once for new sign-ins with local data) */}
+      <MigrationBanner
+        isAuthenticated={!!auth.user}
+        onComplete={() => announce("Decisions uploaded to cloud")}
+      />
 
       <main id="main-content" className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6">
         {/* Tabs */}

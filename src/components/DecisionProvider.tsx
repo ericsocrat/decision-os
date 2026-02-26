@@ -29,6 +29,8 @@ import {
   deleteDecision,
   resetToDemo,
 } from "@/lib/storage";
+import { cloudSaveDecision } from "@/lib/cloud-storage";
+import { isCloudEnabled } from "@/lib/supabase";
 import { DEMO_DECISION } from "@/lib/demo-data";
 import { generateId, decodeDecisionFromUrl } from "@/lib/utils";
 import { isDecision } from "@/lib/validation";
@@ -144,7 +146,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     setCanRedo(false);
   }, []);
 
-  // Auto-save on decision change (debounced)
+  // Auto-save on decision change (debounced) — local + cloud
   useEffect(() => {
     if (!isDirty) return;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -153,6 +155,13 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
       setDecisions(getDecisions());
       setIsDirty(false);
       announce("Changes saved");
+
+      // Best-effort cloud sync (fire-and-forget)
+      if (isCloudEnabled()) {
+        cloudSaveDecision(decision).catch(() => {
+          // Offline or error — data is safe in localStorage
+        });
+      }
     }, 300);
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);

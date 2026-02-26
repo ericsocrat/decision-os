@@ -54,8 +54,11 @@
 ## v0.3.0 — Persistence & Sharing
 
 - [x] Shareable read-only links (`/share` route with compact encoding)
-- [ ] Supabase backend (behind feature flag)
-- [ ] User accounts (optional)
+- [x] Supabase backend (behind feature flag, `NEXT_PUBLIC_SUPABASE_URL`)
+- [x] User accounts (GitHub + Google OAuth via Supabase Auth)
+- [x] Cloud sync (local-first with last-write-wins bidirectional merge)
+- [x] localStorage → cloud migration (one-click MigrationBanner)
+- [x] Offline fallback (app works fully without connectivity)
 - [ ] Shareable decision links (server-stored, short URLs)
 - [ ] Collaborative decision-making (real-time)
 - [ ] Decision history / versioning

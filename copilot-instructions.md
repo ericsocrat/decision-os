@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Decision OS is a structured decision-making web app. Users create decisions with options, criteria (weighted), and scores, then see rankings and sensitivity analysis. It is client-side only (localStorage) with a deterministic scoring engine.
+Decision OS is a structured decision-making web app. Users create decisions with options, criteria (weighted), and scores, then see rankings and sensitivity analysis. Uses localStorage by default with optional Supabase-powered auth + cloud sync (feature-flagged behind `NEXT_PUBLIC_SUPABASE_URL`).
 
 ## Tech Stack
 
@@ -10,6 +10,7 @@ Decision OS is a structured decision-making web app. Users create decisions with
 - **Styling**: Tailwind CSS 4 + utility classes (with `dark:` variants)
 - **Icons**: lucide-react
 - **Charts**: Recharts (bar + stacked breakdown)
+- **Auth/Cloud**: Supabase (optional, via `@supabase/supabase-js`)
 - **Compression**: lz-string (URL sharing)
 - **Testing**: Vitest + React Testing Library + Playwright E2E
 - **Linting**: ESLint + Prettier
@@ -42,7 +43,10 @@ src/
 ├── components/       # React components
 │   ├── DecisionProvider.tsx  # State management context + URL share restore
 │   ├── DecisionBuilder.tsx   # Decision editor UI
-│   ├── Header.tsx            # App header (branding, selector, dark toggle, import)
+│   ├── Header.tsx            # App header (branding, selector, dark toggle, auth, sync)
+│   ├── AuthButton.tsx        # Sign in/out dropdown with OAuth providers
+│   ├── SyncStatus.tsx        # Cloud sync status indicator
+│   ├── MigrationBanner.tsx   # One-time localStorage → cloud migration prompt
 │   ├── ImportModal.tsx       # JSON/CSV import with preview and drag-and-drop
 │   ├── CompareView.tsx       # Side-by-side decision comparison with divergence analysis
 │   ├── MonteCarloView.tsx    # Monte Carlo simulation config, results, histograms
@@ -55,7 +59,9 @@ src/
 │   ├── Toast.tsx             # Imperative toast notifications (showToast)
 │   └── TemplatePicker.tsx    # Modal template picker with focus trap
 ├── hooks/            # Custom React hooks
-│   └── useValidation.ts     # Memoized validation (errors/warnings/infos)
+│   ├── useValidation.ts     # Memoized validation (errors/warnings/infos)
+│   ├── useAuth.ts           # Supabase auth state hook (user, session, sign in/out)
+│   └── useSync.ts           # Cloud sync status hook (auto-sync, manual trigger)
 ├── lib/              # Pure logic (no React)
 │   ├── types.ts      # TypeScript type definitions
 │   ├── scoring.ts    # Scoring engine (CRITICAL - see below)
@@ -68,8 +74,12 @@ src/
 │   ├── comparison.ts # Decision comparison engine (deltas, agreement, heatmap)
 │   ├── monte-carlo.ts # Monte Carlo simulation engine (PRNG, perturbation)
 │   ├── share.ts      # Compact share encoding/decoding for /share route
+│   ├── supabase.ts   # Supabase client singleton (feature-flag guarded)
+│   ├── supabase-types.ts # Generated Supabase Database types
+│   ├── cloud-storage.ts  # Supabase cloud CRUD operations
+│   ├── sync.ts       # Bidirectional sync engine (local ↔ cloud)
 │   └── error-reporter.ts  # Production error telemetry
-└── __tests__/        # Unit tests (259 tests, 16 files)
+└── __tests__/        # Unit tests (281 tests, 18 files)
     ├── scoring.test.ts
     ├── validation.test.ts
     ├── utils.test.ts
@@ -80,6 +90,8 @@ src/
     ├── error-reporter.test.ts  # Error reporter tests (9 tests)
     ├── monte-carlo.test.ts   # Monte Carlo engine tests (38 tests)
     ├── share.test.ts         # Share encoding/decoding tests (23 tests)
+    ├── cloud-storage.test.ts # Cloud storage CRUD tests with mocked Supabase (13 tests)
+    ├── sync.test.ts          # Sync engine tests (9 tests)
     ├── test-utils.tsx        # renderWithProviders helper
     └── components/           # Component integration tests
         ├── DecisionProvider.test.tsx
