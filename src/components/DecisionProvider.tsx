@@ -1,29 +1,49 @@
 /**
- * React hook + context for managing Decision OS state.
+ * Decision OS — State Management Provider (useReducer + Dual-Context)
  *
- * Provides:
- * - Current decision state
- * - CRUD operations
- * - Computed results (memoized)
- * - Persistence to localStorage
+ * Architecture:
+ *   DecisionStateContext   — state values (re-renders consumers on change)
+ *   DecisionDispatchContext — stable dispatch (never causes re-renders)
+ *   DecisionContext         — backward-compatible context (convenience methods + state)
+ *
+ * The pure `decisionReducer` lives in `@/lib/decision-reducer.ts` and is tested
+ * independently. This component handles:
+ *   - Bootstrapping from localStorage
+ *   - Auto-save side effect
+ *   - Screen-reader announcements
+ *   - Derived state memoization (results, TOPSIS, regret, sensitivity)
+ *   - Convenience action wrappers for backward-compatible API
+ *
+ * @see https://github.com/ericsocrat/decision-os/issues/77
  */
 
 "use client";
 
 import {
   createContext,
-  useCallback,
   useContext,
+  useReducer,
   useEffect,
   useMemo,
+  useCallback,
   useRef,
-  useState,
   type ReactNode,
+  type Dispatch,
 } from "react";
-import type { Confidence, Criterion, Decision, Option, ScoreMatrix } from "@/lib/types";
-import { computeResults, sensitivityAnalysis, resolveScoreValue } from "@/lib/scoring";
-import { computeTopsisResults, type TopsisResults } from "@/lib/topsis";
-import { computeRegretResults, type RegretResults } from "@/lib/regret";
+import type { Confidence, Criterion, Decision, DecisionResults, Option } from "@/lib/types";
+import type { TopsisResults } from "@/lib/topsis";
+import type { RegretResults } from "@/lib/regret";
+import type { SensitivityAnalysis } from "@/lib/types";
+import {
+  type DecisionAction,
+  type InternalReducerState,
+  type ReducerState,
+  createInitialState,
+  decisionReducer,
+} from "@/lib/decision-reducer";
+import { computeResults, sensitivityAnalysis } from "@/lib/scoring";
+import { computeTopsisResults } from "@/lib/topsis";
+import { computeRegretResults } from "@/lib/regret";
 import {
   getDecisions,
   getDecision,
@@ -31,508 +51,320 @@ import {
   deleteDecision,
   resetToDemo,
 } from "@/lib/storage";
-import { cloudSaveDecision } from "@/lib/cloud-storage";
-import { isCloudEnabled } from "@/lib/supabase";
 import { DEMO_DECISION } from "@/lib/demo-data";
-import { generateId, decodeDecisionFromUrl } from "@/lib/utils";
-import { decodeShareUrl } from "@/lib/share";
-import { isDecision } from "@/lib/validation";
-import { useAnnounce } from "@/components/Announcer";
+import { generateId } from "@/lib/utils";
+import { useAnnounce } from "./Announcer";
 
-interface DecisionContextValue {
-  // State
-  decision: Decision;
-  decisions: Decision[];
-  results: ReturnType<typeof computeResults>;
+// ---------------------------------------------------------------------------
+// Derived state (computed from decision via useMemo)
+// ---------------------------------------------------------------------------
+
+interface DerivedState {
+  results: DecisionResults;
   topsisResults: TopsisResults;
   regretResults: RegretResults;
-  sensitivity: ReturnType<typeof sensitivityAnalysis>;
-  isDirty: boolean;
-  isLoading: boolean;
+  sensitivity: SensitivityAnalysis;
+}
 
-  // Decision CRUD
-  setDecision: (d: Decision) => void;
+// ---------------------------------------------------------------------------
+// Context value types
+// ---------------------------------------------------------------------------
+
+/** Read-only state: reducer state + derived computations */
+export type DecisionStateValue = ReducerState & DerivedState;
+
+/** Stable dispatch function */
+export type DecisionDispatchValue = Dispatch<DecisionAction>;
+
+/** Full backward-compatible context (state + convenience methods + dispatch) */
+export interface DecisionContextValue extends DecisionStateValue {
+  dispatch: DecisionDispatchValue;
+  // Convenience action wrappers (same API as before the refactor)
+  updateTitle: (title: string) => void;
+  updateDescription: (description: string) => void;
+  addOption: () => void;
+  updateOption: (optionId: string, updates: Partial<Option>) => void;
+  removeOption: (optionId: string) => void;
+  addCriterion: () => void;
+  updateCriterion: (criterionId: string, updates: Partial<Criterion>) => void;
+  removeCriterion: (criterionId: string) => void;
+  updateScore: (optionId: string, criterionId: string, value: number | null) => void;
+  updateConfidence: (optionId: string, criterionId: string, confidence: Confidence) => void;
+  undo: () => void;
+  redo: () => void;
+  setSwingPercent: (value: number) => void;
   loadDecision: (id: string) => void;
   createNewDecision: () => void;
   removeDecision: (id: string) => void;
   resetDemo: () => void;
-
-  // Field updates
-  updateTitle: (title: string) => void;
-  updateDescription: (desc: string) => void;
-
-  // Options
-  addOption: () => void;
-  updateOption: (id: string, updates: Partial<Option>) => void;
-  removeOption: (id: string) => void;
-
-  // Criteria
-  addCriterion: () => void;
-  updateCriterion: (id: string, updates: Partial<Criterion>) => void;
-  removeCriterion: (id: string) => void;
-
-  // Scores
-  updateScore: (optionId: string, criterionId: string, value: number | null) => void;
-  updateConfidence: (optionId: string, criterionId: string, confidence: Confidence) => void;
-
-  // Sensitivity
-  swingPercent: number;
-  setSwingPercent: (v: number) => void;
-
-  // Undo/Redo
-  undo: () => void;
-  redo: () => void;
-  canUndo: boolean;
-  canRedo: boolean;
 }
 
+// ---------------------------------------------------------------------------
+// Contexts
+// ---------------------------------------------------------------------------
+
+const DecisionStateContext = createContext<DecisionStateValue | null>(null);
+const DecisionDispatchContext = createContext<DecisionDispatchValue | null>(null);
 const DecisionContext = createContext<DecisionContextValue | null>(null);
 
-export function useDecision() {
+// ---------------------------------------------------------------------------
+// Hooks
+// ---------------------------------------------------------------------------
+
+/** Read-only state (re-renders on state changes) */
+export function useDecisionState(): DecisionStateValue {
+  const ctx = useContext(DecisionStateContext);
+  if (!ctx) throw new Error("useDecisionState must be used within DecisionProvider");
+  return ctx;
+}
+
+/** Stable dispatch (never re-renders) */
+export function useDecisionDispatch(): DecisionDispatchValue {
+  const ctx = useContext(DecisionDispatchContext);
+  if (!ctx) throw new Error("useDecisionDispatch must be used within DecisionProvider");
+  return ctx;
+}
+
+/** Backward-compatible hook — convenience methods + full state */
+export function useDecision(): DecisionContextValue {
   const ctx = useContext(DecisionContext);
   if (!ctx) throw new Error("useDecision must be used within DecisionProvider");
   return ctx;
 }
 
+// ---------------------------------------------------------------------------
+// Provider
+// ---------------------------------------------------------------------------
+
 export function DecisionProvider({ children }: { children: ReactNode }) {
-  // Check URL hash for shared decision data (compact or legacy format)
-  const sharedDecision = (() => {
-    if (typeof window === "undefined") return null;
-    const hash = window.location.hash;
-
-    // Compact share format: /share#d=...
-    if (hash.startsWith("#d=")) {
-      const encoded = hash.slice("#d=".length);
-      if (!encoded) return null;
-      const decoded = decodeShareUrl(encoded);
-      if (decoded && isDecision(decoded)) {
-        saveDecision(decoded);
-        window.history.replaceState(null, "", window.location.pathname);
-        return decoded;
-      }
-      return null;
-    }
-
-    // Legacy format: /#data=...
-    if (hash.startsWith("#data=")) {
-      const encoded = hash.slice("#data=".length);
-      if (!encoded) return null;
-      const decoded = decodeDecisionFromUrl<unknown>(encoded, null);
-      if (isDecision(decoded)) {
-        saveDecision(decoded);
-        window.history.replaceState(null, "", window.location.pathname);
-        return decoded;
-      }
-    }
-
-    return null;
-  })();
-
-  // Initialize state from shared link or localStorage via lazy initializer
-  const [decision, setDecisionState] = useState<Decision>(() => {
-    if (sharedDecision) return sharedDecision;
-    if (typeof window === "undefined") return DEMO_DECISION;
-    const saved = getDecisions();
-    return saved.length > 0 ? saved[0] : DEMO_DECISION;
+  // ── Bootstrap from localStorage ──────────────────────────
+  const [state, dispatch] = useReducer(decisionReducer, undefined, (): InternalReducerState => {
+    const decisions = getDecisions();
+    return createInitialState(decisions[0], decisions);
   });
-  const [decisions, setDecisions] = useState<Decision[]>(() => {
-    if (typeof window === "undefined") return [DEMO_DECISION];
-    return getDecisions();
-  });
-  const [isDirty, setIsDirty] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [swingPercent, setSwingPercent] = useState(20);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const announce = useAnnounce();
 
-  // ── Undo/Redo history stacks ──────────────────────────────
-  const MAX_UNDO = 50;
-  const COALESCE_MS = 500;
-  const undoStackRef = useRef<Decision[]>([]);
-  const redoStackRef = useRef<Decision[]>([]);
-  const [canUndo, setCanUndo] = useState(false);
-  const [canRedo, setCanRedo] = useState(false);
-
-  /** Metadata for the most recent undo push (used for coalescing text edits). */
-  const lastUndoMeta = useRef<{
-    type: "text" | "structural";
-    field?: string;
-    timestamp: number;
-  } | null>(null);
-
-  /** Push current state onto the undo stack before a mutation */
-  const pushUndo = useCallback((current: Decision) => {
-    undoStackRef.current = [...undoStackRef.current.slice(-(MAX_UNDO - 1)), current];
-    redoStackRef.current = []; // New mutation clears redo
-    setCanUndo(true);
-    setCanRedo(false);
-  }, []);
-
-  /**
-   * Push with coalescing: text edits to the same field within COALESCE_MS
-   * reuse the existing top-of-stack entry instead of pushing a new one.
-   */
-  const pushUndoCoalesced = useCallback(
-    (current: Decision, type: "text" | "structural", field?: string) => {
-      const now = Date.now();
-      const last = lastUndoMeta.current;
-
-      if (
-        type === "text" &&
-        last?.type === "text" &&
-        last.field === field &&
-        now - last.timestamp < COALESCE_MS
-      ) {
-        // Coalesce: don't push — the top of the stack already holds the "before" snapshot
-        lastUndoMeta.current = { type, field, timestamp: now };
-        // Still clear redo since it's a new mutation
-        redoStackRef.current = [];
-        setCanRedo(false);
-        return;
-      }
-
-      // New undo group — push the snapshot
-      pushUndo(current);
-      lastUndoMeta.current = { type, field, timestamp: now };
-    },
-    [pushUndo]
-  );
-
-  /** Clear history (on navigation actions) */
-  const clearHistory = useCallback(() => {
-    undoStackRef.current = [];
-    redoStackRef.current = [];
-    lastUndoMeta.current = null;
-    setCanUndo(false);
-    setCanRedo(false);
-  }, []);
-
-  // Auto-save on decision change (debounced) — local + cloud
+  // Keep announce ref stable for use in callbacks
+  const announceRef = useRef(announce);
   useEffect(() => {
-    if (!isDirty) return;
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
-      saveDecision(decision);
-      setDecisions(getDecisions());
-      setIsDirty(false);
-      announce("Changes saved");
+    announceRef.current = announce;
+  }, [announce]);
 
-      // Best-effort cloud sync (fire-and-forget)
-      if (isCloudEnabled()) {
-        cloudSaveDecision(decision).catch(() => {
-          // Offline or error — data is safe in localStorage
-        });
-      }
-    }, 300);
-    return () => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    };
-  }, [decision, isDirty, announce]);
+  // ── Auto-save side effect ────────────────────────────────
+  useEffect(() => {
+    if (state.isDirty) {
+      saveDecision(state.decision);
+      dispatch({ type: "MARK_CLEAN" });
+      dispatch({ type: "REFRESH_DECISIONS", decisions: getDecisions() });
+      announceRef.current("Changes saved");
+    }
+  }, [state.isDirty, state.decision]);
 
-  // Memoized results
-  const results = useMemo(() => computeResults(decision), [decision]);
-  const topsisResults = useMemo(() => computeTopsisResults(decision), [decision]);
-  const regretResults = useMemo(() => computeRegretResults(decision), [decision]);
+  // ── Derived state (memoized) ─────────────────────────────
+  const results = useMemo(() => computeResults(state.decision), [state.decision]);
+  const topsisResults = useMemo(() => computeTopsisResults(state.decision), [state.decision]);
+  const regretResults = useMemo(() => computeRegretResults(state.decision), [state.decision]);
   const sensitivity = useMemo(
-    () => sensitivityAnalysis(decision, swingPercent),
-    [decision, swingPercent]
+    () => sensitivityAnalysis(state.decision, state.swingPercent),
+    [state.decision, state.swingPercent]
   );
 
-  const setDecision = useCallback(
-    (d: Decision) => {
-      setDecisionState((prev) => {
-        pushUndoCoalesced(prev, "structural");
-        return { ...d, updatedAt: new Date().toISOString() };
-      });
-      setIsDirty(true);
-    },
-    [pushUndoCoalesced]
+  // ── Convenience action wrappers ──────────────────────────
+  // These depend only on `dispatch` (stable) so they never change identity.
+
+  const updateTitle = useCallback(
+    (title: string) => dispatch({ type: "UPDATE_TITLE", title, timestamp: Date.now() }),
+    [dispatch]
   );
 
-  /** Internal: set decision with text-edit coalescing for a given field. */
-  const setDecisionText = useCallback(
-    (d: Decision, field: string) => {
-      setDecisionState((prev) => {
-        pushUndoCoalesced(prev, "text", field);
-        return { ...d, updatedAt: new Date().toISOString() };
-      });
-      setIsDirty(true);
-    },
-    [pushUndoCoalesced]
+  const updateDescription = useCallback(
+    (description: string) =>
+      dispatch({ type: "UPDATE_DESCRIPTION", description, timestamp: Date.now() }),
+    [dispatch]
   );
 
-  /** Undo: restore previous state from undo stack */
+  const addOption = useCallback(() => {
+    dispatch({ type: "ADD_OPTION" });
+  }, [dispatch]);
+
+  const updateOption = useCallback(
+    (optionId: string, updates: Partial<Option>) =>
+      dispatch({ type: "UPDATE_OPTION", optionId, updates, timestamp: Date.now() }),
+    [dispatch]
+  );
+
+  const removeOption = useCallback(
+    (optionId: string) => dispatch({ type: "REMOVE_OPTION", optionId }),
+    [dispatch]
+  );
+
+  const addCriterion = useCallback(() => {
+    dispatch({ type: "ADD_CRITERION" });
+  }, [dispatch]);
+
+  const updateCriterion = useCallback(
+    (criterionId: string, updates: Partial<Criterion>) =>
+      dispatch({ type: "UPDATE_CRITERION", criterionId, updates, timestamp: Date.now() }),
+    [dispatch]
+  );
+
+  const removeCriterion = useCallback(
+    (criterionId: string) => dispatch({ type: "REMOVE_CRITERION", criterionId }),
+    [dispatch]
+  );
+
+  const updateScore = useCallback(
+    (optionId: string, criterionId: string, value: number | null) =>
+      dispatch({ type: "UPDATE_SCORE", optionId, criterionId, value }),
+    [dispatch]
+  );
+
+  const updateConfidence = useCallback(
+    (optionId: string, criterionId: string, confidence: Confidence) =>
+      dispatch({ type: "UPDATE_CONFIDENCE", optionId, criterionId, confidence }),
+    [dispatch]
+  );
+
   const undo = useCallback(() => {
-    if (undoStackRef.current.length === 0) return;
-    const previous = undoStackRef.current[undoStackRef.current.length - 1];
-    undoStackRef.current = undoStackRef.current.slice(0, -1);
-    lastUndoMeta.current = null; // Reset coalescing after undo
-    setDecisionState((current) => {
-      redoStackRef.current = [...redoStackRef.current, current];
-      setCanRedo(true);
-      return previous;
-    });
-    setCanUndo(undoStackRef.current.length > 0);
-    setIsDirty(true);
-    announce("Undone");
-  }, [announce]);
+    dispatch({ type: "UNDO" });
+    announceRef.current("Undone");
+  }, [dispatch]);
 
-  /** Redo: restore state from redo stack */
   const redo = useCallback(() => {
-    if (redoStackRef.current.length === 0) return;
-    const next = redoStackRef.current[redoStackRef.current.length - 1];
-    redoStackRef.current = redoStackRef.current.slice(0, -1);
-    lastUndoMeta.current = null; // Reset coalescing after redo
-    setDecisionState((current) => {
-      undoStackRef.current = [...undoStackRef.current, current];
-      setCanUndo(true);
-      return next;
-    });
-    setCanRedo(redoStackRef.current.length > 0);
-    setIsDirty(true);
-    announce("Redone");
-  }, [announce]);
+    dispatch({ type: "REDO" });
+    announceRef.current("Redone");
+  }, [dispatch]);
+
+  const setSwingPercent = useCallback(
+    (value: number) => dispatch({ type: "SET_SWING_PERCENT", value }),
+    [dispatch]
+  );
+
+  // ── Navigation actions (side effects + dispatch) ─────────
 
   const loadDecision = useCallback(
     (id: string) => {
-      const d = getDecision(id);
-      if (d) {
-        setIsLoading(true);
-        setDecisionState(d);
-        setIsDirty(false);
-        clearHistory();
-        announce(`Loaded decision: ${d.title}`);
-        // Brief loading skeleton for visual feedback
-        requestAnimationFrame(() => setIsLoading(false));
-      }
+      const found = getDecision(id);
+      if (!found) return;
+      const decisions = getDecisions();
+      dispatch({ type: "LOAD_DECISION", decision: found, decisions });
+      announceRef.current(`Loaded decision: ${found.title}`);
     },
-    [announce, clearHistory]
+    [dispatch]
   );
 
   const createNewDecision = useCallback(() => {
-    const now = new Date().toISOString();
-    const newDecision: Decision = {
+    const blank: Decision = {
       id: generateId(),
       title: "Untitled Decision",
       description: "",
       options: [
-        { id: generateId(), name: "Option A" },
-        { id: generateId(), name: "Option B" },
+        { id: generateId(), name: "Option 1" },
+        { id: generateId(), name: "Option 2" },
       ],
       criteria: [{ id: generateId(), name: "Criterion 1", weight: 50, type: "benefit" }],
       scores: {},
-      createdAt: now,
-      updatedAt: now,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
-    saveDecision(newDecision);
-    setDecisionState(newDecision);
-    setDecisions(getDecisions());
-    setIsDirty(false);
-    clearHistory();
-    announce("New decision created");
-  }, [announce, clearHistory]);
+    saveDecision(blank);
+    const decisions = getDecisions();
+    dispatch({ type: "CREATE_DECISION", decision: blank, decisions });
+    announceRef.current("New decision created");
+  }, [dispatch]);
 
   const removeDecision = useCallback(
     (id: string) => {
-      if (deleteDecision(id)) {
-        const remaining = getDecisions();
-        setDecisions(remaining);
-        if (decision.id === id && remaining.length > 0) {
-          setDecisionState(remaining[0]);
-        }
-        clearHistory();
-        announce("Decision deleted");
-      }
+      const ok = deleteDecision(id);
+      if (!ok) return;
+      const remaining = getDecisions();
+      // If we deleted the active decision, fall back to first
+      const fallback = state.decision.id === id ? (remaining[0] ?? null) : null;
+      dispatch({ type: "DELETE_DECISION", remaining, fallback });
+      announceRef.current("Decision deleted");
     },
-    [decision.id, announce, clearHistory]
+    [dispatch, state.decision.id]
   );
 
-  const resetDemoFn = useCallback(() => {
+  const resetDemo = useCallback(() => {
     resetToDemo();
-    const saved = getDecisions();
-    setDecisions(saved);
-    setDecisionState(saved[0]);
-    setIsDirty(false);
-    clearHistory();
-    announce("Demo data restored");
-  }, [announce, clearHistory]);
+    const decisions = getDecisions();
+    dispatch({ type: "RESET_DEMO", decisions, decision: DEMO_DECISION });
+    announceRef.current("Demo data restored");
+  }, [dispatch]);
 
-  // Field updates (text-coalesced undo)
-  const updateTitle = useCallback(
-    (title: string) => setDecisionText({ ...decision, title }, "title"),
-    [decision, setDecisionText]
+  // ── Assemble context values ──────────────────────────────
+
+  const stateValue = useMemo<DecisionStateValue>(
+    () => ({
+      decision: state.decision,
+      decisions: state.decisions,
+      isDirty: state.isDirty,
+      isLoading: state.isLoading,
+      swingPercent: state.swingPercent,
+      past: state.past,
+      future: state.future,
+      canUndo: state.canUndo,
+      canRedo: state.canRedo,
+      results,
+      topsisResults,
+      regretResults,
+      sensitivity,
+    }),
+    [state, results, topsisResults, regretResults, sensitivity]
   );
 
-  const updateDescription = useCallback(
-    (desc: string) => setDecisionText({ ...decision, description: desc }, "description"),
-    [decision, setDecisionText]
+  const contextValue = useMemo<DecisionContextValue>(
+    () => ({
+      ...stateValue,
+      dispatch,
+      updateTitle,
+      updateDescription,
+      addOption,
+      updateOption,
+      removeOption,
+      addCriterion,
+      updateCriterion,
+      removeCriterion,
+      updateScore,
+      updateConfidence,
+      undo,
+      redo,
+      setSwingPercent,
+      loadDecision,
+      createNewDecision,
+      removeDecision,
+      resetDemo,
+    }),
+    [
+      stateValue,
+      dispatch,
+      updateTitle,
+      updateDescription,
+      addOption,
+      updateOption,
+      removeOption,
+      addCriterion,
+      updateCriterion,
+      removeCriterion,
+      updateScore,
+      updateConfidence,
+      undo,
+      redo,
+      setSwingPercent,
+      loadDecision,
+      createNewDecision,
+      removeDecision,
+      resetDemo,
+    ]
   );
 
-  // Options
-  const addOption = useCallback(() => {
-    const newOpt: Option = {
-      id: generateId(),
-      name: `Option ${decision.options.length + 1}`,
-    };
-    setDecision({ ...decision, options: [...decision.options, newOpt] });
-    announce(`Option ${decision.options.length + 1} added`);
-  }, [decision, setDecision, announce]);
-
-  const updateOption = useCallback(
-    (id: string, updates: Partial<Option>) => {
-      const updated = {
-        ...decision,
-        options: decision.options.map((o) => (o.id === id ? { ...o, ...updates } : o)),
-      };
-      // Name-only edits coalesce as text; all other updates are structural
-      if ("name" in updates && Object.keys(updates).length === 1) {
-        setDecisionText(updated, `option:${id}:name`);
-      } else {
-        setDecision(updated);
-      }
-    },
-    [decision, setDecision, setDecisionText]
+  return (
+    <DecisionStateContext value={stateValue}>
+      <DecisionDispatchContext value={dispatch}>
+        <DecisionContext value={contextValue}>{children}</DecisionContext>
+      </DecisionDispatchContext>
+    </DecisionStateContext>
   );
-
-  const removeOption = useCallback(
-    (id: string) => {
-      const removed = decision.options.find((o) => o.id === id);
-      const newScores = { ...decision.scores };
-      delete newScores[id];
-      setDecision({
-        ...decision,
-        options: decision.options.filter((o) => o.id !== id),
-        scores: newScores,
-      });
-      announce(`${removed?.name ?? "Option"} removed`);
-    },
-    [decision, setDecision, announce]
-  );
-
-  // Criteria
-  const addCriterion = useCallback(() => {
-    const newCrit: Criterion = {
-      id: generateId(),
-      name: `Criterion ${decision.criteria.length + 1}`,
-      weight: 50,
-      type: "benefit",
-    };
-    setDecision({ ...decision, criteria: [...decision.criteria, newCrit] });
-    announce(`Criterion ${decision.criteria.length + 1} added`);
-  }, [decision, setDecision, announce]);
-
-  const updateCriterion = useCallback(
-    (id: string, updates: Partial<Criterion>) => {
-      const updated = {
-        ...decision,
-        criteria: decision.criteria.map((c) => (c.id === id ? { ...c, ...updates } : c)),
-      };
-      // Name-only edits coalesce as text; weight/type changes are structural
-      if ("name" in updates && Object.keys(updates).length === 1) {
-        setDecisionText(updated, `criterion:${id}:name`);
-      } else {
-        setDecision(updated);
-      }
-    },
-    [decision, setDecision, setDecisionText]
-  );
-
-  const removeCriterion = useCallback(
-    (id: string) => {
-      const removed = decision.criteria.find((c) => c.id === id);
-      const newScores: ScoreMatrix = {};
-      for (const optId of Object.keys(decision.scores)) {
-        const optScores = { ...decision.scores[optId] };
-        delete optScores[id];
-        newScores[optId] = optScores;
-      }
-      setDecision({
-        ...decision,
-        criteria: decision.criteria.filter((c) => c.id !== id),
-        scores: newScores,
-      });
-      announce(`${removed?.name ?? "Criterion"} removed`);
-    },
-    [decision, setDecision, announce]
-  );
-
-  // Scores
-  const updateScore = useCallback(
-    (optionId: string, criterionId: string, value: number | null) => {
-      const newScores = { ...decision.scores };
-      if (!newScores[optionId]) newScores[optionId] = {};
-      if (value === null) {
-        // Set to null (unscored)
-        newScores[optionId] = {
-          ...newScores[optionId],
-          [criterionId]: null,
-        };
-      } else {
-        const clamped = Math.max(0, Math.min(10, Math.round(value)));
-        // Preserve existing confidence if cell was a ScoredCell
-        const existing = newScores[optionId]?.[criterionId];
-        const existingConf =
-          typeof existing === "object" && existing !== null && "confidence" in existing
-            ? existing.confidence
-            : undefined;
-        newScores[optionId] = {
-          ...newScores[optionId],
-          [criterionId]: existingConf ? { value: clamped, confidence: existingConf } : clamped,
-        };
-      }
-      setDecision({ ...decision, scores: newScores });
-    },
-    [decision, setDecision]
-  );
-
-  // Confidence toggle
-  const updateConfidence = useCallback(
-    (optionId: string, criterionId: string, confidence: Confidence) => {
-      const newScores = { ...decision.scores };
-      if (!newScores[optionId]) newScores[optionId] = {};
-      const existing = newScores[optionId]?.[criterionId];
-      const numValue = resolveScoreValue(existing);
-      if (numValue === null) return; // Can't set confidence on unscored cell
-      newScores[optionId] = {
-        ...newScores[optionId],
-        [criterionId]: { value: numValue, confidence },
-      };
-      setDecision({ ...decision, scores: newScores });
-    },
-    [decision, setDecision]
-  );
-
-  const value: DecisionContextValue = {
-    decision,
-    decisions,
-    results,
-    topsisResults,
-    regretResults,
-    sensitivity,
-    isDirty,
-    isLoading,
-    setDecision,
-    loadDecision,
-    createNewDecision,
-    removeDecision,
-    resetDemo: resetDemoFn,
-    updateTitle,
-    updateDescription,
-    addOption,
-    updateOption,
-    removeOption,
-    addCriterion,
-    updateCriterion,
-    removeCriterion,
-    updateScore,
-    updateConfidence,
-    swingPercent,
-    setSwingPercent,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-  };
-
-  return <DecisionContext.Provider value={value}>{children}</DecisionContext.Provider>;
 }
