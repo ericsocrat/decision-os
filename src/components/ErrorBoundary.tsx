@@ -13,7 +13,8 @@ import { reportError } from "@/lib/error-reporter";
 
 interface Props {
   children: ReactNode;
-  fallback?: ReactNode;
+  /** Static fallback node, or render-prop receiving a reset callback */
+  fallback?: ReactNode | ((reset: () => void) => ReactNode);
 }
 
 interface State {
@@ -45,7 +46,9 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
-        return this.props.fallback;
+        return typeof this.props.fallback === "function"
+          ? this.props.fallback(this.handleReset)
+          : this.props.fallback;
       }
 
       return (

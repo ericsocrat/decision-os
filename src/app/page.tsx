@@ -18,6 +18,7 @@ import {
 import { AnnouncerProvider, useAnnounce } from "@/components/Announcer";
 import { DecisionProvider, useDecision } from "@/components/DecisionProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { TabErrorFallback } from "@/components/TabErrorFallback";
 import { Header } from "@/components/Header";
 import { DecisionBuilder } from "@/components/DecisionBuilder";
 import { ResultsView } from "@/components/ResultsView";
@@ -432,11 +433,13 @@ function AppContent() {
           aria-labelledby="tab-results"
           className={activeTab === "results" ? "" : "hidden"}
         >
-          <ResultsView
-            validation={validation}
-            completeness={completeness}
-            onSwitchToBuilder={() => setActiveTab("builder")}
-          />
+          <ErrorBoundary fallback={(reset) => <TabErrorFallback tab="Results" onReset={reset} />}>
+            <ResultsView
+              validation={validation}
+              completeness={completeness}
+              onSwitchToBuilder={() => setActiveTab("builder")}
+            />
+          </ErrorBoundary>
         </div>
         <div
           id="panel-sensitivity"
@@ -444,9 +447,13 @@ function AppContent() {
           aria-labelledby="tab-sensitivity"
           className={activeTab === "sensitivity" ? "" : "hidden"}
         >
-          <Suspense fallback={<TabPanelSkeleton label="Sensitivity" />}>
-            <SensitivityView />
-          </Suspense>
+          <ErrorBoundary
+            fallback={(reset) => <TabErrorFallback tab="Sensitivity" onReset={reset} />}
+          >
+            <Suspense fallback={<TabPanelSkeleton label="Sensitivity" />}>
+              <SensitivityView />
+            </Suspense>
+          </ErrorBoundary>
         </div>
         <div
           id="panel-compare"
@@ -454,9 +461,11 @@ function AppContent() {
           aria-labelledby="tab-compare"
           className={activeTab === "compare" ? "" : "hidden"}
         >
-          <Suspense fallback={<TabPanelSkeleton label="Compare" />}>
-            <CompareView />
-          </Suspense>
+          <ErrorBoundary fallback={(reset) => <TabErrorFallback tab="Compare" onReset={reset} />}>
+            <Suspense fallback={<TabPanelSkeleton label="Compare" />}>
+              <CompareView />
+            </Suspense>
+          </ErrorBoundary>
         </div>
         <div
           id="panel-montecarlo"
@@ -464,9 +473,13 @@ function AppContent() {
           aria-labelledby="tab-montecarlo"
           className={activeTab === "montecarlo" ? "" : "hidden"}
         >
-          <Suspense fallback={<TabPanelSkeleton label="Monte Carlo" />}>
-            <MonteCarloView />
-          </Suspense>
+          <ErrorBoundary
+            fallback={(reset) => <TabErrorFallback tab="Monte Carlo" onReset={reset} />}
+          >
+            <Suspense fallback={<TabPanelSkeleton label="Monte Carlo" />}>
+              <MonteCarloView />
+            </Suspense>
+          </ErrorBoundary>
         </div>
       </main>
 
