@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   X,
   Crosshair,
+  FlaskConical,
 } from "lucide-react";
 import { useState, lazy, Suspense, useMemo } from "react";
 import { buildShareLink } from "@/lib/share";
@@ -30,6 +31,7 @@ import { useBiasDetection } from "@/hooks/useBiasDetection";
 import { HybridResults } from "./HybridResults";
 import { QualityBar } from "./QualityBar";
 import { ConfidenceStrategySelector } from "./ConfidenceStrategySelector";
+import { WhatIfPanel } from "./WhatIfPanel";
 
 const ScoreChart = lazy(() => import("./ScoreChart").then((m) => ({ default: m.ScoreChart })));
 const ParetoChart = lazy(() => import("./ParetoChart").then((m) => ({ default: m.ParetoChart })));
@@ -41,9 +43,10 @@ interface ResultsViewProps {
 }
 
 export function ResultsView({ validation, completeness, onSwitchToBuilder }: ResultsViewProps) {
-  const { decision, results, topsisResults, regretResults, setConfidenceStrategy } = useDecision();
+  const { decision, results, topsisResults, regretResults, setConfidenceStrategy, updateCriterion, updateScore } = useDecision();
   const [shareStatus, setShareStatus] = useState<string>("");
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [whatIfOpen, setWhatIfOpen] = useState(false);
   const [scoringMethod, setScoringMethod] = useState<
     "wsm" | "topsis" | "minimax-regret" | "consensus"
   >("wsm");
@@ -304,6 +307,15 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
             >
               <Link className="h-4 w-4" />
               <span className="hidden sm:inline">Share</span>
+            </button>
+            <button
+              onClick={() => setWhatIfOpen(true)}
+              className="inline-flex items-center gap-1 rounded-md border border-purple-300 dark:border-purple-600 px-3 py-1.5 text-sm font-medium text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors"
+              aria-label="Open what-if analysis"
+              data-testid="whatif-open-btn"
+            >
+              <FlaskConical className="h-4 w-4" />
+              <span className="hidden sm:inline">What-If</span>
             </button>
           </div>
         </div>
@@ -577,6 +589,29 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
           <NormalizedWeightsTable />
         </div>
       </section>
+
+      {/* What-If Analysis Panel */}
+      {whatIfOpen && (
+        <WhatIfPanel
+          decision={decision}
+          originalResults={results}
+          onApply={(weights, scores) => {
+            decision.criteria.forEach((c, i) => {
+              if (c.weight !== weights[i]) {
+                updateCriterion(c.id, { weight: weights[i] });
+              }
+            });
+            for (const opt of decision.options) {
+              for (const crit of decision.criteria) {
+                const newVal = scores[opt.id]?.[crit.id] ?? null;
+                updateScore(opt.id, crit.id, newVal);
+              }
+            }
+            setWhatIfOpen(false);
+          }}
+          onClose={() => setWhatIfOpen(false)}
+        />
+      )}
     </div>
   );
 }
