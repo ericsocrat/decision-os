@@ -23,7 +23,7 @@ beforeEach(() => {
   });
 });
 
-function createItems(overrides?: Partial<OverflowMenuItem>[]): OverflowMenuItem[] {
+function createItems(overrides?: (Partial<OverflowMenuItem> | undefined)[]): OverflowMenuItem[] {
   const defaults: OverflowMenuItem[] = [
     {
       key: "templates",
