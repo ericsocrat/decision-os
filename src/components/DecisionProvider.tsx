@@ -125,10 +125,18 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
 
   // ── Undo/Redo history stacks ──────────────────────────────
   const MAX_UNDO = 50;
+  const COALESCE_MS = 500;
   const undoStackRef = useRef<Decision[]>([]);
   const redoStackRef = useRef<Decision[]>([]);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
+
+  /** Metadata for the most recent undo push (used for coalescing text edits). */
+  const lastUndoMeta = useRef<{
+    type: "text" | "structural";
+    field?: string;
+    timestamp: number;
+  } | null>(null);
 
   /** Push current state onto the undo stack before a mutation */
   const pushUndo = useCallback((current: Decision) => {
@@ -138,10 +146,41 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     setCanRedo(false);
   }, []);
 
+  /**
+   * Push with coalescing: text edits to the same field within COALESCE_MS
+   * reuse the existing top-of-stack entry instead of pushing a new one.
+   */
+  const pushUndoCoalesced = useCallback(
+    (current: Decision, type: "text" | "structural", field?: string) => {
+      const now = Date.now();
+      const last = lastUndoMeta.current;
+
+      if (
+        type === "text" &&
+        last?.type === "text" &&
+        last.field === field &&
+        now - last.timestamp < COALESCE_MS
+      ) {
+        // Coalesce: don't push — the top of the stack already holds the "before" snapshot
+        lastUndoMeta.current = { type, field, timestamp: now };
+        // Still clear redo since it's a new mutation
+        redoStackRef.current = [];
+        setCanRedo(false);
+        return;
+      }
+
+      // New undo group — push the snapshot
+      pushUndo(current);
+      lastUndoMeta.current = { type, field, timestamp: now };
+    },
+    [pushUndo]
+  );
+
   /** Clear history (on navigation actions) */
   const clearHistory = useCallback(() => {
     undoStackRef.current = [];
     redoStackRef.current = [];
+    lastUndoMeta.current = null;
     setCanUndo(false);
     setCanRedo(false);
   }, []);
@@ -178,12 +217,24 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
   const setDecision = useCallback(
     (d: Decision) => {
       setDecisionState((prev) => {
-        pushUndo(prev);
+        pushUndoCoalesced(prev, "structural");
         return { ...d, updatedAt: new Date().toISOString() };
       });
       setIsDirty(true);
     },
-    [pushUndo]
+    [pushUndoCoalesced]
+  );
+
+  /** Internal: set decision with text-edit coalescing for a given field. */
+  const setDecisionText = useCallback(
+    (d: Decision, field: string) => {
+      setDecisionState((prev) => {
+        pushUndoCoalesced(prev, "text", field);
+        return { ...d, updatedAt: new Date().toISOString() };
+      });
+      setIsDirty(true);
+    },
+    [pushUndoCoalesced]
   );
 
   /** Undo: restore previous state from undo stack */
@@ -191,6 +242,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     if (undoStackRef.current.length === 0) return;
     const previous = undoStackRef.current[undoStackRef.current.length - 1];
     undoStackRef.current = undoStackRef.current.slice(0, -1);
+    lastUndoMeta.current = null; // Reset coalescing after undo
     setDecisionState((current) => {
       redoStackRef.current = [...redoStackRef.current, current];
       setCanRedo(true);
@@ -206,6 +258,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     if (redoStackRef.current.length === 0) return;
     const next = redoStackRef.current[redoStackRef.current.length - 1];
     redoStackRef.current = redoStackRef.current.slice(0, -1);
+    lastUndoMeta.current = null; // Reset coalescing after redo
     setDecisionState((current) => {
       undoStackRef.current = [...undoStackRef.current, current];
       setCanUndo(true);
@@ -280,15 +333,15 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     announce("Demo data restored");
   }, [announce, clearHistory]);
 
-  // Field updates
+  // Field updates (text-coalesced undo)
   const updateTitle = useCallback(
-    (title: string) => setDecision({ ...decision, title }),
-    [decision, setDecision]
+    (title: string) => setDecisionText({ ...decision, title }, "title"),
+    [decision, setDecisionText]
   );
 
   const updateDescription = useCallback(
-    (desc: string) => setDecision({ ...decision, description: desc }),
-    [decision, setDecision]
+    (desc: string) => setDecisionText({ ...decision, description: desc }, "description"),
+    [decision, setDecisionText]
   );
 
   // Options
@@ -303,12 +356,18 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
 
   const updateOption = useCallback(
     (id: string, updates: Partial<Option>) => {
-      setDecision({
+      const updated = {
         ...decision,
         options: decision.options.map((o) => (o.id === id ? { ...o, ...updates } : o)),
-      });
+      };
+      // Name-only edits coalesce as text; all other updates are structural
+      if ("name" in updates && Object.keys(updates).length === 1) {
+        setDecisionText(updated, `option:${id}:name`);
+      } else {
+        setDecision(updated);
+      }
     },
-    [decision, setDecision]
+    [decision, setDecision, setDecisionText]
   );
 
   const removeOption = useCallback(
@@ -340,12 +399,18 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
 
   const updateCriterion = useCallback(
     (id: string, updates: Partial<Criterion>) => {
-      setDecision({
+      const updated = {
         ...decision,
         criteria: decision.criteria.map((c) => (c.id === id ? { ...c, ...updates } : c)),
-      });
+      };
+      // Name-only edits coalesce as text; weight/type changes are structural
+      if ("name" in updates && Object.keys(updates).length === 1) {
+        setDecisionText(updated, `criterion:${id}:name`);
+      } else {
+        setDecision(updated);
+      }
     },
-    [decision, setDecision]
+    [decision, setDecision, setDecisionText]
   );
 
   const removeCriterion = useCallback(
