@@ -26,6 +26,7 @@ const en = {
     results: "Results",
     sensitivity: "Sensitivity",
     compare: "Compare",
+    montecarlo: "Monte Carlo",
   },
   builder: {
     titlePlaceholder: "Decision title",

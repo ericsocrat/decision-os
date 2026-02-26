@@ -45,6 +45,7 @@ src/
 │   ├── Header.tsx            # App header (branding, selector, dark toggle, import)
 │   ├── ImportModal.tsx       # JSON/CSV import with preview and drag-and-drop
 │   ├── CompareView.tsx       # Side-by-side decision comparison with divergence analysis
+│   ├── MonteCarloView.tsx    # Monte Carlo simulation config, results, histograms
 │   ├── ResultsView.tsx       # Rankings, chart, export, share
 │   ├── SensitivityView.tsx   # Sensitivity analysis
 │   ├── ScoreChart.tsx        # Recharts visualization
@@ -65,8 +66,9 @@ src/
 │   ├── templates.ts  # 8 pre-built decision templates
 │   ├── import.ts     # JSON/CSV import parsing and validation
 │   ├── comparison.ts # Decision comparison engine (deltas, agreement, heatmap)
+│   ├── monte-carlo.ts # Monte Carlo simulation engine (PRNG, perturbation)
 │   └── error-reporter.ts  # Production error telemetry
-└── __tests__/        # Unit tests (198 tests, 14 files)
+└── __tests__/        # Unit tests (236 tests, 15 files)
     ├── scoring.test.ts
     ├── validation.test.ts
     ├── utils.test.ts
@@ -75,6 +77,7 @@ src/
     ├── import.test.ts        # Import module tests (30 tests)
     ├── comparison.test.ts    # Comparison engine tests (33 tests)
     ├── error-reporter.test.ts  # Error reporter tests (9 tests)
+    ├── monte-carlo.test.ts   # Monte Carlo engine tests (38 tests)
     ├── test-utils.tsx        # renderWithProviders helper
     └── components/           # Component integration tests
         ├── DecisionProvider.test.tsx

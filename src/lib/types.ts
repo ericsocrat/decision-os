@@ -93,3 +93,69 @@ export interface SensitivityAnalysis {
   points: SensitivityPoint[];
   summary: string;
 }
+
+// ---------------------------------------------------------------------------
+// Monte Carlo simulation types
+// ---------------------------------------------------------------------------
+
+/** Distribution type for weight perturbation */
+export type PerturbationDistribution = "uniform" | "normal" | "triangular";
+
+/** Configuration for a Monte Carlo simulation run */
+export interface MonteCarloConfig {
+  /** Number of simulation iterations (default: 10000) */
+  numSimulations: number;
+  /** Perturbation range as fraction 0–1 (e.g. 0.2 = ±20% of each weight) */
+  perturbationRange: number;
+  /** Statistical distribution for perturbation sampling */
+  distribution: PerturbationDistribution;
+  /** Optional seed for reproducible results (0 = random) */
+  seed: number;
+}
+
+/** Win probability + score distribution for a single option */
+export interface MonteCarloOptionResult {
+  optionId: string;
+  optionName: string;
+  /** Fraction of simulations this option ranked #1 (0–1) */
+  winProbability: number;
+  /** Number of simulations this option won */
+  winCount: number;
+  /** Mean score across all simulations */
+  meanScore: number;
+  /** Standard deviation of score */
+  stdDev: number;
+  /** Score at the 5th percentile (lower bound of 90% CI) */
+  p5: number;
+  /** Score at the 25th percentile */
+  p25: number;
+  /** Score at the 50th percentile (median) */
+  p50: number;
+  /** Score at the 75th percentile */
+  p75: number;
+  /** Score at the 95th percentile (upper bound of 90% CI) */
+  p95: number;
+  /** Histogram buckets for score distribution visualization */
+  histogram: HistogramBucket[];
+}
+
+/** A bucket in a score histogram */
+export interface HistogramBucket {
+  /** Lower bound of the bucket (inclusive) */
+  min: number;
+  /** Upper bound of the bucket (exclusive, except last) */
+  max: number;
+  /** Number of simulations falling in this bucket */
+  count: number;
+}
+
+/** Full Monte Carlo simulation results */
+export interface MonteCarloResults {
+  decisionId: string;
+  config: MonteCarloConfig;
+  options: MonteCarloOptionResult[];
+  /** Total wall-clock time in milliseconds */
+  elapsedMs: number;
+  /** Summary text */
+  summary: string;
+}

@@ -14,6 +14,7 @@ import { DecisionBuilder } from "@/components/DecisionBuilder";
 import { ResultsView } from "@/components/ResultsView";
 import { SensitivityView } from "@/components/SensitivityView";
 import { CompareView } from "@/components/CompareView";
+import { MonteCarloView } from "@/components/MonteCarloView";
 import { DecisionSkeleton } from "@/components/DecisionSkeleton";
 import { ImportModal } from "@/components/ImportModal";
 import { useValidation } from "@/hooks/useValidation";
@@ -22,6 +23,7 @@ import {
   BarChart3,
   Activity,
   GitCompareArrows,
+  Dices,
   Keyboard,
   X,
   Upload,
@@ -40,16 +42,17 @@ function useIsMounted() {
   );
 }
 
-type Tab = "builder" | "results" | "sensitivity" | "compare";
+type Tab = "builder" | "results" | "sensitivity" | "compare" | "montecarlo";
 
 const tabLabels: Record<Tab, string> = {
   builder: "Builder",
   results: "Results",
   sensitivity: "Sensitivity",
   compare: "Compare",
+  montecarlo: "Monte Carlo",
 };
 
-const TAB_IDS: Tab[] = ["builder", "results", "sensitivity", "compare"];
+const TAB_IDS: Tab[] = ["builder", "results", "sensitivity", "compare", "montecarlo"];
 
 function AppContent() {
   const [activeTab, setActiveTab] = useState<Tab>("builder");
@@ -216,6 +219,10 @@ function AppContent() {
           setActiveTab("compare");
           announce("Compare tab");
           break;
+        case "5":
+          setActiveTab("montecarlo");
+          announce("Monte Carlo tab");
+          break;
         case "?":
           setShowShortcuts((prev) => !prev);
           break;
@@ -275,6 +282,11 @@ function AppContent() {
       id: "compare",
       label: "Compare",
       icon: <GitCompareArrows className="h-4 w-4" />,
+    },
+    {
+      id: "montecarlo",
+      label: "Monte Carlo",
+      icon: <Dices className="h-4 w-4" />,
     },
   ];
 
@@ -362,6 +374,14 @@ function AppContent() {
         >
           <CompareView />
         </div>
+        <div
+          id="panel-montecarlo"
+          role="tabpanel"
+          aria-labelledby="tab-montecarlo"
+          className={activeTab === "montecarlo" ? "" : "hidden"}
+        >
+          <MonteCarloView />
+        </div>
       </main>
 
       {/* Footer */}
@@ -414,6 +434,7 @@ function AppContent() {
                 ["2", "Results tab"],
                 ["3", "Sensitivity tab"],
                 ["4", "Compare tab"],
+                ["5", "Monte Carlo tab"],
                 ["←/→", "Navigate tabs"],
                 ["Home/End", "First/last tab"],
                 ["Ctrl+Z", "Undo"],

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Monte Carlo Sensitivity Engine**: Stochastic simulation engine with configurable iterations (1k–50k), perturbation range (±5%–50%), and distributions (uniform/normal/triangular). Seeded PRNG (xoshiro128\*\*) for reproducible results. Win probabilities, score distributions (mean, stddev, percentiles), confidence intervals, mini histograms. 5th tab ("Monte Carlo") with interactive config panel and rich results display. Pure engine in `monte-carlo.ts`. 38 Monte Carlo unit tests (#3)
 - **Decision Comparison Mode**: Side-by-side decision comparison with divergence analysis. 4th tab ("Compare") with dual selector dropdowns, agreement score (Spearman's rank correlation), side-by-side rankings with rank/score deltas, divergence heatmap with green/yellow/red severity, weight comparison table. Pure comparison engine in `comparison.ts`. 33 comparison unit tests (#12)
 - **JSON/CSV Import**: Import decisions from JSON files (full Decision or results export format) and CSV spreadsheets with preview step. File picker + drag-and-drop support. Lightweight CSV parser (no dependencies). 30 import unit tests. Import button in Header toolbar (#11)
 - **Error Telemetry**: Production error reporter with localStorage diagnostics (max 20 errors, FIFO). Sentry forwarding wired (activates when @sentry/nextjs is loaded). ErrorBoundary now reports via `reportError()`. No PII captured. 9 error reporter unit tests (#40)
