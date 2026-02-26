@@ -265,7 +265,7 @@ describe("csvToDecision", () => {
     expect(decision.scores[opt1Id][crit1Id]).toBe(4);
   });
 
-  it("defaults null scores to 0", () => {
+  it("preserves null scores from CSV", () => {
     const preview = {
       headers: ["A"],
       rows: [{ option: "X", scores: [null] as (number | null)[] }],
@@ -274,7 +274,7 @@ describe("csvToDecision", () => {
     const decision = csvToDecision(preview, "Test", ["benefit"], [50]);
     const optId = decision.options[0].id;
     const critId = decision.criteria[0].id;
-    expect(decision.scores[optId][critId]).toBe(0);
+    expect(decision.scores[optId][critId]).toBeNull();
   });
 
   it("uses default title when empty", () => {

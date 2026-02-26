@@ -11,11 +11,15 @@
 import { useCallback, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { ScoreSlider } from "./ScoreSlider";
-import type { Criterion, Decision, Option } from "@/lib/types";
+import type { Criterion, Decision, Option, ScoreValue } from "@/lib/types";
+import { resolveScoreValue, resolveConfidence } from "@/lib/scoring";
+import { ConfidenceDot } from "./ConfidenceDot";
+import type { Confidence } from "@/lib/types";
 
 interface MobileScoreCardsProps {
   decision: Decision;
-  updateScore: (optionId: string, criterionId: string, value: number) => void;
+  updateScore: (optionId: string, criterionId: string, value: number | null) => void;
+  updateConfidence?: (optionId: string, criterionId: string, confidence: Confidence) => void;
 }
 
 /** Letter label for option index (A, B, C, …) */
@@ -32,14 +36,16 @@ function OptionCard({
   expanded,
   onToggle,
   updateScore,
+  updateConfidence,
 }: {
   option: Option;
   index: number;
   criteria: Criterion[];
-  scores: Record<string, number>;
+  scores: Record<string, ScoreValue>;
   expanded: boolean;
   onToggle: () => void;
   updateScore: (criterionId: string, value: number) => void;
+  updateConfidence?: (criterionId: string, confidence: Confidence) => void;
 }) {
   return (
     <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
@@ -101,10 +107,23 @@ function OptionCard({
                 </p>
               )}
               <ScoreSlider
-                value={scores[crit.id] ?? 0}
+                value={resolveScoreValue(scores[crit.id]) ?? 0}
                 onChange={(v) => updateScore(crit.id, v)}
                 label={`Score for ${option.name} on ${crit.name}`}
               />
+              {resolveConfidence(scores[crit.id]) && updateConfidence && (
+                <div className="mt-1 flex items-center gap-1.5">
+                  <span className="text-[10px] text-gray-400 dark:text-gray-500">Confidence:</span>
+                  <ConfidenceDot
+                    confidence={resolveConfidence(scores[crit.id])!}
+                    onChange={(next) => updateConfidence(crit.id, next)}
+                    size="md"
+                  />
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                    {resolveConfidence(scores[crit.id])}
+                  </span>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -113,7 +132,11 @@ function OptionCard({
   );
 }
 
-export function MobileScoreCards({ decision, updateScore }: MobileScoreCardsProps) {
+export function MobileScoreCards({
+  decision,
+  updateScore,
+  updateConfidence,
+}: MobileScoreCardsProps) {
   // Accordion: keep track of which option is expanded (first by default)
   const [expandedId, setExpandedId] = useState<string | null>(decision.options[0]?.id ?? null);
 
@@ -133,6 +156,9 @@ export function MobileScoreCards({ decision, updateScore }: MobileScoreCardsProp
           expanded={expandedId === opt.id}
           onToggle={() => toggle(opt.id)}
           updateScore={(critId, v) => updateScore(opt.id, critId, v)}
+          updateConfidence={
+            updateConfidence ? (critId, c) => updateConfidence(opt.id, critId, c) : undefined
+          }
         />
       ))}
     </div>

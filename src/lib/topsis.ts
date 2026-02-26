@@ -24,7 +24,7 @@
  */
 
 import type { Decision } from "./types";
-import { normalizeWeights, DISPLAY_PRECISION } from "./scoring";
+import { normalizeWeights, DISPLAY_PRECISION, readScoreOrZero } from "./scoring";
 
 // ---------------------------------------------------------------------------
 //  Types
@@ -82,8 +82,9 @@ export function computeTopsisResults(decision: Decision): TopsisResults {
   const numCriteria = criteria.length;
 
   // --- Step 1: Build raw decision matrix (options × criteria) ----------------
+  // Null scores are treated as 0 in TOPSIS (included in vector normalization)
   const rawMatrix: number[][] = options.map((opt) =>
-    criteria.map((crit) => scores[opt.id]?.[crit.id] ?? 0)
+    criteria.map((crit) => readScoreOrZero(scores, opt.id, crit.id))
   );
 
   // --- Step 2: Vector normalization ------------------------------------------

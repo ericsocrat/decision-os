@@ -26,8 +26,10 @@ import type {
   MonteCarloOptionResult,
   MonteCarloResults,
   PerturbationDistribution,
+  ScoreMatrix,
+  Confidence,
 } from "./types";
-import { computeResults, roundDisplay } from "./scoring";
+import { computeResults, roundDisplay, resolveScoreValue, resolveConfidence } from "./scoring";
 
 // ---------------------------------------------------------------------------
 // Callback interface for progress reporting & cancellation
@@ -156,6 +158,72 @@ export function perturbWeights(
 }
 
 // ---------------------------------------------------------------------------
+// Confidence-based score perturbation
+// ---------------------------------------------------------------------------
+
+/** Multiplier for per-cell score perturbation based on confidence */
+export const CONFIDENCE_PERTURBATION: Record<Confidence, number> = {
+  high: 1.0, // standard perturbation
+  medium: 1.5, // 50% wider
+  low: 2.5, // 150% wider
+};
+
+/**
+ * Check if any cell in the ScoreMatrix has a non-high confidence level.
+ * Used to skip score perturbation entirely when all are plain numbers.
+ */
+export function hasNonHighConfidence(scores: ScoreMatrix): boolean {
+  for (const optId of Object.keys(scores)) {
+    const row = scores[optId];
+    for (const critId of Object.keys(row)) {
+      const conf = resolveConfidence(row[critId]);
+      if (conf && conf !== "high") return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Create a perturbed copy of the score matrix.
+ * Each cell is perturbed independently:
+ *   perturbed = clamp(base ± delta, 0, 10)
+ * where delta scales with the cell's confidence level.
+ *
+ * High-confidence cells: standard range
+ * Medium-confidence: 1.5× wider
+ * Low-confidence: 2.5× wider
+ * Null cells: preserved as-is
+ */
+export function perturbScores(
+  scores: ScoreMatrix,
+  options: { id: string }[],
+  criteria: { id: string }[],
+  rand: () => number,
+  range: number,
+  distribution: PerturbationDistribution
+): ScoreMatrix {
+  const result: ScoreMatrix = {};
+  for (const opt of options) {
+    result[opt.id] = {};
+    for (const crit of criteria) {
+      const sv = scores[opt.id]?.[crit.id];
+      const numVal = resolveScoreValue(sv);
+      if (numVal === null) {
+        result[opt.id][crit.id] = null;
+        continue;
+      }
+      const conf = resolveConfidence(sv) ?? "high";
+      const multiplier = CONFIDENCE_PERTURBATION[conf];
+      const effectiveRange = range * multiplier;
+      const perturbation = samplePerturbation(rand, effectiveRange, distribution);
+      const perturbed = numVal * perturbation;
+      result[opt.id][crit.id] = Math.max(0, Math.min(10, perturbed));
+    }
+  }
+  return result;
+}
+
+// ---------------------------------------------------------------------------
 // Histogram helpers
 // ---------------------------------------------------------------------------
 
@@ -254,6 +322,7 @@ export function runMonteCarloSimulation(
   const rand = createPRNG(seed);
   const baseWeights = criteria.map((c) => c.weight);
   const numOptions = options.length;
+  const shouldPerturbScores = hasNonHighConfidence(decision.scores);
 
   // Accumulators ----------------------------------------------------------
 
@@ -280,9 +349,15 @@ export function runMonteCarloSimulation(
     // Perturb weights
     const perturbedWeights = perturbWeights(baseWeights, rand, perturbationRange, distribution);
 
-    // Build a shallow-copy decision with the perturbed weights
+    // Perturb scores based on per-cell confidence (skip if all high)
+    const perturbedScores = shouldPerturbScores
+      ? perturbScores(decision.scores, options, criteria, rand, perturbationRange, distribution)
+      : decision.scores;
+
+    // Build a shallow-copy decision with the perturbed weights and scores
     const simDecision: Decision = {
       ...decision,
+      scores: perturbedScores,
       criteria: criteria.map((c, i) => ({ ...c, weight: perturbedWeights[i] })),
     };
 

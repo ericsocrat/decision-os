@@ -20,8 +20,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { Criterion, Decision, Option, ScoreMatrix } from "@/lib/types";
-import { computeResults, sensitivityAnalysis } from "@/lib/scoring";
+import type { Confidence, Criterion, Decision, Option, ScoreMatrix } from "@/lib/types";
+import { computeResults, sensitivityAnalysis, resolveScoreValue } from "@/lib/scoring";
 import { computeTopsisResults, type TopsisResults } from "@/lib/topsis";
 import { computeRegretResults, type RegretResults } from "@/lib/regret";
 import {
@@ -72,7 +72,8 @@ interface DecisionContextValue {
   removeCriterion: (id: string) => void;
 
   // Scores
-  updateScore: (optionId: string, criterionId: string, value: number) => void;
+  updateScore: (optionId: string, criterionId: string, value: number | null) => void;
+  updateConfidence: (optionId: string, criterionId: string, confidence: Confidence) => void;
 
   // Sensitivity
   swingPercent: number;
@@ -457,13 +458,44 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
 
   // Scores
   const updateScore = useCallback(
-    (optionId: string, criterionId: string, value: number) => {
-      const clamped = Math.max(0, Math.min(10, Math.round(value)));
+    (optionId: string, criterionId: string, value: number | null) => {
       const newScores = { ...decision.scores };
       if (!newScores[optionId]) newScores[optionId] = {};
+      if (value === null) {
+        // Set to null (unscored)
+        newScores[optionId] = {
+          ...newScores[optionId],
+          [criterionId]: null,
+        };
+      } else {
+        const clamped = Math.max(0, Math.min(10, Math.round(value)));
+        // Preserve existing confidence if cell was a ScoredCell
+        const existing = newScores[optionId]?.[criterionId];
+        const existingConf =
+          typeof existing === "object" && existing !== null && "confidence" in existing
+            ? existing.confidence
+            : undefined;
+        newScores[optionId] = {
+          ...newScores[optionId],
+          [criterionId]: existingConf ? { value: clamped, confidence: existingConf } : clamped,
+        };
+      }
+      setDecision({ ...decision, scores: newScores });
+    },
+    [decision, setDecision]
+  );
+
+  // Confidence toggle
+  const updateConfidence = useCallback(
+    (optionId: string, criterionId: string, confidence: Confidence) => {
+      const newScores = { ...decision.scores };
+      if (!newScores[optionId]) newScores[optionId] = {};
+      const existing = newScores[optionId]?.[criterionId];
+      const numValue = resolveScoreValue(existing);
+      if (numValue === null) return; // Can't set confidence on unscored cell
       newScores[optionId] = {
         ...newScores[optionId],
-        [criterionId]: clamped,
+        [criterionId]: { value: numValue, confidence },
       };
       setDecision({ ...decision, scores: newScores });
     },
@@ -493,6 +525,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     updateCriterion,
     removeCriterion,
     updateScore,
+    updateConfidence,
     swingPercent,
     setSwingPercent,
     undo,

@@ -93,10 +93,11 @@ describe("decisionToSharePayload", () => {
   test("handles missing scores gracefully", () => {
     const missing = { ...sampleDecision, scores: {} };
     const payload = decisionToSharePayload(missing);
+    // Missing scores are encoded as null (not scored)
     expect(payload.s).toEqual([
-      [0, 0, 0],
-      [0, 0, 0],
-      [0, 0, 0],
+      [null, null, null],
+      [null, null, null],
+      [null, null, null],
     ]);
   });
 });

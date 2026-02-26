@@ -153,7 +153,7 @@ export function getTemplateById(templateId: string): DecisionTemplate | undefine
 /**
  * Instantiate a Decision from a template.
  * Generates fresh IDs for options, criteria, and the decision itself.
- * Scores default to 0 for all combinations.
+ * Scores default to null (unscored) for all combinations.
  */
 export function instantiateTemplate(template: DecisionTemplate): Decision {
   const now = new Date().toISOString();
@@ -165,12 +165,12 @@ export function instantiateTemplate(template: DecisionTemplate): Decision {
     type: c.type,
   }));
 
-  // Initialize all scores to 0
-  const scores: Record<string, Record<string, number>> = {};
+  // Initialize all scores to null (not yet scored)
+  const scores: Record<string, Record<string, null>> = {};
   for (const opt of options) {
     scores[opt.id] = {};
     for (const crit of criteria) {
-      scores[opt.id][crit.id] = 0;
+      scores[opt.id][crit.id] = null;
     }
   }
 

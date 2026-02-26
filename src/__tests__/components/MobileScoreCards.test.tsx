@@ -88,12 +88,12 @@ function makeDecision(): Decision {
 describe("MobileScoreCards", () => {
   let decision: Decision;
   let updateScore: ReturnType<
-    typeof vi.fn<(optionId: string, criterionId: string, value: number) => void>
+    typeof vi.fn<(optionId: string, criterionId: string, value: number | null) => void>
   >;
 
   beforeEach(() => {
     decision = makeDecision();
-    updateScore = vi.fn<(optionId: string, criterionId: string, value: number) => void>();
+    updateScore = vi.fn<(optionId: string, criterionId: string, value: number | null) => void>();
   });
 
   it("renders a card for each option", () => {

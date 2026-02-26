@@ -130,11 +130,10 @@ describe("scoreOption", () => {
     expect(result.criterionScores[1].effectiveScore).toBe(4.0);
   });
 
-  it("treats missing scores as 0", () => {
+  it("treats missing scores as null (not scored)", () => {
     const result = scoreOption("opt_missing", "Missing", criteria, {}, nw);
-    // c1 (cost): eff = 10-0 = 10, weighted = 5.0
-    // c2 (benefit): eff = 0, weighted = 0
-    expect(result.totalScore).toBe(5.0);
+    // All cells are null (missing) → excluded from computation → 0
+    expect(result.totalScore).toBe(0);
   });
 });
 

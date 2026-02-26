@@ -23,6 +23,8 @@ import type { CriterionType } from "@/lib/types";
 import type { ValidationResult } from "@/hooks/useValidation";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { computeCompleteness } from "@/lib/completeness";
+import { readScore, resolveConfidence } from "@/lib/scoring";
+import { ConfidenceDot } from "./ConfidenceDot";
 import { CompletionRing } from "./CompletionRing";
 import { WeightSlider } from "./WeightSlider";
 import { WeightDistributionBar } from "./WeightDistributionBar";
@@ -46,6 +48,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
     updateCriterion,
     removeCriterion,
     updateScore,
+    updateConfidence,
     undo,
     redo,
     canUndo,
@@ -556,7 +559,11 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
         </span>
 
         {/* Mobile: Card-based scoring (< 640px) */}
-        <MobileScoreCards decision={decision} updateScore={updateScore} />
+        <MobileScoreCards
+          decision={decision}
+          updateScore={updateScore}
+          updateConfidence={updateConfidence}
+        />
 
         {/* Desktop: Table layout (≥ 640px) */}
         <div className="hidden sm:block overflow-x-auto">
@@ -608,32 +615,55 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                   <td className="px-3 py-2 text-sm font-medium text-gray-900 dark:text-gray-100 border-b border-gray-100 dark:border-gray-700">
                     {opt.name}
                   </td>
-                  {decision.criteria.map((crit, colIdx) => (
-                    <td
-                      key={crit.id}
-                      className="px-3 py-2 text-center border-b border-gray-100 dark:border-gray-700"
-                    >
-                      <input
-                        type="number"
-                        min={0}
-                        max={10}
-                        step={1}
-                        value={decision.scores[opt.id]?.[crit.id] ?? 0}
-                        onChange={(e) => {
-                          const v = Number(e.target.value);
-                          if (Number.isFinite(v)) {
-                            updateScore(opt.id, crit.id, Math.max(0, Math.min(10, v)));
-                          }
-                        }}
-                        onKeyDown={(e) => handleGridKeyDown(e, rowIdx, colIdx)}
-                        data-grid-row={rowIdx}
-                        data-grid-col={colIdx}
-                        className="w-14 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 px-2 py-1.5 text-sm text-center focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        aria-label={`Score for ${opt.name} on ${crit.name}`}
-                        aria-describedby="score-range-desc"
-                      />
-                    </td>
-                  ))}
+                  {decision.criteria.map((crit, colIdx) => {
+                    const cellValue = readScore(decision.scores, opt.id, crit.id);
+                    const isNull = cellValue === null;
+                    const confidence = resolveConfidence(decision.scores[opt.id]?.[crit.id]);
+                    return (
+                      <td
+                        key={crit.id}
+                        className="px-3 py-2 text-center border-b border-gray-100 dark:border-gray-700"
+                      >
+                        <div className="inline-flex items-center gap-1">
+                          <input
+                            type="number"
+                            min={0}
+                            max={10}
+                            step={1}
+                            value={isNull ? "" : cellValue}
+                            placeholder={isNull ? "?" : undefined}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              if (raw === "") {
+                                updateScore(opt.id, crit.id, null);
+                              } else {
+                                const v = Number(raw);
+                                if (Number.isFinite(v)) {
+                                  updateScore(opt.id, crit.id, Math.max(0, Math.min(10, v)));
+                                }
+                              }
+                            }}
+                            onKeyDown={(e) => handleGridKeyDown(e, rowIdx, colIdx)}
+                            data-grid-row={rowIdx}
+                            data-grid-col={colIdx}
+                            className={`w-14 rounded-md px-2 py-1.5 text-sm text-center focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                              isNull
+                                ? "border-2 border-dashed border-gray-300 dark:border-gray-500 bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                                : "border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            }`}
+                            aria-label={`Score for ${opt.name} on ${crit.name}${isNull ? " (not scored)" : ""}`}
+                            aria-describedby="score-range-desc"
+                          />
+                          {confidence && (
+                            <ConfidenceDot
+                              confidence={confidence}
+                              onChange={(next) => updateConfidence(opt.id, crit.id, next)}
+                            />
+                          )}
+                        </div>
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>

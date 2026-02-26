@@ -13,12 +13,15 @@
  */
 
 import type {
+  Confidence,
   Criterion,
   CriterionScore,
   Decision,
   DecisionResults,
   OptionResult,
   ScoreMatrix,
+  ScoreValue,
+  ScoredCell,
   SensitivityAnalysis,
   SensitivityPoint,
   TopDriver,
@@ -33,6 +36,64 @@ export const MAX_SCORE = 10;
 
 /** Decimal places for displayed scores */
 export const DISPLAY_PRECISION = 2;
+
+// ---------------------------------------------------------------------------
+// ScoreValue helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract the raw numeric value from a ScoreValue.
+ * - `null` → `null` (not scored)
+ * - `number` → the number
+ * - `ScoredCell` → its `.value`
+ */
+export function resolveScoreValue(sv: ScoreValue | undefined): number | null {
+  if (sv === null || sv === undefined) return null;
+  if (typeof sv === "number") return sv;
+  return sv.value;
+}
+
+/**
+ * Extract the confidence level from a ScoreValue.
+ * - `null` / `undefined` → `null`
+ * - plain `number` → "high" (default)
+ * - `ScoredCell` → its `.confidence`
+ */
+export function resolveConfidence(sv: ScoreValue | undefined): Confidence | null {
+  if (sv === null || sv === undefined) return null;
+  if (typeof sv === "number") return "high";
+  return sv.confidence;
+}
+
+/**
+ * Check whether a ScoreValue is a ScoredCell (object with value + confidence).
+ */
+export function isScoredCell(sv: ScoreValue | undefined): sv is ScoredCell {
+  return typeof sv === "object" && sv !== null && "value" in sv && "confidence" in sv;
+}
+
+/**
+ * Read a score cell from the matrix, returning `null` if not scored.
+ */
+export function readScore(
+  scores: ScoreMatrix,
+  optionId: string,
+  criterionId: string
+): number | null {
+  return resolveScoreValue(scores[optionId]?.[criterionId]);
+}
+
+/**
+ * Read a score cell, defaulting `null` to 0 for backward compatibility
+ * in contexts that cannot handle nulls (e.g. comparison, bias detection).
+ */
+export function readScoreOrZero(
+  scores: ScoreMatrix,
+  optionId: string,
+  criterionId: string
+): number {
+  return resolveScoreValue(scores[optionId]?.[criterionId]) ?? 0;
+}
 
 // ---------------------------------------------------------------------------
 // Weight normalization
@@ -77,6 +138,14 @@ export function effectiveScore(rawScore: number, criterionType: "benefit" | "cos
 /**
  * Score a single option across all criteria.
  * Returns the total weighted score and per-criterion breakdown.
+ *
+ * Null scores are excluded: the option's total is normalized by
+ * the sum of weights for scored criteria only, so unscored cells
+ * don't silently bias the result.
+ *
+ * Formula: score_i = Σ(w_j · e_ij) / Σ(w_j)  for j ∈ scored criteria
+ * When all criteria are scored, Σ(w_j) = 1.0, so results are identical
+ * to the original behavior (backward compatible).
  */
 export function scoreOption(
   optionId: string,
@@ -86,28 +155,39 @@ export function scoreOption(
   normalizedWeights: number[]
 ): OptionResult {
   const criterionScores: CriterionScore[] = criteria.map((criterion, i) => {
-    const rawScore = scores[optionId]?.[criterion.id] ?? 0;
-    const eff = effectiveScore(rawScore, criterion.type);
+    const raw = readScore(scores, optionId, criterion.id);
+    const numericRaw = raw ?? 0;
+    const eff = effectiveScore(numericRaw, criterion.type);
     const nw = normalizedWeights[i];
 
     return {
       criterionId: criterion.id,
       criterionName: criterion.name,
-      rawScore,
+      rawScore: numericRaw,
       normalizedWeight: nw,
       effectiveScore: roundDisplay(eff * nw),
       criterionType: criterion.type,
+      isNull: raw === null,
     };
   });
 
-  // Accumulate from unrounded weighted scores to avoid double-rounding errors
-  const totalScore = roundDisplay(
-    criteria.reduce((sum, criterion, i) => {
-      const rawScore = scores[optionId]?.[criterion.id] ?? 0;
-      const eff = effectiveScore(rawScore, criterion.type);
-      return sum + eff * normalizedWeights[i];
-    }, 0)
-  );
+  // Accumulate only scored criteria; normalize by their weight sum
+  // Formula: score_i = Σ(w_j · e_ij) / Σ(w_j) for j ∈ scored
+  let scoredWeightSum = 0;
+  let weightedSum = 0;
+
+  criteria.forEach((criterion, i) => {
+    const raw = readScore(scores, optionId, criterion.id);
+    if (raw !== null) {
+      const eff = effectiveScore(raw, criterion.type);
+      weightedSum += eff * normalizedWeights[i];
+      scoredWeightSum += normalizedWeights[i];
+    }
+  });
+
+  // When all scored: scoredWeightSum ≈ 1.0, so result = weightedSum (unchanged)
+  // When partially scored: divide by scoredWeightSum to re-normalize
+  const totalScore = roundDisplay(scoredWeightSum > 0 ? weightedSum / scoredWeightSum : 0);
 
   return {
     optionId,

@@ -7,7 +7,7 @@
  */
 
 import type { Decision } from "./types";
-import { normalizeWeights, effectiveScore, computeResults } from "./scoring";
+import { normalizeWeights, effectiveScore, computeResults, readScoreOrZero } from "./scoring";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -57,10 +57,10 @@ function detectHaloEffect(decision: Decision): BiasWarning[] {
   for (const opt of options) {
     let highestCount = 0;
     for (const crit of criteria) {
-      const optScore = scores[opt.id]?.[crit.id] ?? 0;
+      const optScore = readScoreOrZero(scores, opt.id, crit.id);
       const isHighest = options.every((other) => {
         if (other.id === opt.id) return true;
-        return (scores[other.id]?.[crit.id] ?? 0) <= optScore;
+        return readScoreOrZero(scores, other.id, crit.id) <= optScore;
       });
       if (isHighest) highestCount++;
     }
@@ -85,7 +85,7 @@ function detectUniformityBias(decision: Decision): BiasWarning[] {
   if (criteria.length < 2) return warnings;
 
   for (const opt of options) {
-    const optScores = criteria.map((c) => scores[opt.id]?.[c.id] ?? 0);
+    const optScores = criteria.map((c) => readScoreOrZero(scores, opt.id, c.id));
     const min = Math.min(...optScores);
     const max = Math.max(...optScores);
     if (max - min <= UNIFORMITY_RANGE && optScores.length >= 2) {
@@ -109,7 +109,7 @@ function detectScoreAnchoring(decision: Decision): BiasWarning[] {
   const allScores: number[] = [];
   for (const opt of options) {
     for (const crit of criteria) {
-      allScores.push(scores[opt.id]?.[crit.id] ?? 0);
+      allScores.push(readScoreOrZero(scores, opt.id, crit.id));
     }
   }
   if (allScores.length < 4) return [];
@@ -198,7 +198,7 @@ function detectExtremeScores(decision: Decision): BiasWarning[] {
   if (criteria.length < 2) return warnings;
 
   for (const opt of options) {
-    const optScores = criteria.map((c) => scores[opt.id]?.[c.id] ?? 0);
+    const optScores = criteria.map((c) => readScoreOrZero(scores, opt.id, c.id));
     const extremeCount = optScores.filter((s) => s === 0 || s === 10).length;
     if (extremeCount / optScores.length > EXTREME_FRACTION && optScores.length >= 2) {
       warnings.push({
@@ -245,7 +245,7 @@ function detectSingleCriterionDominance(decision: Decision): BiasWarning[] {
       let total = 0;
       for (let ri = 0; ri < remainingCriteria.length; ri++) {
         const rc = remainingCriteria[ri];
-        const raw = scores[opt.id]?.[rc.id] ?? 0;
+        const raw = readScoreOrZero(scores, opt.id, rc.id);
         total += effectiveScore(raw, rc.type) * remainingNw[ri];
       }
       if (total > newWinnerScore) {

@@ -21,8 +21,9 @@
  */
 
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
-import type { Decision, CriterionType } from "./types";
+import type { Decision, CriterionType, ScoreValue } from "./types";
 import { generateId } from "./utils";
+import { readScoreOrZero, resolveConfidence } from "./scoring";
 
 /** Compacted share payload — version 1 */
 export interface SharePayloadV1 {
@@ -36,8 +37,10 @@ export interface SharePayloadV1 {
   o: string[];
   /** Criteria: [name, weight, typeInitial("b"|"c")] */
   c: [string, number, string][];
-  /** Scores grid: scores[optionIdx][criterionIdx] */
-  s: number[][];
+  /** Scores grid: scores[optionIdx][criterionIdx]; null = unscored */
+  s: (number | null)[][];
+  /** Confidence grid (optional): conf[optionIdx][criterionIdx]; 0=high, 1=medium, 2=low, absent=high */
+  cf?: (number | null)[][];
 }
 
 /**
@@ -93,19 +96,42 @@ export function buildShareLink(decision: Decision, origin: string): string | nul
 //  Internal helpers
 // ---------------------------------------------------------------------------
 
+const CONF_TO_INT: Record<string, number> = { high: 0, medium: 1, low: 2 };
+const INT_TO_CONF = ["high", "medium", "low"] as const;
+
 /** Convert a Decision into a compact share payload. */
 export function decisionToSharePayload(decision: Decision): SharePayloadV1 {
+  let hasConfidence = false;
+  const confGrid: (number | null)[][] = [];
+
+  const scoreGrid = decision.options.map((opt) => {
+    const confRow: (number | null)[] = [];
+    const row = decision.criteria.map((cri) => {
+      const sv = decision.scores[opt.id]?.[cri.id];
+      const conf = resolveConfidence(sv);
+      if (conf && conf !== "high") hasConfidence = true;
+      confRow.push(sv === null || sv === undefined ? null : CONF_TO_INT[conf ?? "high"]);
+      return sv === null || sv === undefined
+        ? null
+        : readScoreOrZero(decision.scores, opt.id, cri.id);
+    });
+    confGrid.push(confRow);
+    return row;
+  });
+
   const payload: SharePayloadV1 = {
     v: 1,
     t: decision.title,
     o: decision.options.map((o) => o.name),
     c: decision.criteria.map((c) => [c.name, c.weight, c.type[0]]),
-    s: decision.options.map((opt) =>
-      decision.criteria.map((cri) => decision.scores[opt.id]?.[cri.id] ?? 0)
-    ),
+    s: scoreGrid,
   };
   if (decision.description) {
     payload.d = decision.description;
+  }
+  // Only include confidence grid if any cell has non-high confidence
+  if (hasConfidence) {
+    payload.cf = confGrid;
   }
   return payload;
 }
@@ -128,11 +154,25 @@ export function sharePayloadToDecision(payload: SharePayloadV1): Decision {
     type: typeMap[typeInitial] ?? ("benefit" as CriterionType),
   }));
 
-  const scores: Record<string, Record<string, number>> = {};
+  const scores: Record<string, Record<string, ScoreValue>> = {};
   for (let oi = 0; oi < options.length; oi++) {
     scores[options[oi].id] = {};
     for (let ci = 0; ci < criteria.length; ci++) {
-      scores[options[oi].id][criteria[ci].id] = payload.s[oi]?.[ci] ?? 0;
+      const cell = payload.s[oi]?.[ci];
+      if (cell === null || cell === undefined) {
+        scores[options[oi].id][criteria[ci].id] = null;
+      } else {
+        // Check for confidence data
+        const confInt = payload.cf?.[oi]?.[ci];
+        if (confInt !== undefined && confInt !== null && confInt > 0) {
+          scores[options[oi].id][criteria[ci].id] = {
+            value: cell,
+            confidence: INT_TO_CONF[confInt] ?? "high",
+          };
+        } else {
+          scores[options[oi].id][criteria[ci].id] = cell;
+        }
+      }
     }
   }
 

@@ -74,11 +74,11 @@ describe("instantiateTemplate", () => {
     expect(new Set(allIds).size).toBe(allIds.length);
   });
 
-  it("initializes all scores to 0", () => {
+  it("initializes all scores to null (not yet scored)", () => {
     const decision = instantiateTemplate(TEMPLATES[0]);
     for (const opt of decision.options) {
       for (const crit of decision.criteria) {
-        expect(decision.scores[opt.id][crit.id]).toBe(0);
+        expect(decision.scores[opt.id][crit.id]).toBeNull();
       }
     }
   });

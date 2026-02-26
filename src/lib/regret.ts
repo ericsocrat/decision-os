@@ -21,7 +21,7 @@
  */
 
 import type { Decision } from "./types";
-import { effectiveScore, normalizeWeights, DISPLAY_PRECISION } from "./scoring";
+import { effectiveScore, normalizeWeights, DISPLAY_PRECISION, readScoreOrZero } from "./scoring";
 
 // ---------------------------------------------------------------------------
 //  Types
@@ -79,9 +79,10 @@ export function computeRegretResults(decision: Decision): RegretResults {
 
   // --- Step 1: Compute effective score matrix --------------------------------
   // effectiveScores[i][j] = effective score of option i on criterion j
+  // Null scores are treated as 0 for regret computation
   const effectiveScores: number[][] = options.map((opt) =>
     criteria.map((crit) => {
-      const raw = scores[opt.id]?.[crit.id] ?? 0;
+      const raw = readScoreOrZero(scores, opt.id, crit.id);
       return effectiveScore(raw, crit.type);
     })
   );

@@ -24,11 +24,30 @@ export interface Option {
   description?: string;
 }
 
+/** Confidence level for a per-cell score */
+export type Confidence = "high" | "medium" | "low";
+
+/** A score cell with an explicit confidence annotation */
+export interface ScoredCell {
+  value: number;
+  confidence: Confidence;
+}
+
 /**
- * Score matrix entry: maps `optionId -> criterionId -> score (0–10)`.
- * Stored as a flat record for simplicity.
+ * A single cell in the score matrix:
+ * - `number`     — plain numeric score (backward-compatible; implicitly high confidence)
+ * - `ScoredCell` — annotated score with explicit confidence
+ * - `null`       — not yet scored (distinct from "scored 0")
  */
-export type ScoreMatrix = Record<string, Record<string, number>>;
+export type ScoreValue = number | ScoredCell | null;
+
+/**
+ * Score matrix: maps `optionId -> criterionId -> ScoreValue`.
+ *
+ * `null` means "not yet scored" (the user hasn't evaluated this cell).
+ * `0` means "deliberately scored zero".
+ */
+export type ScoreMatrix = Record<string, Record<string, ScoreValue>>;
 
 /** A complete decision with all its data */
 export interface Decision {
@@ -59,6 +78,8 @@ export interface CriterionScore {
   normalizedWeight: number;
   effectiveScore: number; // rawScore (or inverted) * normalizedWeight
   criterionType: CriterionType;
+  /** True when the score cell was null (not yet scored) */
+  isNull?: boolean;
 }
 
 /** Full results for a decision */

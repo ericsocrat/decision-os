@@ -7,7 +7,7 @@
  */
 
 import type { Criterion, Decision, Option, ScoreMatrix } from "./types";
-import { MAX_SCORE } from "./scoring";
+import { MAX_SCORE, resolveScoreValue } from "./scoring";
 
 export interface ValidationError {
   field: string;
@@ -170,7 +170,8 @@ export function validateCriterion(criterion: Criterion): ValidationError[] {
 
 /**
  * Validate the scores matrix.
- * Ensures all scores are numbers between 0 and MAX_SCORE.
+ * Ensures all scored values are numbers between 0 and MAX_SCORE.
+ * `null` values are valid (not yet scored).
  */
 export function validateScores(
   scores: ScoreMatrix,
@@ -181,14 +182,14 @@ export function validateScores(
 
   for (const option of options) {
     for (const criterion of criteria) {
-      const value = scores[option.id]?.[criterion.id];
-      if (value !== undefined && value !== null) {
-        if (!Number.isFinite(value) || value < 0 || value > MAX_SCORE) {
-          errors.push({
-            field: `scores.${option.id}.${criterion.id}`,
-            message: `Score for "${option.name}" on "${criterion.name}" must be 0–${MAX_SCORE}.`,
-          });
-        }
+      const raw = scores[option.id]?.[criterion.id];
+      if (raw === null || raw === undefined) continue; // null = unscored, valid
+      const value = resolveScoreValue(raw);
+      if (value !== null && (!Number.isFinite(value) || value < 0 || value > MAX_SCORE)) {
+        errors.push({
+          field: `scores.${option.id}.${criterion.id}`,
+          message: `Score for "${option.name}" on "${criterion.name}" must be 0–${MAX_SCORE}.`,
+        });
       }
     }
   }

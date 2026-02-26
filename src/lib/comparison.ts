@@ -7,7 +7,7 @@
  */
 
 import type { Decision } from "./types";
-import { computeResults } from "./scoring";
+import { computeResults, readScoreOrZero } from "./scoring";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -215,8 +215,8 @@ export function compareDecisions(decA: Decision, decB: Decision): ComparisonResu
       const criterionB = decB.criteria.find((c) => normalizeName(c.name) === critKey);
       if (!criterionA || !criterionB) continue;
 
-      const sA = decA.scores[optionA.id]?.[criterionA.id] ?? 0;
-      const sB = decB.scores[optionB.id]?.[criterionB.id] ?? 0;
+      const sA = readScoreOrZero(decA.scores, optionA.id, criterionA.id);
+      const sB = readScoreOrZero(decB.scores, optionB.id, criterionB.id);
 
       scoreMatrix.push({
         optionName: opt.optionName,

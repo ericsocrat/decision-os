@@ -9,6 +9,7 @@
  */
 
 import type { Criterion, Decision, Option, ScoreMatrix } from "./types";
+import type { ScoreValue } from "./types";
 import { isDecision } from "./validation";
 import { generateId } from "./utils";
 
@@ -357,7 +358,8 @@ export function csvToDecision(
     row.scores.forEach((score, ci) => {
       const criterionId = criteria[ci]?.id;
       if (criterionId) {
-        scores[optionId][criterionId] = score ?? 0;
+        // Preserve null from CSV empty cells
+        scores[optionId][criterionId] = score as ScoreValue;
       }
     });
   });

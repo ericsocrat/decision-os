@@ -2,12 +2,15 @@
  * Completeness calculation — pure functions to determine how "complete"
  * a decision's score matrix is.
  *
- * A cell is considered "filled" when its value is > 0.
- * (Future: when per-score confidence / null-score (#76) is implemented,
- * the definition can change to "explicitly set".)
+ * A cell is considered "filled" when it has a non-null value > 0.
+ * - `null` or absent: not scored → unfilled
+ * - `0`: scored but zero → unfilled (user scored it zero)
+ * - `ScoredCell` with value > 0: filled
+ * - plain number > 0: filled
  */
 
 import type { Decision } from "./types";
+import { readScore } from "@/lib/scoring";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -58,10 +61,9 @@ export function computeCompleteness(decision: Decision): CompletenessResult {
 
   let filled = 0;
   for (const opt of options) {
-    const row = scores[opt.id];
-    if (!row) continue;
     for (const crit of criteria) {
-      if ((row[crit.id] ?? 0) > 0) filled++;
+      const val = readScore(scores, opt.id, crit.id);
+      if (val !== null && val > 0) filled++;
     }
   }
 
