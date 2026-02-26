@@ -22,6 +22,7 @@ import {
 } from "react";
 import type { Criterion, Decision, Option, ScoreMatrix } from "@/lib/types";
 import { computeResults, sensitivityAnalysis } from "@/lib/scoring";
+import { computeTopsisResults, type TopsisResults } from "@/lib/topsis";
 import {
   getDecisions,
   getDecision,
@@ -42,6 +43,7 @@ interface DecisionContextValue {
   decision: Decision;
   decisions: Decision[];
   results: ReturnType<typeof computeResults>;
+  topsisResults: TopsisResults;
   sensitivity: ReturnType<typeof sensitivityAnalysis>;
   isDirty: boolean;
   isLoading: boolean;
@@ -226,6 +228,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
 
   // Memoized results
   const results = useMemo(() => computeResults(decision), [decision]);
+  const topsisResults = useMemo(() => computeTopsisResults(decision), [decision]);
   const sensitivity = useMemo(
     () => sensitivityAnalysis(decision, swingPercent),
     [decision, swingPercent]
@@ -468,6 +471,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     decision,
     decisions,
     results,
+    topsisResults,
     sensitivity,
     isDirty,
     isLoading,

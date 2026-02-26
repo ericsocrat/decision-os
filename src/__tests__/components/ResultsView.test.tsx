@@ -114,7 +114,7 @@ describe("ResultsView", () => {
       />
     );
     expect(screen.getByText("Explain This Result")).toBeInTheDocument();
-    expect(screen.getByText(/how scoring works/i)).toBeInTheDocument();
+    expect(screen.getByText(/how wsm works/i)).toBeInTheDocument();
   });
 
   it("shows validation guard when invalid", () => {

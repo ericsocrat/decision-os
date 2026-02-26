@@ -16,9 +16,11 @@ import {
   AlertTriangle,
   X,
 } from "lucide-react";
-import { useState, lazy, Suspense } from "react";
+import { useState, lazy, Suspense, useMemo } from "react";
 import { buildShareLink } from "@/lib/share";
 import { normalizeWeights } from "@/lib/scoring";
+import type { TopsisResults } from "@/lib/topsis";
+import type { Decision, DecisionResults } from "@/lib/types";
 import type { ValidationResult } from "@/hooks/useValidation";
 import type { CompletenessResult } from "@/lib/completeness";
 import { BiasWarnings } from "./BiasWarnings";
@@ -33,10 +35,28 @@ interface ResultsViewProps {
 }
 
 export function ResultsView({ validation, completeness, onSwitchToBuilder }: ResultsViewProps) {
-  const { decision, results } = useDecision();
+  const { decision, results, topsisResults } = useDecision();
   const [shareStatus, setShareStatus] = useState<string>("");
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [scoringMethod, setScoringMethod] = useState<"wsm" | "topsis">("wsm");
   const biasDetection = useBiasDetection(decision);
+
+  // Agreement / disagreement between WSM and TOPSIS
+  const methodAgreement = useMemo(() => {
+    if (results.optionResults.length < 2 || topsisResults.rankings.length < 2) {
+      return null;
+    }
+    const wsmWinner = results.optionResults[0].optionId;
+    const topsisWinner = topsisResults.rankings[0].optionId;
+    const agree = wsmWinner === topsisWinner;
+
+    // Compute rank-order similarity (Spearman-like)
+    const wsmOrder = results.optionResults.map((r) => r.optionId);
+    const topsisOrder = topsisResults.rankings.map((r) => r.optionId);
+    const fullAgreement = wsmOrder.every((id, i) => topsisOrder[i] === id);
+
+    return { agree, fullAgreement, wsmWinner, topsisWinner };
+  }, [results, topsisResults]);
 
   if (results.optionResults.length === 0) {
     return (
@@ -183,6 +203,37 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
             Rankings
           </h2>
           <div className="flex items-center gap-2">
+            {/* Scoring method selector */}
+            <div
+              className="flex items-center rounded-md border border-gray-300 dark:border-gray-600 overflow-hidden"
+              role="radiogroup"
+              aria-label="Scoring method"
+            >
+              <button
+                role="radio"
+                aria-checked={scoringMethod === "wsm"}
+                onClick={() => setScoringMethod("wsm")}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset ${
+                  scoringMethod === "wsm"
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                }`}
+              >
+                WSM
+              </button>
+              <button
+                role="radio"
+                aria-checked={scoringMethod === "topsis"}
+                onClick={() => setScoringMethod("topsis")}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset ${
+                  scoringMethod === "topsis"
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                }`}
+              >
+                TOPSIS
+              </button>
+            </div>
             <button
               onClick={handleExportJson}
               className="inline-flex items-center gap-1 rounded-md border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
@@ -219,89 +270,50 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
           </div>
         )}
 
-        <div className="space-y-3">
-          {results.optionResults.map((r, index) => {
-            const barWidth = maxScore > 0 ? (r.totalScore / maxScore) * 100 : 0;
-            const isWinner = index === 0;
-            const optionDesc = decision.options.find((o) => o.id === r.optionId)?.description;
+        {/* Method agreement / disagreement indicator */}
+        {methodAgreement && (
+          <div
+            className={`text-sm mb-3 px-3 py-2 rounded-md flex items-center gap-2 ${
+              methodAgreement.fullAgreement
+                ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300"
+                : methodAgreement.agree
+                  ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                  : "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300"
+            }`}
+            data-testid="method-agreement"
+          >
+            {methodAgreement.fullAgreement ? (
+              <>
+                <span className="font-medium">Full agreement:</span> WSM and TOPSIS produce the same
+                ranking order.
+              </>
+            ) : methodAgreement.agree ? (
+              <>
+                <span className="font-medium">Winner agrees:</span> Both methods pick the same
+                winner, but differ on other ranks.
+              </>
+            ) : (
+              <>
+                <span className="font-medium">Methods disagree:</span> WSM picks{" "}
+                <span className="font-semibold">
+                  {decision.options.find((o) => o.id === methodAgreement.wsmWinner)?.name}
+                </span>
+                , TOPSIS picks{" "}
+                <span className="font-semibold">
+                  {decision.options.find((o) => o.id === methodAgreement.topsisWinner)?.name}
+                </span>
+                . Consider reviewing your criteria weights.
+              </>
+            )}
+          </div>
+        )}
 
-            return (
-              <div
-                key={r.optionId}
-                className={`rounded-lg border p-4 ${
-                  isWinner
-                    ? "border-blue-200 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/30"
-                    : "border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold ${
-                        isWinner
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300"
-                      }`}
-                    >
-                      {r.rank}
-                    </span>
-                    <div>
-                      <span className="font-medium text-gray-900 dark:text-gray-100">
-                        {r.optionName}
-                      </span>
-                      {optionDesc && (
-                        <p
-                          className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[280px] sm:max-w-[400px]"
-                          title={optionDesc}
-                        >
-                          {optionDesc}
-                        </p>
-                      )}
-                    </div>
-                    {isWinner && (
-                      <span className="rounded-full bg-blue-100 dark:bg-blue-900 px-2 py-0.5 text-xs font-medium text-blue-800 dark:text-blue-200">
-                        Winner
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                    {r.totalScore.toFixed(2)}
-                  </span>
-                </div>
-
-                {/* Score bar */}
-                <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      isWinner ? "bg-blue-600" : "bg-gray-400"
-                    }`}
-                    style={{ width: `${barWidth}%` }}
-                    role="progressbar"
-                    aria-valuenow={r.totalScore}
-                    aria-valuemin={0}
-                    aria-valuemax={10}
-                    aria-label={`${r.optionName}: ${r.totalScore.toFixed(2)}`}
-                  />
-                </div>
-
-                {/* Criterion breakdown */}
-                <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {r.criterionScores.map((cs) => (
-                    <div
-                      key={cs.criterionId}
-                      className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded px-2 py-1"
-                    >
-                      <span className="truncate mr-1">{cs.criterionName}</span>
-                      <span className="font-medium text-gray-900 dark:text-gray-200">
-                        {cs.effectiveScore.toFixed(2)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        {/* Rankings — render based on selected method */}
+        {scoringMethod === "wsm" ? (
+          <WsmRankings results={results} decision={decision} maxScore={maxScore} />
+        ) : (
+          <TopsisRankings topsisResults={topsisResults} decision={decision} />
+        )}
       </section>
 
       {/* Score Chart Visualization */}
@@ -378,13 +390,22 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
           Explain This Result
         </h2>
         <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-sm text-gray-700 dark:text-gray-300 space-y-2">
-          <p>
-            <strong>How scoring works:</strong> Each criterion&apos;s raw weight is normalized so
-            all weights sum to 100%. For each option, scores (0–10) are multiplied by the normalized
-            weight. Cost criteria are inverted (10 − score) so lower costs yield higher effective
-            scores.
-          </p>
-          {results.optionResults.length > 0 && (
+          {scoringMethod === "wsm" ? (
+            <p>
+              <strong>How WSM works:</strong> Each criterion&apos;s raw weight is normalized so all
+              weights sum to 100%. For each option, scores (0–10) are multiplied by the normalized
+              weight. Cost criteria are inverted (10 − score) so lower costs yield higher effective
+              scores.
+            </p>
+          ) : (
+            <p>
+              <strong>How TOPSIS works:</strong> Scores are vector-normalized per criterion, then
+              weighted. The ideal (best possible) and anti-ideal (worst possible) solutions are
+              identified. Each option is ranked by how close it is to the ideal and how far from the
+              anti-ideal (closeness coefficient C* ∈ [0,&nbsp;1]).
+            </p>
+          )}
+          {scoringMethod === "wsm" && results.optionResults.length > 0 && (
             <p>
               <strong>Winner:</strong>{" "}
               <span className="text-blue-700 font-medium">
@@ -399,6 +420,27 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
                     results.optionResults[0].totalScore - results.optionResults[1].totalScore
                   ).toFixed(2)}{" "}
                   points.
+                </>
+              )}
+            </p>
+          )}
+          {scoringMethod === "topsis" && topsisResults.rankings.length > 0 && (
+            <p>
+              <strong>Winner:</strong>{" "}
+              <span className="text-blue-700 font-medium">
+                {topsisResults.rankings[0].optionName}
+              </span>{" "}
+              has a closeness coefficient of{" "}
+              {topsisResults.rankings[0].closenessCoefficient.toFixed(2)}.
+              {topsisResults.rankings.length > 1 && (
+                <>
+                  {" "}
+                  The gap over #{2} ({topsisResults.rankings[1].optionName}) is{" "}
+                  {(
+                    topsisResults.rankings[0].closenessCoefficient -
+                    topsisResults.rankings[1].closenessCoefficient
+                  ).toFixed(2)}
+                  .
                 </>
               )}
             </p>
@@ -441,6 +483,207 @@ function NormalizedWeightsTable() {
           </span>
         ))}
       </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+//  WSM Rankings sub-component (extracted from inline)
+// ---------------------------------------------------------------------------
+
+interface WsmRankingsProps {
+  results: DecisionResults;
+  decision: Decision;
+  maxScore: number;
+}
+
+function WsmRankings({ results, decision, maxScore }: WsmRankingsProps) {
+  return (
+    <div className="space-y-3">
+      {results.optionResults.map((r, index) => {
+        const barWidth = maxScore > 0 ? (r.totalScore / maxScore) * 100 : 0;
+        const isWinner = index === 0;
+        const optionDesc = decision.options.find((o) => o.id === r.optionId)?.description;
+
+        return (
+          <div
+            key={r.optionId}
+            className={`rounded-lg border p-4 ${
+              isWinner
+                ? "border-blue-200 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/30"
+                : "border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold ${
+                    isWinner
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300"
+                  }`}
+                >
+                  {r.rank}
+                </span>
+                <div>
+                  <span className="font-medium text-gray-900 dark:text-gray-100">
+                    {r.optionName}
+                  </span>
+                  {optionDesc && (
+                    <p
+                      className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[280px] sm:max-w-[400px]"
+                      title={optionDesc}
+                    >
+                      {optionDesc}
+                    </p>
+                  )}
+                </div>
+                {isWinner && (
+                  <span className="rounded-full bg-blue-100 dark:bg-blue-900 px-2 py-0.5 text-xs font-medium text-blue-800 dark:text-blue-200">
+                    Winner
+                  </span>
+                )}
+              </div>
+              <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                {r.totalScore.toFixed(2)}
+              </span>
+            </div>
+
+            {/* Score bar */}
+            <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  isWinner ? "bg-blue-600" : "bg-gray-400"
+                }`}
+                style={{ width: `${barWidth}%` }}
+                role="progressbar"
+                aria-valuenow={r.totalScore}
+                aria-valuemin={0}
+                aria-valuemax={10}
+                aria-label={`${r.optionName}: ${r.totalScore.toFixed(2)}`}
+              />
+            </div>
+
+            {/* Criterion breakdown */}
+            <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {r.criterionScores.map((cs) => (
+                <div
+                  key={cs.criterionId}
+                  className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded px-2 py-1"
+                >
+                  <span className="truncate mr-1">{cs.criterionName}</span>
+                  <span className="font-medium text-gray-900 dark:text-gray-200">
+                    {cs.effectiveScore.toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+//  TOPSIS Rankings sub-component
+// ---------------------------------------------------------------------------
+
+interface TopsisRankingsProps {
+  topsisResults: TopsisResults;
+  decision: Decision;
+}
+
+function TopsisRankings({ topsisResults, decision }: TopsisRankingsProps) {
+  const maxCoefficient = Math.max(...topsisResults.rankings.map((r) => r.closenessCoefficient), 0);
+
+  return (
+    <div className="space-y-3">
+      {topsisResults.rankings.map((r, index) => {
+        const barWidth = maxCoefficient > 0 ? (r.closenessCoefficient / maxCoefficient) * 100 : 0;
+        const isWinner = index === 0;
+        const optionDesc = decision.options.find((o) => o.id === r.optionId)?.description;
+
+        return (
+          <div
+            key={r.optionId}
+            className={`rounded-lg border p-4 ${
+              isWinner
+                ? "border-blue-200 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/30"
+                : "border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold ${
+                    isWinner
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300"
+                  }`}
+                >
+                  {r.rank}
+                </span>
+                <div>
+                  <span className="font-medium text-gray-900 dark:text-gray-100">
+                    {r.optionName}
+                  </span>
+                  {optionDesc && (
+                    <p
+                      className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[280px] sm:max-w-[400px]"
+                      title={optionDesc}
+                    >
+                      {optionDesc}
+                    </p>
+                  )}
+                </div>
+                {isWinner && (
+                  <span className="rounded-full bg-blue-100 dark:bg-blue-900 px-2 py-0.5 text-xs font-medium text-blue-800 dark:text-blue-200">
+                    Winner
+                  </span>
+                )}
+              </div>
+              <div className="text-right">
+                <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                  {r.closenessCoefficient.toFixed(2)}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">C*</span>
+              </div>
+            </div>
+
+            {/* Closeness bar */}
+            <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  isWinner ? "bg-blue-600" : "bg-gray-400"
+                }`}
+                style={{ width: `${barWidth}%` }}
+                role="progressbar"
+                aria-valuenow={r.closenessCoefficient}
+                aria-valuemin={0}
+                aria-valuemax={1}
+                aria-label={`${r.optionName}: closeness ${r.closenessCoefficient.toFixed(2)}`}
+              />
+            </div>
+
+            {/* Distance metrics */}
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded px-2 py-1">
+                <span>D⁺ (to ideal)</span>
+                <span className="font-medium text-gray-900 dark:text-gray-200">
+                  {r.distanceToIdeal.toFixed(2)}
+                </span>
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded px-2 py-1">
+                <span>D⁻ (to anti-ideal)</span>
+                <span className="font-medium text-gray-900 dark:text-gray-200">
+                  {r.distanceToAntiIdeal.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
