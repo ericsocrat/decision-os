@@ -134,7 +134,7 @@ describe("useAuth", () => {
     });
 
     expect(mockSignInWithOAuth).toHaveBeenCalledWith(
-      expect.objectContaining({ provider: "google" }),
+      expect.objectContaining({ provider: "google" })
     );
   });
 

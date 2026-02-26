@@ -85,7 +85,12 @@ describe("useSync", () => {
     expect(fullSync).toHaveBeenCalledTimes(1);
     expect(result.current.status).toBe("done");
     expect(result.current.isSyncing).toBe(false);
-    expect(result.current.lastResult).toEqual({ status: "done", uploaded: 0, downloaded: 0, merged: 0 });
+    expect(result.current.lastResult).toEqual({
+      status: "done",
+      uploaded: 0,
+      downloaded: 0,
+      merged: 0,
+    });
   });
 
   it("auto-syncs on mount after 500ms delay when authenticated", async () => {
@@ -129,7 +134,12 @@ describe("useSync", () => {
       await result.current.triggerSync();
     });
 
-    expect(result.current.lastResult).toEqual({ status: "error", uploaded: 0, downloaded: 0, merged: 0 });
+    expect(result.current.lastResult).toEqual({
+      status: "error",
+      uploaded: 0,
+      downloaded: 0,
+      merged: 0,
+    });
     expect(result.current.status).toBe("error");
   });
 });

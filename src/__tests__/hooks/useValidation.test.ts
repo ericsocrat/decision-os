@@ -64,7 +64,9 @@ describe("useValidation", () => {
     const decision = makeDecision({ criteria: [] });
     const { result } = renderHook(() => useValidation(decision));
     expect(result.current.isValid).toBe(false);
-    expect(result.current.errors.some((e) => e.message.includes("1 criterion is required"))).toBe(true);
+    expect(result.current.errors.some((e) => e.message.includes("1 criterion is required"))).toBe(
+      true
+    );
   });
 
   it("returns an error when all weights are zero", () => {
@@ -87,7 +89,9 @@ describe("useValidation", () => {
       ],
     });
     const { result } = renderHook(() => useValidation(decision));
-    expect(result.current.warnings.some((w) => w.message.includes("Option needs a name"))).toBe(true);
+    expect(result.current.warnings.some((w) => w.message.includes("Option needs a name"))).toBe(
+      true
+    );
   });
 
   it("returns a warning for duplicate option names", () => {
@@ -109,7 +113,9 @@ describe("useValidation", () => {
       ],
     });
     const { result } = renderHook(() => useValidation(decision));
-    expect(result.current.warnings.some((w) => w.message.includes("Criterion needs a name"))).toBe(true);
+    expect(result.current.warnings.some((w) => w.message.includes("Criterion needs a name"))).toBe(
+      true
+    );
   });
 
   it("returns an info for a single zero-weight criterion", () => {
