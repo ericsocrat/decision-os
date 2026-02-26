@@ -42,7 +42,9 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
   const { decision, results, topsisResults, regretResults } = useDecision();
   const [shareStatus, setShareStatus] = useState<string>("");
   const [bannerDismissed, setBannerDismissed] = useState(false);
-  const [scoringMethod, setScoringMethod] = useState<"wsm" | "topsis" | "minimax-regret" | "consensus">("wsm");
+  const [scoringMethod, setScoringMethod] = useState<
+    "wsm" | "topsis" | "minimax-regret" | "consensus"
+  >("wsm");
   const biasDetection = useBiasDetection(decision);
 
   // Agreement / disagreement between WSM, TOPSIS, and Minimax Regret
@@ -668,17 +670,39 @@ function WsmRankings({ results, decision, maxScore }: WsmRankingsProps) {
 
             {/* Criterion breakdown */}
             <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {r.criterionScores.map((cs) => (
-                <div
-                  key={cs.criterionId}
-                  className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded px-2 py-1"
-                >
-                  <span className="truncate mr-1">{cs.criterionName}</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-200">
-                    {cs.effectiveScore.toFixed(2)}
-                  </span>
-                </div>
-              ))}
+              {r.criterionScores.map((cs) => {
+                const reasoning = decision.reasoning?.[r.optionId]?.[cs.criterionId];
+                return (
+                  <div
+                    key={cs.criterionId}
+                    className="group relative text-xs text-gray-600 dark:text-gray-400 flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded px-2 py-1"
+                    title={reasoning || undefined}
+                  >
+                    <span className="truncate mr-1">
+                      {reasoning && (
+                        <span
+                          className="text-blue-500 dark:text-blue-400 mr-0.5"
+                          aria-hidden="true"
+                        >
+                          ●
+                        </span>
+                      )}
+                      {cs.criterionName}
+                    </span>
+                    <span className="font-medium text-gray-900 dark:text-gray-200">
+                      {cs.effectiveScore.toFixed(2)}
+                    </span>
+                    {reasoning && (
+                      <div
+                        role="tooltip"
+                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block group-focus-within:block w-48 p-2 rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg text-xs text-gray-700 dark:text-gray-300 z-10 whitespace-normal"
+                      >
+                        <span className="font-medium">Reasoning:</span> {reasoning}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         );

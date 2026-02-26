@@ -90,6 +90,7 @@ export interface DecisionContextValue extends DecisionStateValue {
   removeCriterion: (criterionId: string) => void;
   updateScore: (optionId: string, criterionId: string, value: number | null) => void;
   updateConfidence: (optionId: string, criterionId: string, confidence: Confidence) => void;
+  updateReasoning: (optionId: string, criterionId: string, text: string) => void;
   undo: () => void;
   redo: () => void;
   setSwingPercent: (value: number) => void;
@@ -226,6 +227,12 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     [dispatch]
   );
 
+  const updateReasoning = useCallback(
+    (optionId: string, criterionId: string, text: string) =>
+      dispatch({ type: "UPDATE_REASONING", optionId, criterionId, text, timestamp: Date.now() }),
+    [dispatch]
+  );
+
   const undo = useCallback(() => {
     dispatch({ type: "UNDO" });
     announceRef.current("Undone");
@@ -329,6 +336,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
       removeCriterion,
       updateScore,
       updateConfidence,
+      updateReasoning,
       undo,
       redo,
       setSwingPercent,
@@ -350,6 +358,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
       removeCriterion,
       updateScore,
       updateConfidence,
+      updateReasoning,
       undo,
       redo,
       setSwingPercent,

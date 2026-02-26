@@ -14,12 +14,14 @@ import { ScoreSlider } from "./ScoreSlider";
 import type { Criterion, Decision, Option, ScoreValue } from "@/lib/types";
 import { resolveScoreValue, resolveConfidence } from "@/lib/scoring";
 import { ConfidenceDot } from "./ConfidenceDot";
+import { ReasoningPopover } from "./ReasoningPopover";
 import type { Confidence } from "@/lib/types";
 
 interface MobileScoreCardsProps {
   decision: Decision;
   updateScore: (optionId: string, criterionId: string, value: number | null) => void;
   updateConfidence?: (optionId: string, criterionId: string, confidence: Confidence) => void;
+  updateReasoning?: (optionId: string, criterionId: string, text: string) => void;
 }
 
 /** Letter label for option index (A, B, C, …) */
@@ -33,19 +35,23 @@ function OptionCard({
   index,
   criteria,
   scores,
+  reasoning,
   expanded,
   onToggle,
   updateScore,
   updateConfidence,
+  updateReasoning,
 }: {
   option: Option;
   index: number;
   criteria: Criterion[];
   scores: Record<string, ScoreValue>;
+  reasoning: Record<string, string> | undefined;
   expanded: boolean;
   onToggle: () => void;
   updateScore: (criterionId: string, value: number) => void;
   updateConfidence?: (criterionId: string, confidence: Confidence) => void;
+  updateReasoning?: (criterionId: string, text: string) => void;
 }) {
   return (
     <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
@@ -124,6 +130,17 @@ function OptionCard({
                   </span>
                 </div>
               )}
+              {updateReasoning && (
+                <div className="mt-1 flex items-center gap-1.5">
+                  <span className="text-[10px] text-gray-400 dark:text-gray-500">Note:</span>
+                  <ReasoningPopover
+                    value={reasoning?.[crit.id]}
+                    onChange={(text) => updateReasoning(crit.id, text)}
+                    optionName={option.name}
+                    criterionName={crit.name}
+                  />
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -136,6 +153,7 @@ export function MobileScoreCards({
   decision,
   updateScore,
   updateConfidence,
+  updateReasoning,
 }: MobileScoreCardsProps) {
   // Accordion: keep track of which option is expanded (first by default)
   const [expandedId, setExpandedId] = useState<string | null>(decision.options[0]?.id ?? null);
@@ -153,11 +171,15 @@ export function MobileScoreCards({
           index={idx}
           criteria={decision.criteria}
           scores={decision.scores[opt.id] ?? {}}
+          reasoning={decision.reasoning?.[opt.id]}
           expanded={expandedId === opt.id}
           onToggle={() => toggle(opt.id)}
           updateScore={(critId, v) => updateScore(opt.id, critId, v)}
           updateConfidence={
             updateConfidence ? (critId, c) => updateConfidence(opt.id, critId, c) : undefined
+          }
+          updateReasoning={
+            updateReasoning ? (critId, t) => updateReasoning(opt.id, critId, t) : undefined
           }
         />
       ))}

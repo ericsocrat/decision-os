@@ -28,6 +28,7 @@ import { ConfidenceDot } from "./ConfidenceDot";
 import { CompletionRing } from "./CompletionRing";
 import { WeightSlider } from "./WeightSlider";
 import { WeightDistributionBar } from "./WeightDistributionBar";
+import { ReasoningPopover } from "./ReasoningPopover";
 import { BiasWarnings } from "./BiasWarnings";
 import { useBiasDetection } from "@/hooks/useBiasDetection";
 import { MobileScoreCards } from "./MobileScoreCards";
@@ -49,6 +50,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
     removeCriterion,
     updateScore,
     updateConfidence,
+    updateReasoning,
     undo,
     redo,
     canUndo,
@@ -563,6 +565,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
           decision={decision}
           updateScore={updateScore}
           updateConfidence={updateConfidence}
+          updateReasoning={updateReasoning}
         />
 
         {/* Desktop: Table layout (≥ 640px) */}
@@ -660,6 +663,12 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                               onChange={(next) => updateConfidence(opt.id, crit.id, next)}
                             />
                           )}
+                          <ReasoningPopover
+                            value={decision.reasoning?.[opt.id]?.[crit.id]}
+                            onChange={(text) => updateReasoning(opt.id, crit.id, text)}
+                            optionName={opt.name}
+                            criterionName={crit.name}
+                          />
                         </div>
                       </td>
                     );

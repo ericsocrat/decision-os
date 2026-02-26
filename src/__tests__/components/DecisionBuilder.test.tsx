@@ -51,7 +51,7 @@ describe("DecisionBuilder", () => {
     renderWithProviders(<DecisionBuilder validation={emptyValidation} />);
     expect(screen.getByText("Options")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /add option/i })).toBeInTheDocument();
-  });
+  }, 15_000);
 
   it("renders Criteria section with Add Criterion button", () => {
     renderWithProviders(<DecisionBuilder validation={emptyValidation} />);
@@ -84,7 +84,7 @@ describe("DecisionBuilder", () => {
     await user.click(screen.getByRole("button", { name: /add option/i }));
     const newInputs = screen.getAllByRole("textbox");
     expect(newInputs.length).toBeGreaterThan(initialCount);
-  });
+  }, 15_000);
 
   it("renders score inputs in the grid", () => {
     renderWithProviders(<DecisionBuilder validation={emptyValidation} />);

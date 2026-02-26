@@ -57,6 +57,8 @@ export interface Decision {
   options: Option[];
   criteria: Criterion[];
   scores: ScoreMatrix;
+  /** Optional per-score reasoning notes: optionId → criterionId → text */
+  reasoning?: Record<string, Record<string, string>>;
   createdAt: string; // ISO 8601
   updatedAt: string; // ISO 8601
 }

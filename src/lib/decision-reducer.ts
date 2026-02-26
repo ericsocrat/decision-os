@@ -87,6 +87,15 @@ export type DecisionAction =
   | { type: "UPDATE_SCORE"; optionId: string; criterionId: string; value: number | null }
   | { type: "UPDATE_CONFIDENCE"; optionId: string; criterionId: string; confidence: Confidence }
 
+  // Reasoning
+  | {
+      type: "UPDATE_REASONING";
+      optionId: string;
+      criterionId: string;
+      text: string;
+      timestamp: number;
+    }
+
   // Undo / Redo
   | { type: "UNDO" }
   | { type: "REDO" }
@@ -176,10 +185,13 @@ function applyDecisionMutation(decision: Decision, action: DecisionAction): Deci
     case "REMOVE_OPTION": {
       const newScores = { ...decision.scores };
       delete newScores[action.optionId];
+      const newReasoning = { ...(decision.reasoning ?? {}) };
+      delete newReasoning[action.optionId];
       return stampNow({
         ...decision,
         options: decision.options.filter((o) => o.id !== action.optionId),
         scores: newScores,
+        reasoning: newReasoning,
       });
     }
 
@@ -208,10 +220,17 @@ function applyDecisionMutation(decision: Decision, action: DecisionAction): Deci
         delete optScores[action.criterionId];
         newScores[optId] = optScores;
       }
+      const newReasoning: Record<string, Record<string, string>> = {};
+      for (const optId of Object.keys(decision.reasoning ?? {})) {
+        const optReasoning = { ...(decision.reasoning![optId] ?? {}) };
+        delete optReasoning[action.criterionId];
+        newReasoning[optId] = optReasoning;
+      }
       return stampNow({
         ...decision,
         criteria: decision.criteria.filter((c) => c.id !== action.criterionId),
         scores: newScores,
+        reasoning: newReasoning,
       });
     }
 
@@ -251,6 +270,16 @@ function applyDecisionMutation(decision: Decision, action: DecisionAction): Deci
         [action.criterionId]: { value: numValue, confidence: action.confidence },
       };
       return stampNow({ ...decision, scores: newScores });
+    }
+
+    case "UPDATE_REASONING": {
+      const newReasoning = { ...(decision.reasoning ?? {}) };
+      if (!newReasoning[action.optionId]) newReasoning[action.optionId] = {};
+      newReasoning[action.optionId] = {
+        ...newReasoning[action.optionId],
+        [action.criterionId]: action.text,
+      };
+      return stampNow({ ...decision, reasoning: newReasoning });
     }
 
     default:
@@ -306,6 +335,12 @@ function classifyAction(
     case "UPDATE_SCORE":
     case "UPDATE_CONFIDENCE":
       return { type: "structural", timestamp: Date.now() };
+    case "UPDATE_REASONING":
+      return {
+        type: "text",
+        field: `reasoning:${action.optionId}:${action.criterionId}`,
+        timestamp: action.timestamp,
+      };
     default:
       return null;
   }
