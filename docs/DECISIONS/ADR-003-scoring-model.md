@@ -1,4 +1,4 @@
-# ADR-002: Weighted Sum Scoring Model
+# ADR-003: Weighted Sum Scoring Model
 
 ## Status
 
