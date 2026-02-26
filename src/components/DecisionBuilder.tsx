@@ -26,6 +26,8 @@ import { computeCompleteness } from "@/lib/completeness";
 import { CompletionRing } from "./CompletionRing";
 import { WeightSlider } from "./WeightSlider";
 import { WeightDistributionBar } from "./WeightDistributionBar";
+import { BiasWarnings } from "./BiasWarnings";
+import { useBiasDetection } from "@/hooks/useBiasDetection";
 
 interface DecisionBuilderProps {
   validation: ValidationResult;
@@ -52,6 +54,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
   const gridRef = useRef<HTMLTableElement>(null);
   const completeness = useMemo(() => computeCompleteness(decision), [decision]);
   const [autoNormalize, setAutoNormalize] = useState(false);
+  const biasDetection = useBiasDetection(decision);
 
   /** Track which option/criterion descriptions are expanded */
   const [expandedDescs, setExpandedDescs] = useState<Set<string>>(() => {
@@ -636,6 +639,13 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
           </div>
         )}
       </section>
+
+      {/* Bias Detection Warnings */}
+      <BiasWarnings
+        warnings={biasDetection.warnings}
+        onDismiss={biasDetection.dismiss}
+        onDismissAll={biasDetection.dismissAll}
+      />
     </div>
   );
 }

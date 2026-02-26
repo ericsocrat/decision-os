@@ -22,6 +22,8 @@ import { encodeDecisionToUrl } from "@/lib/utils";
 import { normalizeWeights } from "@/lib/scoring";
 import type { ValidationResult } from "@/hooks/useValidation";
 import type { CompletenessResult } from "@/lib/completeness";
+import { BiasWarnings } from "./BiasWarnings";
+import { useBiasDetection } from "@/hooks/useBiasDetection";
 
 const ScoreChart = lazy(() => import("./ScoreChart").then((m) => ({ default: m.ScoreChart })));
 
@@ -35,6 +37,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
   const { decision, results } = useDecision();
   const [shareStatus, setShareStatus] = useState<string>("");
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const biasDetection = useBiasDetection(decision);
 
   if (results.optionResults.length === 0) {
     return (
@@ -414,6 +417,16 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
             <strong>Top driver:</strong>{" "}
             {results.topDrivers.length > 0 ? results.topDrivers[0].impactDescription : "N/A"}
           </p>
+          {biasDetection.warnings.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <BiasWarnings
+                warnings={biasDetection.warnings}
+                onDismiss={biasDetection.dismiss}
+                onDismissAll={biasDetection.dismissAll}
+                compact
+              />
+            </div>
+          )}
           <NormalizedWeightsTable />
         </div>
       </section>
