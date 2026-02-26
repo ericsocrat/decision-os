@@ -11,6 +11,8 @@
  * @see https://github.com/ericsocrat/decision-os/issues/40
  */
 
+import * as Sentry from "@sentry/nextjs";
+
 export interface ErrorContext {
   /** Origin of the error (e.g. "ErrorBoundary", "storage", "import") */
   source: string;
@@ -83,21 +85,20 @@ function storeError(error: Error, context?: ErrorContext): void {
 }
 
 /**
- * Forward to Sentry SDK if it's loaded on the page.
- * Sentry is loaded via @sentry/nextjs when NEXT_PUBLIC_SENTRY_DSN is set.
+ * Forward to Sentry if the SDK is initialised.
+ * Sentry.init() only runs when NEXT_PUBLIC_SENTRY_DSN is set,
+ * so captureException is a safe no-op otherwise.
  */
 function forwardToSentry(error: Error, context?: ErrorContext): void {
   try {
-    // Dynamic import check — Sentry may not be present
-    const Sentry = (globalThis as Record<string, unknown>).__SENTRY__;
-    if (Sentry && typeof (Sentry as Record<string, unknown>).captureException === "function") {
-      (Sentry as { captureException: (e: Error, ctx?: unknown) => void }).captureException(error, {
-        extra: {
-          source: context?.source,
-          componentStack: context?.componentStack,
-        },
-      });
-    }
+    if (!Sentry.isInitialized()) return;
+
+    Sentry.captureException(error, {
+      extra: {
+        source: context?.source,
+        componentStack: context?.componentStack,
+      },
+    });
   } catch {
     // Fire and forget
   }
