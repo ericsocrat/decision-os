@@ -112,6 +112,25 @@ input[type="range"]::-moz-range-track {
   border-radius: 3px;
 }
 
+/* Score slider — larger touch target (≥44px) for mobile WCAG 2.5.5 */
+.score-slider::-webkit-slider-thumb {
+  width: 28px;
+  height: 28px;
+}
+@media (max-width: 639px) {
+  .score-slider::-webkit-slider-thumb {
+    width: 44px;
+    height: 44px;
+  }
+  .score-slider::-moz-range-thumb {
+    width: 44px;
+    height: 44px;
+  }
+  .score-slider {
+    height: 8px;
+  }
+}
+
 /* Print styles */
 @media print {
   .no-print,

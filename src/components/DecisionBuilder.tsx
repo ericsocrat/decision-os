@@ -28,6 +28,7 @@ import { WeightSlider } from "./WeightSlider";
 import { WeightDistributionBar } from "./WeightDistributionBar";
 import { BiasWarnings } from "./BiasWarnings";
 import { useBiasDetection } from "@/hooks/useBiasDetection";
+import { MobileScoreCards } from "./MobileScoreCards";
 
 interface DecisionBuilderProps {
   validation: ValidationResult;
@@ -553,7 +554,12 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
         <span id="score-range-desc" className="sr-only">
           Enter a value between 0 and 10
         </span>
-        <div className="overflow-x-auto">
+
+        {/* Mobile: Card-based scoring (< 640px) */}
+        <MobileScoreCards decision={decision} updateScore={updateScore} />
+
+        {/* Desktop: Table layout (≥ 640px) */}
+        <div className="hidden sm:block overflow-x-auto">
           <table
             ref={gridRef}
             className="min-w-full border-collapse"
