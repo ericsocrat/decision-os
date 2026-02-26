@@ -5,16 +5,22 @@
 
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef, useSyncExternalStore } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  useSyncExternalStore,
+  lazy,
+  Suspense,
+} from "react";
 import { AnnouncerProvider, useAnnounce } from "@/components/Announcer";
 import { DecisionProvider, useDecision } from "@/components/DecisionProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Header } from "@/components/Header";
 import { DecisionBuilder } from "@/components/DecisionBuilder";
 import { ResultsView } from "@/components/ResultsView";
-import { SensitivityView } from "@/components/SensitivityView";
-import { CompareView } from "@/components/CompareView";
-import { MonteCarloView } from "@/components/MonteCarloView";
 import { MigrationBanner } from "@/components/MigrationBanner";
 import { DecisionSkeleton } from "@/components/DecisionSkeleton";
 import { ImportModal } from "@/components/ImportModal";
@@ -38,6 +44,28 @@ import { validateFile, readFileAsText, importFromJson } from "@/lib/import";
 import { saveDecision } from "@/lib/storage";
 import { useAuth } from "@/hooks/useAuth";
 import pkg from "../../package.json";
+
+/* Lazy-load heavy tab views — only downloaded when their tab is first shown */
+const SensitivityView = lazy(() =>
+  import("@/components/SensitivityView").then((m) => ({ default: m.SensitivityView }))
+);
+const CompareView = lazy(() =>
+  import("@/components/CompareView").then((m) => ({ default: m.CompareView }))
+);
+const MonteCarloView = lazy(() =>
+  import("@/components/MonteCarloView").then((m) => ({ default: m.MonteCarloView }))
+);
+
+/** Skeleton fallback for lazy-loaded tab panels */
+function TabPanelSkeleton({ label }: { label: string }) {
+  return (
+    <div className="animate-pulse space-y-4 py-6" role="status" aria-label={`Loading ${label}…`}>
+      <div className="h-6 w-48 rounded bg-gray-200 dark:bg-gray-700" />
+      <div className="h-64 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700" />
+      <div className="h-4 w-32 rounded bg-gray-200 dark:bg-gray-700" />
+    </div>
+  );
+}
 
 const emptySubscribe = () => () => {};
 function useIsMounted() {
@@ -416,7 +444,9 @@ function AppContent() {
           aria-labelledby="tab-sensitivity"
           className={activeTab === "sensitivity" ? "" : "hidden"}
         >
-          <SensitivityView />
+          <Suspense fallback={<TabPanelSkeleton label="Sensitivity" />}>
+            <SensitivityView />
+          </Suspense>
         </div>
         <div
           id="panel-compare"
@@ -424,7 +454,9 @@ function AppContent() {
           aria-labelledby="tab-compare"
           className={activeTab === "compare" ? "" : "hidden"}
         >
-          <CompareView />
+          <Suspense fallback={<TabPanelSkeleton label="Compare" />}>
+            <CompareView />
+          </Suspense>
         </div>
         <div
           id="panel-montecarlo"
@@ -432,7 +464,9 @@ function AppContent() {
           aria-labelledby="tab-montecarlo"
           className={activeTab === "montecarlo" ? "" : "hidden"}
         >
-          <MonteCarloView />
+          <Suspense fallback={<TabPanelSkeleton label="Monte Carlo" />}>
+            <MonteCarloView />
+          </Suspense>
         </div>
       </main>
 
