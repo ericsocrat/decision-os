@@ -6,6 +6,10 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Decision OS — Smoke Tests", () => {
   test.beforeEach(async ({ page }) => {
+    // Set onboarding flag before navigating so the tour doesn't interfere with tests
+    await page.addInitScript(() => {
+      localStorage.setItem("decisionos:onboarded", "true");
+    });
     await page.goto("/");
     // Wait for hydration
     await page.waitForSelector('h1:has-text("Decision OS")');

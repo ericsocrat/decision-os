@@ -10,6 +10,10 @@ import AxeBuilder from "@axe-core/playwright";
 
 test.describe("Accessibility — axe-core scans", () => {
   test.beforeEach(async ({ page }) => {
+    // Set onboarding flag before navigating so the tour doesn't interfere with tests
+    await page.addInitScript(() => {
+      localStorage.setItem("decisionos:onboarded", "true");
+    });
     await page.goto("/");
     // Wait for the app to fully hydrate
     await expect(page.getByRole("heading", { name: "Decision OS" })).toBeVisible();

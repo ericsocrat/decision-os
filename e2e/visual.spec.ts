@@ -17,6 +17,10 @@ test.describe("Visual Regression", () => {
   test.skip(({ browserName }) => browserName !== "chromium", "Visual tests run only on Chromium");
 
   test.beforeEach(async ({ page }) => {
+    // Set onboarding flag before navigating so the tour doesn't interfere with tests
+    await page.addInitScript(() => {
+      localStorage.setItem("decisionos:onboarded", "true");
+    });
     await page.goto("/");
     // Wait for hydration + content to stabilize
     await page.waitForSelector('h1:has-text("Decision OS")');

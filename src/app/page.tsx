@@ -19,7 +19,9 @@ import { MigrationBanner } from "@/components/MigrationBanner";
 import { DecisionSkeleton } from "@/components/DecisionSkeleton";
 import { ImportModal } from "@/components/ImportModal";
 import { useValidation } from "@/hooks/useValidation";
+import { useOnboarding } from "@/hooks/useOnboarding";
 import { computeCompleteness } from "@/lib/completeness";
+import { CoachmarkOverlay } from "@/components/CoachmarkOverlay";
 import {
   Settings2,
   BarChart3,
@@ -29,6 +31,7 @@ import {
   Keyboard,
   X,
   Upload,
+  HelpCircle,
 } from "lucide-react";
 import { ToastProvider, showToast } from "@/components/Toast";
 import { validateFile, readFileAsText, importFromJson } from "@/lib/import";
@@ -58,7 +61,11 @@ const tabLabels: Record<Tab, string> = {
 const TAB_IDS: Tab[] = ["builder", "results", "sensitivity", "compare", "montecarlo"];
 
 function AppContent() {
-  const [activeTab, setActiveTab] = useState<Tab>("builder");
+  const onboarding = useOnboarding();
+  // First-time visitors start on Results tab (onboarding step 1)
+  const [activeTab, setActiveTab] = useState<Tab>(
+    onboarding.step === "step1" ? "results" : "builder"
+  );
   const [showShortcuts, setShowShortcuts] = useState(false);
   const shortcutTriggerRef = useRef<HTMLButtonElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -67,6 +74,21 @@ function AppContent() {
   const validation = useValidation(decision);
   const completeness = useMemo(() => computeCompleteness(decision), [decision]);
   const auth = useAuth();
+
+  // ── Onboarding: tab switching handled in callbacks (no effect) ──
+  const handleOnboardingNext = useCallback(() => {
+    const currentStep = onboarding.step;
+    onboarding.next();
+    // Advance tab to match the next step
+    if (currentStep === "step1") setActiveTab("builder");
+    else if (currentStep === "step2") setActiveTab("sensitivity");
+    else if (currentStep === "step3") setActiveTab("builder"); // end of tour
+  }, [onboarding]);
+
+  const handleOnboardingDismiss = useCallback(() => {
+    onboarding.dismiss();
+    setActiveTab("builder");
+  }, [onboarding]);
 
   // ── Global drag-and-drop for file import ──────────────────
   const [showDropOverlay, setShowDropOverlay] = useState(false);
@@ -416,19 +438,38 @@ function AppContent() {
 
       {/* Footer */}
       <footer className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 mt-12 transition-colors">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-4 text-center text-xs text-gray-500 dark:text-gray-400">
-          Decision OS v{pkg.version} — Open source structured decision-making tool.{" "}
-          <a
-            href="https://github.com/ericsocrat/decision-os"
-            className="text-blue-600 underline hover:no-underline dark:text-blue-400"
-            target="_blank"
-            rel="noopener noreferrer"
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+          <span>
+            Decision OS v{pkg.version} — Open source structured decision-making tool.{" "}
+            <a
+              href="https://github.com/ericsocrat/decision-os"
+              className="text-blue-600 underline hover:no-underline dark:text-blue-400"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub
+            </a>{" "}
+            | MIT License
+          </span>
+          <button
+            onClick={onboarding.restart}
+            className="inline-flex items-center justify-center h-6 w-6 rounded-full text-gray-400 hover:text-blue-600 hover:bg-gray-100 dark:hover:text-blue-400 dark:hover:bg-gray-700 transition-colors"
+            aria-label="Replay onboarding tour"
+            title="Replay tour"
           >
-            GitHub
-          </a>{" "}
-          | MIT License
+            <HelpCircle className="h-4 w-4" />
+          </button>
         </div>
       </footer>
+
+      {/* Onboarding coachmark overlay */}
+      {onboarding.step !== "idle" && (
+        <CoachmarkOverlay
+          step={onboarding.step}
+          onNext={handleOnboardingNext}
+          onDismiss={handleOnboardingDismiss}
+        />
+      )}
 
       {/* Keyboard Shortcuts Modal */}
       {showShortcuts && (
