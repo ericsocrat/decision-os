@@ -35,6 +35,7 @@ const securityHeaders = [
       "img-src 'self' data: blob:",
       "connect-src 'self' https://*.supabase.co https://*.ingest.sentry.io",
       "font-src 'self'",
+      "worker-src 'self'",
       "frame-ancestors 'none'",
     ].join("; "),
   },

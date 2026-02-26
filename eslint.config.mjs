@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Service worker — plain JS running in worker scope, not React/Node
+    "public/sw.js",
   ]),
 ]);
 

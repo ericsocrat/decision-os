@@ -62,6 +62,11 @@ describe("Content-Security-Policy header", () => {
     expect(csp.value).toContain("font-src 'self'");
   });
 
+  it("restricts worker-src to self for service worker", () => {
+    const csp = securityHeaders.find((h) => h.key === "Content-Security-Policy")!;
+    expect(csp.value).toContain("worker-src 'self'");
+  });
+
   it("still includes all original security headers", () => {
     const keys = securityHeaders.map((h) => h.key);
     expect(keys).toContain("Strict-Transport-Security");
