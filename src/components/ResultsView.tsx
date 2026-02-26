@@ -28,6 +28,7 @@ import type { CompletenessResult } from "@/lib/completeness";
 import { BiasWarnings } from "./BiasWarnings";
 import { useBiasDetection } from "@/hooks/useBiasDetection";
 import { HybridResults } from "./HybridResults";
+import { QualityBar } from "./QualityBar";
 
 const ScoreChart = lazy(() => import("./ScoreChart").then((m) => ({ default: m.ScoreChart })));
 const ParetoChart = lazy(() => import("./ParetoChart").then((m) => ({ default: m.ParetoChart })));
@@ -161,6 +162,9 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
 
   return (
     <div className="space-y-6">
+      {/* Decision quality dashboard */}
+      <QualityBar decision={decision} />
+
       {/* Non-blocking validation warnings */}
       {validation.warnings.length > 0 && (
         <div className="rounded-lg border border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20 px-4 py-3">
