@@ -38,10 +38,11 @@ test.describe("Decision OS — Smoke Tests", () => {
 
   test("Results tab shows rankings with demo data", async ({ page }) => {
     await page.locator('button[role="tab"]:has-text("Results")').click();
+    const resultsPanel = page.locator("#panel-results");
     // Should see rankings heading
-    await expect(page.locator('text="Rankings"')).toBeVisible();
+    await expect(resultsPanel.locator('text="Rankings"')).toBeVisible();
     // Should see at least one rank badge
-    await expect(page.locator('text="Winner"')).toBeVisible();
+    await expect(resultsPanel.locator('text="Winner"')).toBeVisible();
   });
 
   test("keyboard shortcut switches tabs", async ({ page }) => {

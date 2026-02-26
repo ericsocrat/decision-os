@@ -231,8 +231,10 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium firefox webkit
 
-      - name: Run E2E tests
-        run: npm run test:e2e
+      - name: Run E2E smoke tests
+        # Visual regression tests (visual.spec.ts) excluded — requires committed baselines
+        # Accessibility tests run in the dedicated 'accessibility' job above
+        run: npx playwright test e2e/smoke.spec.ts
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v6
