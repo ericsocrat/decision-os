@@ -13,10 +13,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
  * Render with all providers (DecisionProvider, ThemeProvider, AnnouncerProvider).
  * Returns the render result plus a userEvent instance for realistic interactions.
  */
-export function renderWithProviders(
-  ui: ReactElement,
-  options?: Omit<RenderOptions, "wrapper">,
-) {
+export function renderWithProviders(ui: ReactElement, options?: Omit<RenderOptions, "wrapper">) {
   const user = userEvent.setup();
 
   function Wrapper({ children }: { children: React.ReactNode }) {

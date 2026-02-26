@@ -70,18 +70,13 @@ function storeError(error: Error, context?: ErrorContext): void {
       timestamp: new Date().toISOString(),
       context: context
         ? Object.fromEntries(
-            Object.entries(context).filter(
-              ([k]) => k !== "source" && k !== "componentStack",
-            ),
+            Object.entries(context).filter(([k]) => k !== "source" && k !== "componentStack")
           )
         : undefined,
     });
 
     // Keep last N entries
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(errors.slice(-MAX_STORED_ERRORS)),
-    );
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(errors.slice(-MAX_STORED_ERRORS)));
   } catch {
     // Fire and forget — don't let error reporting cause errors
   }
@@ -96,15 +91,12 @@ function forwardToSentry(error: Error, context?: ErrorContext): void {
     // Dynamic import check — Sentry may not be present
     const Sentry = (globalThis as Record<string, unknown>).__SENTRY__;
     if (Sentry && typeof (Sentry as Record<string, unknown>).captureException === "function") {
-      (Sentry as { captureException: (e: Error, ctx?: unknown) => void }).captureException(
-        error,
-        {
-          extra: {
-            source: context?.source,
-            componentStack: context?.componentStack,
-          },
+      (Sentry as { captureException: (e: Error, ctx?: unknown) => void }).captureException(error, {
+        extra: {
+          source: context?.source,
+          componentStack: context?.componentStack,
         },
-      );
+      });
     }
   } catch {
     // Fire and forget

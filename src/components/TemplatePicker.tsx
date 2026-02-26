@@ -40,7 +40,7 @@ export function TemplatePicker({ onSelect, onClose }: TemplatePickerProps) {
       if (e.key !== "Tab") return;
 
       const focusable = modal.querySelectorAll<HTMLElement>(
-        'button, [href], input, [tabindex]:not([tabindex="-1"])',
+        'button, [href], input, [tabindex]:not([tabindex="-1"])'
       );
       if (focusable.length === 0) return;
       const first = focusable[0];

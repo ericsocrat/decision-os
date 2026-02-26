@@ -296,36 +296,34 @@ function AppContent() {
 
       <main id="main-content" className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6">
         {/* Tabs */}
-        <nav
-          className="flex border-b border-gray-200 dark:border-gray-700 mb-6"
-          role="tablist"
-          aria-label="Decision sections"
-        >
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              id={`tab-${tab.id}`}
-              role="tab"
-              aria-selected={activeTab === tab.id}
-              aria-controls={`panel-${tab.id}`}
-              tabIndex={activeTab === tab.id ? 0 : -1}
-              onClick={() => setActiveTab(tab.id)}
-              onKeyDown={handleTabKeyDown}
-              className={`inline-flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-t-md ${
-                activeTab === tab.id
-                  ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200"
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
-              {tab.id === "builder" && validation.errorCount > 0 && (
-                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white px-1">
-                  {validation.errorCount}
-                </span>
-              )}
-            </button>
-          ))}
+        <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
+          <nav role="tablist" aria-label="Decision sections" className="flex">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                id={`tab-${tab.id}`}
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                aria-controls={`panel-${tab.id}`}
+                tabIndex={activeTab === tab.id ? 0 : -1}
+                onClick={() => setActiveTab(tab.id)}
+                onKeyDown={handleTabKeyDown}
+                className={`inline-flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-t-md ${
+                  activeTab === tab.id
+                    ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200"
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+                {tab.id === "builder" && validation.errorCount > 0 && (
+                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white px-1">
+                    {validation.errorCount}
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
 
           {/* Keyboard shortcut hint */}
           <button
@@ -339,7 +337,7 @@ function AppContent() {
               ?
             </kbd>
           </button>
-        </nav>
+        </div>
 
         {/* Tab Panels */}
         <div

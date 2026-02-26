@@ -142,10 +142,7 @@ export const Header = memo(function Header() {
 
       {/* Template Picker Modal */}
       {showTemplates && (
-        <TemplatePicker
-          onSelect={handleTemplateSelect}
-          onClose={() => setShowTemplates(false)}
-        />
+        <TemplatePicker onSelect={handleTemplateSelect} onClose={() => setShowTemplates(false)} />
       )}
 
       {/* Import Modal */}

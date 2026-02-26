@@ -174,17 +174,37 @@ export function importFromJson(content: string): ImportResult {
       errors.push({ type: "schema", message: 'Missing or invalid "title" field.', field: "title" });
     }
     if (!Array.isArray(d.options)) {
-      errors.push({ type: "schema", message: 'Missing or invalid "options" array.', field: "options" });
+      errors.push({
+        type: "schema",
+        message: 'Missing or invalid "options" array.',
+        field: "options",
+      });
     } else if (d.options.length < 1) {
-      errors.push({ type: "validation", message: "At least 1 option is required.", field: "options" });
+      errors.push({
+        type: "validation",
+        message: "At least 1 option is required.",
+        field: "options",
+      });
     }
     if (!Array.isArray(d.criteria)) {
-      errors.push({ type: "schema", message: 'Missing or invalid "criteria" array.', field: "criteria" });
+      errors.push({
+        type: "schema",
+        message: 'Missing or invalid "criteria" array.',
+        field: "criteria",
+      });
     } else if (d.criteria.length < 1) {
-      errors.push({ type: "validation", message: "At least 1 criterion is required.", field: "criteria" });
+      errors.push({
+        type: "validation",
+        message: "At least 1 criterion is required.",
+        field: "criteria",
+      });
     }
     if (typeof d.scores !== "object" || d.scores === null) {
-      errors.push({ type: "schema", message: 'Missing or invalid "scores" object.', field: "scores" });
+      errors.push({
+        type: "schema",
+        message: 'Missing or invalid "scores" object.',
+        field: "scores",
+      });
     }
 
     if (errors.length === 0) {
@@ -314,7 +334,7 @@ export function csvToDecision(
   preview: CsvPreviewData,
   title: string,
   criterionTypes: ("benefit" | "cost")[],
-  weights: number[],
+  weights: number[]
 ): Decision {
   const now = new Date().toISOString();
 

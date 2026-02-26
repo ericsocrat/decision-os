@@ -27,7 +27,7 @@ describe("error-reporter", () => {
       expect(spy).toHaveBeenCalledWith(
         "[Decision OS] test:",
         error,
-        expect.objectContaining({ source: "test" }),
+        expect.objectContaining({ source: "test" })
       );
       spy.mockRestore();
     });

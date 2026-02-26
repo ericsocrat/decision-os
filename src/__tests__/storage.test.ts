@@ -3,7 +3,13 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { getDecisions, getDecision, saveDecision, deleteDecision, resetToDemo } from "@/lib/storage";
+import {
+  getDecisions,
+  getDecision,
+  saveDecision,
+  deleteDecision,
+  resetToDemo,
+} from "@/lib/storage";
 import { DEMO_DECISION } from "@/lib/demo-data";
 import type { Decision } from "@/lib/types";
 

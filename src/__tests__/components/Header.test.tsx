@@ -54,7 +54,9 @@ describe("Header", () => {
 
   it("renders dark mode toggle", () => {
     renderWithProviders(<Header />);
-    expect(screen.getByRole("button", { name: /switch to (dark|light) mode/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /switch to (dark|light) mode/i })
+    ).toBeInTheDocument();
   });
 
   it("renders reset demo button", () => {

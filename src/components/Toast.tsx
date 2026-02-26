@@ -56,7 +56,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
       const timer = setTimeout(() => dismiss(id), duration);
       timers.current.set(id, timer);
     },
-    [dismiss],
+    [dismiss]
   );
 
   // Register the global imperative handle

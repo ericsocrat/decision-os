@@ -174,7 +174,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
       });
       setIsDirty(true);
     },
-    [pushUndo],
+    [pushUndo]
   );
 
   /** Undo: restore previous state from undo stack */
@@ -220,7 +220,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
         requestAnimationFrame(() => setIsLoading(false));
       }
     },
-    [announce, clearHistory],
+    [announce, clearHistory]
   );
 
   const createNewDecision = useCallback(() => {
@@ -258,7 +258,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
         announce("Decision deleted");
       }
     },
-    [decision.id, announce, clearHistory],
+    [decision.id, announce, clearHistory]
   );
 
   const resetDemoFn = useCallback(() => {

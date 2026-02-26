@@ -41,14 +41,14 @@ beforeEach(() => {
 describe("ResultsView", () => {
   it("renders rankings section", () => {
     renderWithProviders(
-      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />,
+      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />
     );
     expect(screen.getByText("Rankings")).toBeInTheDocument();
   });
 
   it("renders ranked option cards", () => {
     renderWithProviders(
-      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />,
+      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />
     );
     // Demo data should produce ranked results; the #1 option should have "Winner" badge
     expect(screen.getByText("Winner")).toBeInTheDocument();
@@ -56,28 +56,28 @@ describe("ResultsView", () => {
 
   it("renders export JSON button", () => {
     renderWithProviders(
-      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />,
+      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />
     );
     expect(screen.getByRole("button", { name: /export.*json/i })).toBeInTheDocument();
   });
 
   it("renders share link button", () => {
     renderWithProviders(
-      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />,
+      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />
     );
     expect(screen.getByRole("button", { name: /copy share link/i })).toBeInTheDocument();
   });
 
   it("renders Top Drivers section", () => {
     renderWithProviders(
-      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />,
+      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />
     );
     expect(screen.getByText("Top Drivers")).toBeInTheDocument();
   });
 
   it("renders Explain This Result section", () => {
     renderWithProviders(
-      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />,
+      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />
     );
     expect(screen.getByText("Explain This Result")).toBeInTheDocument();
     expect(screen.getByText(/how scoring works/i)).toBeInTheDocument();
@@ -85,7 +85,7 @@ describe("ResultsView", () => {
 
   it("shows validation guard when invalid", () => {
     renderWithProviders(
-      <ResultsView validation={invalidResult} onSwitchToBuilder={onSwitchToBuilder} />,
+      <ResultsView validation={invalidResult} onSwitchToBuilder={onSwitchToBuilder} />
     );
     expect(screen.getByText(/fix these issues/i)).toBeInTheDocument();
     expect(screen.getByText("Decision title is required")).toBeInTheDocument();
@@ -94,7 +94,7 @@ describe("ResultsView", () => {
 
   it("Go to Builder button fires callback", async () => {
     const { user } = renderWithProviders(
-      <ResultsView validation={invalidResult} onSwitchToBuilder={onSwitchToBuilder} />,
+      <ResultsView validation={invalidResult} onSwitchToBuilder={onSwitchToBuilder} />
     );
     await user.click(screen.getByRole("button", { name: /go to builder/i }));
     expect(onSwitchToBuilder).toHaveBeenCalledTimes(1);

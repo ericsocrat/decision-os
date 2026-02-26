@@ -96,7 +96,7 @@ export const ImportModal = memo(function ImportModal({ onClose }: ImportModalPro
         }
       }
     },
-    [loadDecision, onClose],
+    [loadDecision, onClose]
   );
 
   const handleFileChange = useCallback(
@@ -104,7 +104,7 @@ export const ImportModal = memo(function ImportModal({ onClose }: ImportModalPro
       const file = e.target.files?.[0];
       if (file) processFile(file);
     },
-    [processFile],
+    [processFile]
   );
 
   const handleCsvConfirm = useCallback(() => {
@@ -149,7 +149,7 @@ export const ImportModal = memo(function ImportModal({ onClose }: ImportModalPro
       const file = e.dataTransfer.files[0];
       if (file) processFile(file);
     },
-    [processFile],
+    [processFile]
   );
 
   return (
@@ -207,8 +207,8 @@ export const ImportModal = memo(function ImportModal({ onClose }: ImportModalPro
                         className="font-medium text-blue-600 hover:underline dark:text-blue-400"
                       >
                         Choose a file
-                      </button>
-                      {" "}or drag and drop
+                      </button>{" "}
+                      or drag and drop
                     </p>
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                       JSON or CSV up to 1 MB
@@ -420,10 +420,7 @@ function CsvPreview({
                 <option value="cost">Cost (lower = better)</option>
               </select>
               <div className="flex items-center gap-1">
-                <label
-                  htmlFor={`weight-${i}`}
-                  className="text-xs text-gray-500 dark:text-gray-400"
-                >
+                <label htmlFor={`weight-${i}`} className="text-xs text-gray-500 dark:text-gray-400">
                   Weight:
                 </label>
                 <input
