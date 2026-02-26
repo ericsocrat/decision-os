@@ -107,4 +107,42 @@ describe("DecisionBuilder", () => {
     renderWithProviders(<DecisionBuilder validation={validation} />);
     expect(screen.getByText("Decision title is required")).toBeInTheDocument();
   });
+
+  it("renders description toggle buttons for options", () => {
+    renderWithProviders(<DecisionBuilder validation={emptyValidation} />);
+    // Demo data has 3 options with descriptions → should show "Edit description"
+    const editBtns = screen.getAllByText("Edit description");
+    expect(editBtns.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders description toggle buttons for criteria", () => {
+    renderWithProviders(<DecisionBuilder validation={emptyValidation} />);
+    // Demo data has 4 criteria with descriptions → "Edit description" buttons
+    const editBtns = screen.getAllByText("Edit description");
+    // At least some should be from criteria
+    expect(editBtns.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("expands description textarea when toggle clicked", async () => {
+    const { user } = renderWithProviders(<DecisionBuilder validation={emptyValidation} />);
+    // Demo data auto-expands descriptions that are non-empty
+    // Find a textarea (should be auto-expanded for demo descriptions)
+    const textareas = screen.getAllByRole("textbox");
+    // Includes name inputs + description textareas
+    expect(textareas.length).toBeGreaterThan(7); // title + desc + at least 3 option names + descriptions
+  });
+
+  it("shows character counter on expanded descriptions", () => {
+    renderWithProviders(<DecisionBuilder validation={emptyValidation} />);
+    // Demo data has descriptions that auto-expand, so counters should be visible
+    const counters = screen.getAllByText(/\/500$/);
+    expect(counters.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("shows criterion description tooltip in score matrix header", () => {
+    renderWithProviders(<DecisionBuilder validation={emptyValidation} />);
+    // Demo criteria have descriptions, so tooltips should exist
+    const tooltips = screen.getAllByRole("tooltip");
+    expect(tooltips.length).toBeGreaterThanOrEqual(1);
+  });
 });

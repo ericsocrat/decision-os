@@ -141,4 +141,18 @@ describe("ResultsView", () => {
     await user.click(screen.getByRole("button", { name: /go to builder/i }));
     expect(onSwitchToBuilder).toHaveBeenCalledTimes(1);
   });
+
+  it("shows option descriptions in ranking cards", () => {
+    renderWithProviders(
+      <ResultsView
+        validation={validResult}
+        completeness={fullCompleteness}
+        onSwitchToBuilder={onSwitchToBuilder}
+      />
+    );
+    // Demo data options have descriptions — should be displayed as truncated text
+    const descriptions = screen.getAllByTitle(/./);
+    // At least some should be option descriptions from demo data
+    expect(descriptions.length).toBeGreaterThanOrEqual(1);
+  });
 });

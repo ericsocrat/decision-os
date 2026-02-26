@@ -230,6 +230,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
           {results.optionResults.map((r, index) => {
             const barWidth = maxScore > 0 ? (r.totalScore / maxScore) * 100 : 0;
             const isWinner = index === 0;
+            const optionDesc = decision.options.find((o) => o.id === r.optionId)?.description;
 
             return (
               <div
@@ -251,9 +252,19 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
                     >
                       {r.rank}
                     </span>
-                    <span className="font-medium text-gray-900 dark:text-gray-100">
-                      {r.optionName}
-                    </span>
+                    <div>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                        {r.optionName}
+                      </span>
+                      {optionDesc && (
+                        <p
+                          className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[280px] sm:max-w-[400px]"
+                          title={optionDesc}
+                        >
+                          {optionDesc}
+                        </p>
+                      )}
+                    </div>
                     {isWinner && (
                       <span className="rounded-full bg-blue-100 dark:bg-blue-900 px-2 py-0.5 text-xs font-medium text-blue-800 dark:text-blue-200">
                         Winner

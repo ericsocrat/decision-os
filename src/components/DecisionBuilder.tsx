@@ -5,7 +5,18 @@
 "use client";
 
 import { useDecision } from "./DecisionProvider";
-import { Plus, Trash2, Info, Clock, AlertCircle, AlertTriangle, Undo2, Redo2 } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Info,
+  Clock,
+  AlertCircle,
+  AlertTriangle,
+  Undo2,
+  Redo2,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { showToast } from "./Toast";
 import { formatRelativeTime } from "@/lib/utils";
 import type { CriterionType } from "@/lib/types";
@@ -41,6 +52,28 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
   const gridRef = useRef<HTMLTableElement>(null);
   const completeness = useMemo(() => computeCompleteness(decision), [decision]);
   const [autoNormalize, setAutoNormalize] = useState(false);
+
+  /** Track which option/criterion descriptions are expanded */
+  const [expandedDescs, setExpandedDescs] = useState<Set<string>>(() => {
+    // Auto-expand any items that already have descriptions
+    const ids = new Set<string>();
+    for (const opt of decision.options) {
+      if (opt.description) ids.add(`opt-${opt.id}`);
+    }
+    for (const crit of decision.criteria) {
+      if (crit.description) ids.add(`crit-${crit.id}`);
+    }
+    return ids;
+  });
+
+  const toggleDesc = useCallback((key: string) => {
+    setExpandedDescs((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
 
   /** Find the criterion with the highest weight */
   const highestWeightId = useMemo(() => {
@@ -287,6 +320,41 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                     </button>
                   )}
                 </div>
+                {/* Description toggle + textarea */}
+                <div className="ml-8 mt-1">
+                  <button
+                    type="button"
+                    onClick={() => toggleDesc(`opt-${opt.id}`)}
+                    className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    aria-expanded={expandedDescs.has(`opt-${opt.id}`)}
+                    aria-controls={`opt-desc-${opt.id}`}
+                  >
+                    {expandedDescs.has(`opt-${opt.id}`) ? (
+                      <ChevronUp className="h-3 w-3" />
+                    ) : (
+                      <ChevronDown className="h-3 w-3" />
+                    )}
+                    {opt.description ? "Edit description" : "Add description"}
+                  </button>
+                  {expandedDescs.has(`opt-${opt.id}`) && (
+                    <div className="mt-1" id={`opt-desc-${opt.id}`}>
+                      <textarea
+                        value={opt.description ?? ""}
+                        onChange={(e) =>
+                          updateOption(opt.id, { description: e.target.value.slice(0, 500) })
+                        }
+                        className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                        placeholder="Add notes about this option..."
+                        rows={2}
+                        maxLength={500}
+                        aria-label={`Description for option ${opt.name}`}
+                      />
+                      <p className="text-right text-[10px] text-gray-400 mt-0.5">
+                        {(opt.description ?? "").length}/500
+                      </p>
+                    </div>
+                  )}
+                </div>
                 {hasIssue && (
                   <p className="ml-8 mt-0.5 text-xs text-orange-600 dark:text-orange-400 flex items-center gap-1">
                     <AlertTriangle className="h-3 w-3 shrink-0" />
@@ -399,6 +467,43 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                   colorIndex={critIndex}
                   isHighest={crit.id === highestWeightId}
                 />
+                {/* Criterion description toggle + textarea */}
+                <div className="mt-1">
+                  <button
+                    type="button"
+                    onClick={() => toggleDesc(`crit-${crit.id}`)}
+                    className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    aria-expanded={expandedDescs.has(`crit-${crit.id}`)}
+                    aria-controls={`crit-desc-${crit.id}`}
+                  >
+                    {expandedDescs.has(`crit-${crit.id}`) ? (
+                      <ChevronUp className="h-3 w-3" />
+                    ) : (
+                      <ChevronDown className="h-3 w-3" />
+                    )}
+                    {crit.description ? "Edit description" : "Add description"}
+                  </button>
+                  {expandedDescs.has(`crit-${crit.id}`) && (
+                    <div className="mt-1" id={`crit-desc-${crit.id}`}>
+                      <textarea
+                        value={crit.description ?? ""}
+                        onChange={(e) =>
+                          updateCriterion(crit.id, {
+                            description: e.target.value.slice(0, 500),
+                          })
+                        }
+                        className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                        placeholder="Describe what this criterion measures..."
+                        rows={2}
+                        maxLength={500}
+                        aria-label={`Description for criterion ${crit.name}`}
+                      />
+                      <p className="text-right text-[10px] text-gray-400 mt-0.5">
+                        {(crit.description ?? "").length}/500
+                      </p>
+                    </div>
+                  )}
+                </div>
                 {critWarning && (
                   <p className="mt-0.5 text-xs text-orange-600 dark:text-orange-400 flex items-center gap-1">
                     <AlertTriangle className="h-3 w-3 shrink-0" />
@@ -460,7 +565,23 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                     key={crit.id}
                     className="text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-3 py-2 border-b border-gray-200 dark:border-gray-700"
                   >
-                    <div>{crit.name}</div>
+                    <div className="group relative inline-block">
+                      <span
+                        tabIndex={crit.description ? 0 : undefined}
+                        aria-describedby={crit.description ? `crit-tooltip-${crit.id}` : undefined}
+                      >
+                        {crit.name}
+                      </span>
+                      {crit.description && (
+                        <div
+                          id={`crit-tooltip-${crit.id}`}
+                          role="tooltip"
+                          className="absolute left-1/2 top-full z-20 mt-1 -translate-x-1/2 hidden group-hover:block group-focus-within:block w-48 rounded-md bg-gray-900 dark:bg-gray-700 px-3 py-2 text-[11px] font-normal normal-case tracking-normal text-white shadow-lg text-left"
+                        >
+                          {crit.description}
+                        </div>
+                      )}
+                    </div>
                     <span
                       className={`text-[10px] font-normal ${crit.type === "cost" ? "text-orange-600" : "text-green-600"}`}
                     >
