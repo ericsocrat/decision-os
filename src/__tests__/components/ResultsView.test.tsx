@@ -7,6 +7,7 @@ import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../test-utils";
 import { ResultsView } from "@/components/ResultsView";
 import type { ValidationResult } from "@/hooks/useValidation";
+import type { CompletenessResult } from "@/lib/completeness";
 
 // Mock lazy-loaded ScoreChart
 vi.mock("@/components/ScoreChart", () => ({
@@ -33,6 +34,15 @@ const invalidResult: ValidationResult = {
 
 const onSwitchToBuilder = vi.fn();
 
+/** Default full-completion result for tests (demo data has non-zero scores). */
+const fullCompleteness: CompletenessResult = {
+  filled: 20,
+  total: 20,
+  ratio: 1,
+  percent: 100,
+  tier: "blue",
+};
+
 beforeEach(() => {
   localStorage.clear();
   onSwitchToBuilder.mockClear();
@@ -41,14 +51,22 @@ beforeEach(() => {
 describe("ResultsView", () => {
   it("renders rankings section", () => {
     renderWithProviders(
-      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />
+      <ResultsView
+        validation={validResult}
+        completeness={fullCompleteness}
+        onSwitchToBuilder={onSwitchToBuilder}
+      />
     );
     expect(screen.getByText("Rankings")).toBeInTheDocument();
   });
 
   it("renders ranked option cards", () => {
     renderWithProviders(
-      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />
+      <ResultsView
+        validation={validResult}
+        completeness={fullCompleteness}
+        onSwitchToBuilder={onSwitchToBuilder}
+      />
     );
     // Demo data should produce ranked results; the #1 option should have "Winner" badge
     expect(screen.getByText("Winner")).toBeInTheDocument();
@@ -56,28 +74,44 @@ describe("ResultsView", () => {
 
   it("renders export JSON button", () => {
     renderWithProviders(
-      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />
+      <ResultsView
+        validation={validResult}
+        completeness={fullCompleteness}
+        onSwitchToBuilder={onSwitchToBuilder}
+      />
     );
     expect(screen.getByRole("button", { name: /export.*json/i })).toBeInTheDocument();
   });
 
   it("renders share link button", () => {
     renderWithProviders(
-      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />
+      <ResultsView
+        validation={validResult}
+        completeness={fullCompleteness}
+        onSwitchToBuilder={onSwitchToBuilder}
+      />
     );
     expect(screen.getByRole("button", { name: /copy share link/i })).toBeInTheDocument();
   });
 
   it("renders Top Drivers section", () => {
     renderWithProviders(
-      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />
+      <ResultsView
+        validation={validResult}
+        completeness={fullCompleteness}
+        onSwitchToBuilder={onSwitchToBuilder}
+      />
     );
     expect(screen.getByText("Top Drivers")).toBeInTheDocument();
   });
 
   it("renders Explain This Result section", () => {
     renderWithProviders(
-      <ResultsView validation={validResult} onSwitchToBuilder={onSwitchToBuilder} />
+      <ResultsView
+        validation={validResult}
+        completeness={fullCompleteness}
+        onSwitchToBuilder={onSwitchToBuilder}
+      />
     );
     expect(screen.getByText("Explain This Result")).toBeInTheDocument();
     expect(screen.getByText(/how scoring works/i)).toBeInTheDocument();
@@ -85,7 +119,11 @@ describe("ResultsView", () => {
 
   it("shows validation guard when invalid", () => {
     renderWithProviders(
-      <ResultsView validation={invalidResult} onSwitchToBuilder={onSwitchToBuilder} />
+      <ResultsView
+        validation={invalidResult}
+        completeness={fullCompleteness}
+        onSwitchToBuilder={onSwitchToBuilder}
+      />
     );
     expect(screen.getByText(/fix these issues/i)).toBeInTheDocument();
     expect(screen.getByText("Decision title is required")).toBeInTheDocument();
@@ -94,7 +132,11 @@ describe("ResultsView", () => {
 
   it("Go to Builder button fires callback", async () => {
     const { user } = renderWithProviders(
-      <ResultsView validation={invalidResult} onSwitchToBuilder={onSwitchToBuilder} />
+      <ResultsView
+        validation={invalidResult}
+        completeness={fullCompleteness}
+        onSwitchToBuilder={onSwitchToBuilder}
+      />
     );
     await user.click(screen.getByRole("button", { name: /go to builder/i }));
     expect(onSwitchToBuilder).toHaveBeenCalledTimes(1);

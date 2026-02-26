@@ -10,7 +10,9 @@ import { showToast } from "./Toast";
 import { formatRelativeTime } from "@/lib/utils";
 import type { CriterionType } from "@/lib/types";
 import type { ValidationResult } from "@/hooks/useValidation";
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
+import { computeCompleteness } from "@/lib/completeness";
+import { CompletionRing } from "./CompletionRing";
 
 interface DecisionBuilderProps {
   validation: ValidationResult;
@@ -35,6 +37,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
   } = useDecision();
 
   const gridRef = useRef<HTMLTableElement>(null);
+  const completeness = useMemo(() => computeCompleteness(decision), [decision]);
 
   /** Arrow-key navigation within the score matrix (WAI-ARIA grid pattern) */
   const handleGridKeyDown = useCallback(
@@ -467,6 +470,13 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
             </tbody>
           </table>
         </div>
+
+        {/* Completion progress ring */}
+        {completeness.total > 0 && (
+          <div className="mt-4">
+            <CompletionRing completeness={completeness} />
+          </div>
+        )}
       </section>
     </div>
   );

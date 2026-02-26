@@ -14,23 +14,27 @@ import {
   FileText,
   AlertCircle,
   AlertTriangle,
+  X,
 } from "lucide-react";
 import { useState, lazy, Suspense } from "react";
 import { buildShareLink } from "@/lib/share";
 import { encodeDecisionToUrl } from "@/lib/utils";
 import { normalizeWeights } from "@/lib/scoring";
 import type { ValidationResult } from "@/hooks/useValidation";
+import type { CompletenessResult } from "@/lib/completeness";
 
 const ScoreChart = lazy(() => import("./ScoreChart").then((m) => ({ default: m.ScoreChart })));
 
 interface ResultsViewProps {
   validation: ValidationResult;
+  completeness: CompletenessResult;
   onSwitchToBuilder: () => void;
 }
 
-export function ResultsView({ validation, onSwitchToBuilder }: ResultsViewProps) {
+export function ResultsView({ validation, completeness, onSwitchToBuilder }: ResultsViewProps) {
   const { decision, results } = useDecision();
   const [shareStatus, setShareStatus] = useState<string>("");
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   if (results.optionResults.length === 0) {
     return (
@@ -69,6 +73,9 @@ export function ResultsView({ validation, onSwitchToBuilder }: ResultsViewProps)
   }
 
   const maxScore = Math.max(...results.optionResults.map((r) => r.totalScore));
+
+  const defaultCount = completeness.total - completeness.filled;
+  const showIncompleteBanner = defaultCount > 0 && !bannerDismissed;
 
   const handleExportJson = () => {
     const data = {
@@ -138,6 +145,36 @@ export function ResultsView({ validation, onSwitchToBuilder }: ResultsViewProps)
               <span className="font-medium">Warning:</span>{" "}
               {validation.warnings.map((w) => w.message).join(". ")}.
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Incomplete scores banner */}
+      {showIncompleteBanner && (
+        <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-4 py-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="text-sm text-amber-700 dark:text-amber-300">
+                <span className="font-medium">
+                  {defaultCount} of {completeness.total} scores are at the default value (0).
+                </span>{" "}
+                Results may not reflect your actual evaluation.
+                <button
+                  onClick={onSwitchToBuilder}
+                  className="ml-2 inline-flex items-center gap-1 text-sm font-medium text-amber-800 dark:text-amber-200 underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-amber-500 rounded"
+                >
+                  Fill remaining scores &rarr;
+                </button>
+              </div>
+            </div>
+            <button
+              onClick={() => setBannerDismissed(true)}
+              className="flex-shrink-0 rounded p-1 text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-800/30 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              aria-label="Dismiss incomplete scores warning"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
         </div>
       )}

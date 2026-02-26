@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useSyncExternalStore } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef, useSyncExternalStore } from "react";
 import { AnnouncerProvider, useAnnounce } from "@/components/Announcer";
 import { DecisionProvider, useDecision } from "@/components/DecisionProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -19,6 +19,7 @@ import { MigrationBanner } from "@/components/MigrationBanner";
 import { DecisionSkeleton } from "@/components/DecisionSkeleton";
 import { ImportModal } from "@/components/ImportModal";
 import { useValidation } from "@/hooks/useValidation";
+import { computeCompleteness } from "@/lib/completeness";
 import {
   Settings2,
   BarChart3,
@@ -64,6 +65,7 @@ function AppContent() {
   const announce = useAnnounce();
   const { decision, isLoading, undo, redo, loadDecision } = useDecision();
   const validation = useValidation(decision);
+  const completeness = useMemo(() => computeCompleteness(decision), [decision]);
   const auth = useAuth();
 
   // ── Global drag-and-drop for file import ──────────────────
@@ -330,6 +332,23 @@ function AppContent() {
                     {validation.errorCount}
                   </span>
                 )}
+                {tab.id === "results" &&
+                  completeness.total > 0 &&
+                  (completeness.percent === 100 ? (
+                    <span
+                      className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white px-1"
+                      title="All scores filled"
+                    >
+                      ✓
+                    </span>
+                  ) : completeness.percent < 50 ? (
+                    <span
+                      className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white px-1"
+                      title={`${completeness.percent}% of scores filled`}
+                    >
+                      ⚠
+                    </span>
+                  ) : null)}
               </button>
             ))}
           </nav>
@@ -363,7 +382,11 @@ function AppContent() {
           aria-labelledby="tab-results"
           className={activeTab === "results" ? "" : "hidden"}
         >
-          <ResultsView validation={validation} onSwitchToBuilder={() => setActiveTab("builder")} />
+          <ResultsView
+            validation={validation}
+            completeness={completeness}
+            onSwitchToBuilder={() => setActiveTab("builder")}
+          />
         </div>
         <div
           id="panel-sensitivity"
