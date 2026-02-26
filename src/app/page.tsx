@@ -388,7 +388,7 @@ function AppContent() {
           Decision OS v{pkg.version} — Open source structured decision-making tool.{" "}
           <a
             href="https://github.com/ericsocrat/decision-os"
-            className="text-blue-600 hover:underline dark:text-blue-400"
+            className="text-blue-600 underline hover:no-underline dark:text-blue-400"
             target="_blank"
             rel="noopener noreferrer"
           >
