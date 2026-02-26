@@ -248,6 +248,9 @@ export function runMonteCarloSimulation(
   /** scoreAccumulator[optionIndex][simIndex] = total score for that sim */
   const allScores: Float64Array[] = options.map(() => new Float64Array(numSimulations));
 
+  /** O(1) lookup from optionId → array index (built once, used numSimulations times) */
+  const optionIndexMap = new Map(options.map((o, i) => [o.id, i]));
+
   // Run simulations -------------------------------------------------------
 
   for (let sim = 0; sim < numSimulations; sim++) {
@@ -264,8 +267,8 @@ export function runMonteCarloSimulation(
 
     // Record scores
     for (const optResult of results.optionResults) {
-      const idx = options.findIndex((o) => o.id === optResult.optionId);
-      if (idx !== -1) {
+      const idx = optionIndexMap.get(optResult.optionId);
+      if (idx !== undefined) {
         allScores[idx][sim] = optResult.totalScore;
       }
     }
@@ -273,8 +276,8 @@ export function runMonteCarloSimulation(
     // Record winner (rank 1)
     if (results.optionResults.length > 0) {
       const winnerId = results.optionResults[0].optionId;
-      const winnerIdx = options.findIndex((o) => o.id === winnerId);
-      if (winnerIdx !== -1) {
+      const winnerIdx = optionIndexMap.get(winnerId);
+      if (winnerIdx !== undefined) {
         winCounts[winnerIdx]++;
       }
     }
