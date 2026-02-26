@@ -102,7 +102,9 @@ test.describe("Decision OS — Smoke Tests", () => {
     await expect(page.locator("html")).not.toHaveClass(/dark/);
   });
 
-  test("share link copies to clipboard", async ({ page, context }) => {
+  // Clipboard permissions only supported in Chromium
+  test("share link copies to clipboard", async ({ page, context, browserName }) => {
+    test.skip(browserName !== "chromium", "Clipboard permissions only supported in Chromium");
     // Grant clipboard permission
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     await page.locator('button[role="tab"]:has-text("Results")').click();
