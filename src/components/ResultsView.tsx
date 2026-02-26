@@ -22,13 +22,14 @@ import { buildShareLink } from "@/lib/share";
 import { normalizeWeights } from "@/lib/scoring";
 import type { TopsisResults } from "@/lib/topsis";
 import type { RegretResults } from "@/lib/regret";
-import type { Decision, DecisionResults } from "@/lib/types";
+import type { Decision, DecisionResults, ConfidenceStrategy } from "@/lib/types";
 import type { ValidationResult } from "@/hooks/useValidation";
 import type { CompletenessResult } from "@/lib/completeness";
 import { BiasWarnings } from "./BiasWarnings";
 import { useBiasDetection } from "@/hooks/useBiasDetection";
 import { HybridResults } from "./HybridResults";
 import { QualityBar } from "./QualityBar";
+import { ConfidenceStrategySelector } from "./ConfidenceStrategySelector";
 
 const ScoreChart = lazy(() => import("./ScoreChart").then((m) => ({ default: m.ScoreChart })));
 const ParetoChart = lazy(() => import("./ParetoChart").then((m) => ({ default: m.ParetoChart })));
@@ -40,7 +41,7 @@ interface ResultsViewProps {
 }
 
 export function ResultsView({ validation, completeness, onSwitchToBuilder }: ResultsViewProps) {
-  const { decision, results, topsisResults, regretResults } = useDecision();
+  const { decision, results, topsisResults, regretResults, setConfidenceStrategy } = useDecision();
   const [shareStatus, setShareStatus] = useState<string>("");
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [scoringMethod, setScoringMethod] = useState<
@@ -164,6 +165,12 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
     <div className="space-y-6">
       {/* Decision quality dashboard */}
       <QualityBar decision={decision} />
+
+      {/* Confidence adjustment strategy */}
+      <ConfidenceStrategySelector
+        value={decision.confidenceStrategy ?? "none"}
+        onChange={setConfidenceStrategy}
+      />
 
       {/* Non-blocking validation warnings */}
       {validation.warnings.length > 0 && (

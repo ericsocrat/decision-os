@@ -14,6 +14,7 @@
 
 import type {
   Confidence,
+  ConfidenceStrategy,
   Criterion,
   CriterionScore,
   Decision,
@@ -100,6 +101,42 @@ export function readScoreOrZero(
 // ---------------------------------------------------------------------------
 
 /**
+ * Confidence-level multiplier map.
+ * Used by the "penalize" strategy to scale effective scores.
+ */
+export const CONFIDENCE_MULTIPLIERS: Record<Confidence, number> = {
+  high: 1.0,
+  medium: 0.8,
+  low: 0.5,
+};
+
+/**
+ * Return the multiplier for a given confidence and strategy.
+ * - `none` → always 1.0 (no adjustment)
+ * - `penalize` → CONFIDENCE_MULTIPLIERS lookup
+ * - `widen` → 1.0 (handled elsewhere in MC distribution)
+ */
+export function confidenceMultiplier(
+  confidence: Confidence | null,
+  strategy: ConfidenceStrategy
+): number {
+  if (strategy !== "penalize" || !confidence) return 1.0;
+  return CONFIDENCE_MULTIPLIERS[confidence];
+}
+
+/**
+ * Compute a confidence-adjusted effective score.
+ * Applies the multiplier to an already-computed effective score.
+ */
+export function confidenceAdjustedScore(
+  effectiveScoreValue: number,
+  confidence: Confidence | null,
+  strategy: ConfidenceStrategy
+): number {
+  return effectiveScoreValue * confidenceMultiplier(confidence, strategy);
+}
+
+/**
  * Normalize an array of raw weights so they sum to 1.0.
  * If all weights are 0, returns equal weights (1/n each).
  * Guarantees: no NaN, no Infinity, all values ≥ 0.
@@ -152,27 +189,32 @@ export function scoreOption(
   optionName: string,
   criteria: Criterion[],
   scores: ScoreMatrix,
-  normalizedWeights: number[]
+  normalizedWeights: number[],
+  strategy: ConfidenceStrategy = "none"
 ): OptionResult {
   const criterionScores: CriterionScore[] = criteria.map((criterion, i) => {
     const raw = readScore(scores, optionId, criterion.id);
     const numericRaw = raw ?? 0;
     const eff = effectiveScore(numericRaw, criterion.type);
     const nw = normalizedWeights[i];
+    const conf = resolveConfidence(scores[optionId]?.[criterion.id]);
+    const mult = confidenceMultiplier(conf, strategy);
+    const adjusted = eff * mult;
 
     return {
       criterionId: criterion.id,
       criterionName: criterion.name,
       rawScore: numericRaw,
       normalizedWeight: nw,
-      effectiveScore: roundDisplay(eff * nw),
+      effectiveScore: roundDisplay(adjusted * nw),
       criterionType: criterion.type,
       isNull: raw === null,
+      confidence: conf ?? undefined,
+      confidenceMultiplier: mult,
     };
   });
 
   // Accumulate only scored criteria; normalize by their weight sum
-  // Formula: score_i = Σ(w_j · e_ij) / Σ(w_j) for j ∈ scored
   let scoredWeightSum = 0;
   let weightedSum = 0;
 
@@ -180,20 +222,20 @@ export function scoreOption(
     const raw = readScore(scores, optionId, criterion.id);
     if (raw !== null) {
       const eff = effectiveScore(raw, criterion.type);
-      weightedSum += eff * normalizedWeights[i];
+      const conf = resolveConfidence(scores[optionId]?.[criterion.id]);
+      const mult = confidenceMultiplier(conf, strategy);
+      weightedSum += eff * mult * normalizedWeights[i];
       scoredWeightSum += normalizedWeights[i];
     }
   });
 
-  // When all scored: scoredWeightSum ≈ 1.0, so result = weightedSum (unchanged)
-  // When partially scored: divide by scoredWeightSum to re-normalize
   const totalScore = roundDisplay(scoredWeightSum > 0 ? weightedSum / scoredWeightSum : 0);
 
   return {
     optionId,
     optionName,
     totalScore,
-    rank: 0, // assigned after sorting
+    rank: 0,
     criterionScores,
   };
 }
@@ -204,6 +246,7 @@ export function scoreOption(
  */
 export function computeResults(decision: Decision): DecisionResults {
   const { criteria, options, scores } = decision;
+  const strategy = decision.confidenceStrategy ?? "none";
 
   if (criteria.length === 0 || options.length === 0) {
     return {
@@ -218,7 +261,7 @@ export function computeResults(decision: Decision): DecisionResults {
 
   // Score each option
   const results: OptionResult[] = options.map((opt) =>
-    scoreOption(opt.id, opt.name, criteria, scores, nw)
+    scoreOption(opt.id, opt.name, criteria, scores, nw, strategy)
   );
 
   // Sort descending by totalScore; stable sort preserves insertion order for ties

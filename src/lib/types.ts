@@ -27,6 +27,14 @@ export interface Option {
 /** Confidence level for a per-cell score */
 export type Confidence = "high" | "medium" | "low";
 
+/**
+ * Strategy for how confidence affects scoring:
+ * - `none`    — display only, no effect on results (default)
+ * - `penalize` — multiply effective score by confidence multiplier
+ * - `widen`   — affects Monte Carlo distribution spread
+ */
+export type ConfidenceStrategy = "none" | "penalize" | "widen";
+
 /** A score cell with an explicit confidence annotation */
 export interface ScoredCell {
   value: number;
@@ -59,6 +67,8 @@ export interface Decision {
   scores: ScoreMatrix;
   /** Optional per-score reasoning notes: optionId → criterionId → text */
   reasoning?: Record<string, Record<string, string>>;
+  /** Strategy for how per-score confidence affects results (default: "none") */
+  confidenceStrategy?: ConfidenceStrategy;
   createdAt: string; // ISO 8601
   updatedAt: string; // ISO 8601
 }
@@ -82,6 +92,10 @@ export interface CriterionScore {
   criterionType: CriterionType;
   /** True when the score cell was null (not yet scored) */
   isNull?: boolean;
+  /** Confidence level for this score (if available) */
+  confidence?: Confidence;
+  /** Multiplier applied based on confidence strategy (1.0 when strategy is "none") */
+  confidenceMultiplier?: number;
 }
 
 /** Full results for a decision */

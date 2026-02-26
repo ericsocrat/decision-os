@@ -30,7 +30,7 @@ import {
   type ReactNode,
   type Dispatch,
 } from "react";
-import type { Confidence, Criterion, Decision, DecisionResults, Option } from "@/lib/types";
+import type { Confidence, ConfidenceStrategy, Criterion, Decision, DecisionResults, Option } from "@/lib/types";
 import type { TopsisResults } from "@/lib/topsis";
 import type { RegretResults } from "@/lib/regret";
 import type { SensitivityAnalysis } from "@/lib/types";
@@ -94,6 +94,7 @@ export interface DecisionContextValue extends DecisionStateValue {
   undo: () => void;
   redo: () => void;
   setSwingPercent: (value: number) => void;
+  setConfidenceStrategy: (strategy: ConfidenceStrategy) => void;
   loadDecision: (id: string) => void;
   createNewDecision: () => void;
   removeDecision: (id: string) => void;
@@ -248,6 +249,11 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     [dispatch]
   );
 
+  const setConfidenceStrategy = useCallback(
+    (strategy: ConfidenceStrategy) => dispatch({ type: "SET_CONFIDENCE_STRATEGY", strategy }),
+    [dispatch]
+  );
+
   // ── Navigation actions (side effects + dispatch) ─────────
 
   const loadDecision = useCallback(
@@ -340,6 +346,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
       undo,
       redo,
       setSwingPercent,
+      setConfidenceStrategy,
       loadDecision,
       createNewDecision,
       removeDecision,
@@ -362,6 +369,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
       undo,
       redo,
       setSwingPercent,
+      setConfidenceStrategy,
       loadDecision,
       createNewDecision,
       removeDecision,

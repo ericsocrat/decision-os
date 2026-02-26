@@ -362,6 +362,47 @@ describe("UI-only actions", () => {
 });
 
 // ---------------------------------------------------------------------------
+// SET_CONFIDENCE_STRATEGY (decision mutation with undo)
+// ---------------------------------------------------------------------------
+
+describe("SET_CONFIDENCE_STRATEGY", () => {
+  it("sets confidenceStrategy on the decision", () => {
+    const state = init();
+    const next = dispatch(state, { type: "SET_CONFIDENCE_STRATEGY", strategy: "penalize" });
+    expect(next.decision.confidenceStrategy).toBe("penalize");
+  });
+
+  it("marks state as dirty", () => {
+    const state = init();
+    const next = dispatch(state, { type: "SET_CONFIDENCE_STRATEGY", strategy: "penalize" });
+    expect(next.isDirty).toBe(true);
+  });
+
+  it("creates an undo snapshot", () => {
+    const state = init();
+    const next = dispatch(state, { type: "SET_CONFIDENCE_STRATEGY", strategy: "penalize" });
+    expect(next.canUndo).toBe(true);
+  });
+
+  it("can be undone", () => {
+    const state = init();
+    const s1 = dispatch(state, { type: "SET_CONFIDENCE_STRATEGY", strategy: "penalize" });
+    expect(s1.decision.confidenceStrategy).toBe("penalize");
+    const s2 = dispatch(s1, { type: "UNDO" });
+    expect(s2.decision.confidenceStrategy).toBeUndefined();
+  });
+
+  it("switches between strategies", () => {
+    const state = init();
+    let s = dispatch(state, { type: "SET_CONFIDENCE_STRATEGY", strategy: "penalize" });
+    s = dispatch(s, { type: "SET_CONFIDENCE_STRATEGY", strategy: "widen" });
+    expect(s.decision.confidenceStrategy).toBe("widen");
+    s = dispatch(s, { type: "SET_CONFIDENCE_STRATEGY", strategy: "none" });
+    expect(s.decision.confidenceStrategy).toBe("none");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Undo / Redo
 // ---------------------------------------------------------------------------
 

@@ -13,7 +13,7 @@
  * @see https://github.com/ericsocrat/decision-os/issues/77
  */
 
-import type { Confidence, Criterion, Decision, Option, ScoreMatrix, ScoreValue } from "./types";
+import type { Confidence, ConfidenceStrategy, Criterion, Decision, Option, ScoreMatrix, ScoreValue } from "./types";
 import { generateId } from "./utils";
 import { resolveScoreValue } from "./scoring";
 
@@ -102,6 +102,7 @@ export type DecisionAction =
 
   // UI state
   | { type: "SET_SWING_PERCENT"; value: number }
+  | { type: "SET_CONFIDENCE_STRATEGY"; strategy: ConfidenceStrategy }
   | { type: "MARK_CLEAN" }
   | { type: "SET_LOADING"; loading: boolean }
   | { type: "REFRESH_DECISIONS"; decisions: Decision[] };
@@ -282,6 +283,9 @@ function applyDecisionMutation(decision: Decision, action: DecisionAction): Deci
       return stampNow({ ...decision, reasoning: newReasoning });
     }
 
+    case "SET_CONFIDENCE_STRATEGY":
+      return stampNow({ ...decision, confidenceStrategy: action.strategy });
+
     default:
       return null;
   }
@@ -334,6 +338,7 @@ function classifyAction(
     case "REMOVE_CRITERION":
     case "UPDATE_SCORE":
     case "UPDATE_CONFIDENCE":
+    case "SET_CONFIDENCE_STRATEGY":
       return { type: "structural", timestamp: Date.now() };
     case "UPDATE_REASONING":
       return {
