@@ -4,9 +4,8 @@
  * We dynamically import next.config.ts and call its `headers()` fn to
  * assert the CSP directives are present and well-formed.
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let securityHeaders: Array<{ key: string; value: string }>;
 
 describe("Content-Security-Policy header", () => {
