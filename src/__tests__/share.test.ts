@@ -13,7 +13,7 @@ import {
   sharePayloadToDecision,
   compressionRatio,
 } from "@/lib/share";
-import { encodeDecisionToUrl } from "@/lib/utils";
+import { compressToEncodedURIComponent } from "lz-string";
 import type { Decision } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
@@ -178,7 +178,7 @@ describe("encodeShareUrl / decodeShareUrl", () => {
 
   test("produces shorter URLs than raw encoding", () => {
     const compactEncoded = encodeShareUrl(sampleDecision);
-    const rawEncoded = encodeDecisionToUrl(sampleDecision);
+    const rawEncoded = compressToEncodedURIComponent(JSON.stringify(sampleDecision));
 
     expect(compactEncoded.length).toBeLessThan(rawEncoded.length);
   });
@@ -281,7 +281,7 @@ describe("buildShareLink", () => {
 
 describe("compressionRatio", () => {
   test("calculates savings correctly", () => {
-    const rawEncoded = encodeDecisionToUrl(sampleDecision);
+    const rawEncoded = compressToEncodedURIComponent(JSON.stringify(sampleDecision));
     const compactEncoded = encodeShareUrl(sampleDecision);
     const ratio = compressionRatio(rawEncoded, compactEncoded);
 

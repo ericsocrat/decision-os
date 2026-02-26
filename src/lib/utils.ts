@@ -13,7 +13,7 @@ export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
 
-import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
+import { decompressFromEncodedURIComponent } from "lz-string";
 
 /**
  * Format a relative time string from an ISO timestamp (e.g. "2 hours ago").
@@ -53,19 +53,9 @@ export function safeJsonParse<T>(json: string, fallback: T): T {
 }
 
 /**
- * Compress decision state into a URL-safe string using lz-string.
- * Produces shorter URLs than raw base64 for typical decision payloads.
- */
-export function encodeDecisionToUrl(decision: object): string {
-  try {
-    const json = JSON.stringify(decision);
-    return compressToEncodedURIComponent(json);
-  } catch {
-    return "";
-  }
-}
-
-/**
+ * @deprecated Use `decodeShareUrl` from `@/lib/share` for compact share URLs.
+ * Retained for backward compatibility with legacy `#data=` share links.
+ *
  * Decode a decision from an lz-string compressed URL component.
  * Falls back to legacy base64 decoding for backward compatibility.
  */

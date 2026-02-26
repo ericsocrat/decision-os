@@ -33,6 +33,7 @@ import { cloudSaveDecision } from "@/lib/cloud-storage";
 import { isCloudEnabled } from "@/lib/supabase";
 import { DEMO_DECISION } from "@/lib/demo-data";
 import { generateId, decodeDecisionFromUrl } from "@/lib/utils";
+import { decodeShareUrl } from "@/lib/share";
 import { isDecision } from "@/lib/validation";
 import { useAnnounce } from "@/components/Announcer";
 
@@ -89,20 +90,36 @@ export function useDecision() {
 }
 
 export function DecisionProvider({ children }: { children: ReactNode }) {
-  // Check URL hash for shared decision data
+  // Check URL hash for shared decision data (compact or legacy format)
   const sharedDecision = (() => {
     if (typeof window === "undefined") return null;
     const hash = window.location.hash;
-    if (!hash.startsWith("#data=")) return null;
-    const encoded = hash.slice("#data=".length);
-    if (!encoded) return null;
-    const decoded = decodeDecisionFromUrl<unknown>(encoded, null);
-    if (isDecision(decoded)) {
-      saveDecision(decoded);
-      // Clean the URL hash without triggering navigation
-      window.history.replaceState(null, "", window.location.pathname);
-      return decoded;
+
+    // Compact share format: /share#d=...
+    if (hash.startsWith("#d=")) {
+      const encoded = hash.slice("#d=".length);
+      if (!encoded) return null;
+      const decoded = decodeShareUrl(encoded);
+      if (decoded && isDecision(decoded)) {
+        saveDecision(decoded);
+        window.history.replaceState(null, "", window.location.pathname);
+        return decoded;
+      }
+      return null;
     }
+
+    // Legacy format: /#data=...
+    if (hash.startsWith("#data=")) {
+      const encoded = hash.slice("#data=".length);
+      if (!encoded) return null;
+      const decoded = decodeDecisionFromUrl<unknown>(encoded, null);
+      if (isDecision(decoded)) {
+        saveDecision(decoded);
+        window.history.replaceState(null, "", window.location.pathname);
+        return decoded;
+      }
+    }
+
     return null;
   })();
 

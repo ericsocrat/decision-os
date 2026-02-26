@@ -3,13 +3,8 @@
  */
 
 import { describe, it, expect } from "vitest";
-import {
-  generateId,
-  safeJsonParse,
-  encodeDecisionToUrl,
-  decodeDecisionFromUrl,
-  formatRelativeTime,
-} from "@/lib/utils";
+import { generateId, safeJsonParse, decodeDecisionFromUrl, formatRelativeTime } from "@/lib/utils";
+import { compressToEncodedURIComponent } from "lz-string";
 import { DEMO_DECISION } from "@/lib/demo-data";
 
 describe("generateId", () => {
@@ -39,9 +34,9 @@ describe("safeJsonParse", () => {
   });
 });
 
-describe("encodeDecisionToUrl / decodeDecisionFromUrl", () => {
-  it("round-trips a full decision object", () => {
-    const encoded = encodeDecisionToUrl(DEMO_DECISION);
+describe("decodeDecisionFromUrl (legacy format)", () => {
+  it("decodes a legacy lz-string encoded decision", () => {
+    const encoded = compressToEncodedURIComponent(JSON.stringify(DEMO_DECISION));
     expect(encoded.length).toBeGreaterThan(0);
     const decoded = decodeDecisionFromUrl(encoded, null);
     expect(decoded).toEqual(DEMO_DECISION);

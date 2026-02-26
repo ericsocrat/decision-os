@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import { useState, lazy, Suspense } from "react";
 import { buildShareLink } from "@/lib/share";
-import { encodeDecisionToUrl } from "@/lib/utils";
 import { normalizeWeights } from "@/lib/scoring";
 import type { ValidationResult } from "@/hooks/useValidation";
 import type { CompletenessResult } from "@/lib/completeness";
@@ -110,7 +109,6 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
 
   const handleShareLink = async () => {
     try {
-      // Try compact share format first (shorter URLs)
       const shareUrl = buildShareLink(decision, window.location.origin);
       if (shareUrl) {
         await navigator.clipboard.writeText(shareUrl);
@@ -118,16 +116,8 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
         setTimeout(() => setShareStatus(""), 3000);
         return;
       }
-      // Fall back to legacy format for very large decisions
-      const encoded = encodeDecisionToUrl(decision);
-      const legacyUrl = `${window.location.origin}${window.location.pathname}#data=${encoded}`;
-      if (legacyUrl.length > 6000) {
-        setShareStatus("Decision too large for URL sharing. Use JSON export instead.");
-        return;
-      }
-      await navigator.clipboard.writeText(legacyUrl);
-      setShareStatus("Link copied to clipboard!");
-      setTimeout(() => setShareStatus(""), 3000);
+      // Compact URL too long — suggest JSON export instead
+      setShareStatus("Decision too large for URL sharing. Use JSON export instead.");
     } catch {
       setShareStatus("Failed to copy link.");
     }
