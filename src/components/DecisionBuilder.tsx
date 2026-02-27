@@ -106,7 +106,7 @@ export const DecisionBuilder = memo(function DecisionBuilder({
   const savedCount = useMemo(() => getSavedDecisionCount(), []);
   const tier: ComplexityTier = useMemo(
     () => getComplexityTier(decision, tierPrefs, savedCount),
-    [decision, tierPrefs, savedCount],
+    [decision, tierPrefs, savedCount]
   );
   const isIntermediate = isTierVisible(tier, "intermediate");
   const isExpert = isTierVisible(tier, "expert");
@@ -266,7 +266,10 @@ export const DecisionBuilder = memo(function DecisionBuilder({
   return (
     <div className="space-y-6">
       {/* Tier indicator + Show all features toggle */}
-      <div className="flex items-center justify-between rounded-md bg-gray-50 dark:bg-gray-800/50 px-3 py-1.5" data-testid="tier-indicator">
+      <div
+        className="flex items-center justify-between rounded-md bg-gray-50 dark:bg-gray-800/50 px-3 py-1.5"
+        data-testid="tier-indicator"
+      >
         <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
           <span
             className={`inline-block h-2 w-2 rounded-full ${
@@ -448,7 +451,12 @@ export const DecisionBuilder = memo(function DecisionBuilder({
                 const optIssues = validation.byId.get(opt.id);
                 const hasIssue = !!optIssues && optIssues.length > 0;
                 return (
-                  <SortableItem key={opt.id} id={opt.id} dragLabel={`Reorder option ${opt.name}`} showHandle={isExpert}>
+                  <SortableItem
+                    key={opt.id}
+                    id={opt.id}
+                    dragLabel={`Reorder option ${opt.name}`}
+                    showHandle={isExpert}
+                  >
                     <div className="flex items-center gap-2">
                       <span className="w-6 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
                         {label}
@@ -869,7 +877,9 @@ export const DecisionBuilder = memo(function DecisionBuilder({
                             />
                           )}
                           {isExpert && (
-                            <ConfidenceIndicator metadata={getMetadata(decision, opt.id, crit.id)} />
+                            <ConfidenceIndicator
+                              metadata={getMetadata(decision, opt.id, crit.id)}
+                            />
                           )}
                         </div>
                         {isExpert && isFocused && (

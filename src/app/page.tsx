@@ -48,6 +48,8 @@ import { validateFile, readFileAsText, importFromJson } from "@/lib/import";
 import { saveDecision } from "@/lib/storage";
 import { useAuth } from "@/hooks/useAuth";
 import { EmptyState } from "@/components/EmptyState";
+import { useWizardMode } from "@/hooks/useWizardMode";
+import { ModeToggle } from "@/components/ModeToggle";
 import { DEMO_DECISION } from "@/lib/demo-data";
 import pkg from "../../package.json";
 
@@ -62,6 +64,9 @@ const MonteCarloView = lazy(() =>
   import("@/components/MonteCarloView").then((m) => ({ default: m.MonteCarloView }))
 );
 const VersionHistory = lazy(() => import("@/components/VersionHistory"));
+const GuidedWizard = lazy(() =>
+  import("@/components/GuidedWizard").then((m) => ({ default: m.GuidedWizard }))
+);
 
 /** Skeleton fallback for lazy-loaded tab panels */
 function TabPanelSkeleton({ label }: Readonly<{ label: string }>) {
@@ -110,6 +115,8 @@ function AppContent() {
   const validation = useValidation(decision);
   const completeness = useMemo(() => computeCompleteness(decision), [decision]);
   const auth = useAuth();
+  const { mode, setMode } = useWizardMode();
+  const isAdvanced = mode === "advanced";
 
   // ── Empty-state detection ──
   const isEmpty = !isLoading && isEmptyDecision(decision);
@@ -300,40 +307,44 @@ function AppContent() {
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
 
-      switch (e.key) {
-        case "1":
-          setActiveTab("builder");
-          announce("Builder tab");
-          break;
-        case "2":
-          setActiveTab("results");
-          announce("Results tab");
-          break;
-        case "3":
-          setActiveTab("sensitivity");
-          announce("Sensitivity tab");
-          break;
-        case "4":
-          setActiveTab("compare");
-          announce("Compare tab");
-          break;
-        case "5":
-          setActiveTab("montecarlo");
-          announce("Monte Carlo tab");
-          break;
-        case "6":
-          setActiveTab("history");
-          announce("History tab");
-          break;
-        case "?":
-          setShowShortcuts((prev) => !prev);
-          break;
-        case "Escape":
-          closeModal();
-          break;
+      if (isAdvanced) {
+        switch (e.key) {
+          case "1":
+            setActiveTab("builder");
+            announce("Builder tab");
+            break;
+          case "2":
+            setActiveTab("results");
+            announce("Results tab");
+            break;
+          case "3":
+            setActiveTab("sensitivity");
+            announce("Sensitivity tab");
+            break;
+          case "4":
+            setActiveTab("compare");
+            announce("Compare tab");
+            break;
+          case "5":
+            setActiveTab("montecarlo");
+            announce("Monte Carlo tab");
+            break;
+          case "6":
+            setActiveTab("history");
+            announce("History tab");
+            break;
+          case "?":
+            setShowShortcuts((prev) => !prev);
+            break;
+          case "Escape":
+            closeModal();
+            break;
+        }
+      } else if (e.key === "Escape") {
+        closeModal();
       }
     },
-    [closeModal, announce, undo, redo]
+    [closeModal, announce, undo, redo, isAdvanced]
   );
 
   useEffect(() => {
@@ -386,6 +397,10 @@ function AppContent() {
             onLoadDemo={handleLoadDemo}
             onStartBlank={handleStartBlank}
           />
+        ) : !isAdvanced ? (
+          <Suspense fallback={<DecisionSkeleton />}>
+            <GuidedWizard onSwitchToAdvanced={() => setMode("advanced")} />
+          </Suspense>
         ) : (
           <>
             {/* Tabs */}
@@ -522,6 +537,13 @@ function AppContent() {
             )}
           </>
         )}
+        {/* Mode toggle — visible when decision has data */}
+        {!isEmpty && (
+          <ModeToggle
+            mode={mode}
+            onModeChange={setMode}
+          />
+        )}
       </main>
 
       {/* Footer */}
@@ -551,7 +573,7 @@ function AppContent() {
       </footer>
 
       {/* Onboarding coachmark overlay */}
-      {onboarding.step !== "idle" && (
+      {isAdvanced && onboarding.step !== "idle" && (
         <CoachmarkOverlay
           step={onboarding.step}
           onNext={handleOnboardingNext}

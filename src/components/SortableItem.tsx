@@ -25,7 +25,12 @@ interface SortableItemProps {
   showHandle?: boolean;
 }
 
-export function SortableItem({ id, children, dragLabel = "Drag to reorder", showHandle = true }: SortableItemProps) {
+export function SortableItem({
+  id,
+  children,
+  dragLabel = "Drag to reorder",
+  showHandle = true,
+}: SortableItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
   });
