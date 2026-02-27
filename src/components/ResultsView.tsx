@@ -35,6 +35,7 @@ import { WhatIfPanel } from "./WhatIfPanel";
 import { FrameworkComparison } from "./FrameworkComparison";
 import { CompositeConfidenceIndicator } from "./CompositeConfidenceIndicator";
 import { OutcomeTracker } from "./OutcomeTracker";
+import { RetrospectiveView } from "./RetrospectiveView";
 
 const ScoreChart = lazy(() => import("./ScoreChart").then((m) => ({ default: m.ScoreChart })));
 const ParetoChart = lazy(() => import("./ParetoChart").then((m) => ({ default: m.ParetoChart })));
@@ -640,6 +641,9 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
 
       {/* Outcome Tracker */}
       <OutcomeTracker decision={decision} results={results} />
+
+      {/* Retrospective Timeline */}
+      <RetrospectiveView decision={decision} />
     </div>
   );
 }
