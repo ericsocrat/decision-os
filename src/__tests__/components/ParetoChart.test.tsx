@@ -62,6 +62,7 @@ function makeDecision(criteriaCount: number, optionCount: number): Decision {
 
 function makeResults(optionCount: number): DecisionResults {
   return {
+    decisionId: "test",
     optionResults: Array.from({ length: optionCount }, (_, i) => ({
       optionId: `o${i}`,
       optionName: `Option ${i}`,
@@ -70,7 +71,7 @@ function makeResults(optionCount: number): DecisionResults {
       rank: i + 1,
       criterionScores: [],
     })),
-    bestOptionId: "o0",
+    topDrivers: [],
   };
 }
 

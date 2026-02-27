@@ -29,7 +29,7 @@ vi.mock("@/lib/storage", () => ({
 }));
 
 vi.mock("@/lib/cloud-storage", () => ({
-  cloudSaveAllDecisions: (...args: unknown[]) => mockCloudSaveAll(...args),
+  cloudSaveAllDecisions: () => mockCloudSaveAll(),
 }));
 
 describe("MigrationBanner", () => {

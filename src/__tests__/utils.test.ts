@@ -2,7 +2,7 @@
  * Unit tests for utility functions.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { generateId, safeJsonParse, formatRelativeTime } from "@/lib/utils";
 
 describe("generateId", () => {
@@ -15,6 +15,14 @@ describe("generateId", () => {
   it("returns unique values on successive calls", () => {
     const ids = new Set(Array.from({ length: 50 }, () => generateId()));
     expect(ids.size).toBe(50);
+  });
+
+  it("falls back to timestamp+random when crypto.randomUUID is unavailable", () => {
+    const origRandomUUID = crypto.randomUUID;
+    vi.stubGlobal("crypto", { ...crypto, randomUUID: undefined });
+    const id = generateId();
+    expect(id).toMatch(/^\d+-[a-z0-9]+$/);
+    vi.stubGlobal("crypto", { ...crypto, randomUUID: origRandomUUID });
   });
 });
 

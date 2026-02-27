@@ -65,7 +65,7 @@ describe("SyncStatus", () => {
       <SyncStatus
         sync={makeSyncProp({
           status: "done",
-          lastResult: { uploaded: 2, downloaded: 1, error: null },
+          lastResult: { status: "done" as const, uploaded: 2, downloaded: 1, merged: 0 },
         })}
         isAuthenticated={true}
       />,
@@ -102,7 +102,7 @@ describe("SyncStatus", () => {
       <SyncStatus
         sync={makeSyncProp({
           status: "done",
-          lastResult: { uploaded: 3, downloaded: 5, error: null },
+          lastResult: { status: "done" as const, uploaded: 3, downloaded: 5, merged: 0 },
         })}
         isAuthenticated={true}
       />,

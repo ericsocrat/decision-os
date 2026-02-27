@@ -111,6 +111,46 @@ describe("detectLocale", () => {
       configurable: true,
     });
   });
+
+  it("falls back to en when window is undefined (SSR)", () => {
+    const origWindow = globalThis.window;
+    // Simulate SSR by removing window
+    Object.defineProperty(globalThis, "window", {
+      value: undefined,
+      writable: true,
+      configurable: true,
+    });
+    expect(detectLocale()).toBe("en");
+    // Restore
+    Object.defineProperty(globalThis, "window", {
+      value: origWindow,
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  it("falls back to navigator.language when navigator.languages is undefined", () => {
+    globalThis.localStorage.clear();
+    const origLanguages = globalThis.navigator.languages;
+    const origLanguage = globalThis.navigator.language;
+    Object.defineProperty(globalThis.navigator, "languages", {
+      value: undefined,
+      configurable: true,
+    });
+    Object.defineProperty(globalThis.navigator, "language", {
+      value: "es-MX",
+      configurable: true,
+    });
+    expect(detectLocale()).toBe("es");
+    Object.defineProperty(globalThis.navigator, "languages", {
+      value: origLanguages,
+      configurable: true,
+    });
+    Object.defineProperty(globalThis.navigator, "language", {
+      value: origLanguage,
+      configurable: true,
+    });
+  });
 });
 
 // ── Translation file structure ─────────────────────────────────────
@@ -187,6 +227,11 @@ describe("useTf hook", () => {
       </Wrapper>,
     );
     expect(screen.getByTestId("tf-result").textContent).toBeTruthy();
+  });
+
+  it("returns the key itself when used outside I18nProvider", () => {
+    render(<TfConsumer translationKey="app.title" />);
+    expect(screen.getByTestId("tf-result").textContent).toBe("app.title");
   });
 });
 
