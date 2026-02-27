@@ -60,4 +60,17 @@ describe("formatRelativeTime", () => {
     const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString();
     expect(formatRelativeTime(fiveDaysAgo)).toBe("5d ago");
   });
+
+  it("returns Xs ago for seconds-old timestamps (10-59s)", () => {
+    const thirtySecAgo = new Date(Date.now() - 30 * 1000).toISOString();
+    expect(formatRelativeTime(thirtySecAgo)).toBe("30s ago");
+  });
+
+  it("returns absolute date for timestamps older than 30 days", () => {
+    const fortyFiveDaysAgo = new Date(Date.now() - 45 * 24 * 60 * 60 * 1000);
+    const result = formatRelativeTime(fortyFiveDaysAgo.toISOString());
+    // Should be a locale-formatted date string (e.g. "May 1, 2025"), not "Xd ago"
+    expect(result).not.toContain("d ago");
+    expect(result).toMatch(/\d{4}/); // contains a 4-digit year
+  });
 });

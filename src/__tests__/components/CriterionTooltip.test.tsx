@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CriterionTooltip } from "@/components/CriterionTooltip";
 
@@ -45,9 +45,10 @@ describe("CriterionTooltip", () => {
     await user.tab(); // focus
     expect(screen.getByRole("tooltip")).not.toHaveClass("invisible");
     await user.tab(); // blur away
-    // Wait for hide timeout
-    await new Promise((r) => setTimeout(r, 200));
-    expect(screen.getByRole("tooltip", { hidden: true })).toHaveClass("invisible");
+    // Wait for hide timeout (150ms in component) to settle inside act()
+    await waitFor(() => {
+      expect(screen.getByRole("tooltip", { hidden: true })).toHaveClass("invisible");
+    });
   });
 
   it("hides tooltip on Escape key", async () => {

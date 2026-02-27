@@ -80,14 +80,20 @@ describe("useAuth", () => {
     expect(mockSignOut).not.toHaveBeenCalled();
   });
 
-  it("sets loading=true initially when cloud is enabled", () => {
+  it("sets loading=true initially when cloud is enabled", async () => {
     vi.mocked(isCloudEnabled).mockReturnValue(true);
     vi.mocked(getSupabase).mockReturnValue(mockSupabaseClient as never);
 
-    const { result } = renderHook(() => useAuth());
+    const { result, unmount } = renderHook(() => useAuth());
 
     expect(result.current.cloudEnabled).toBe(true);
     expect(result.current.loading).toBe(true);
+
+    // Wait for async getSession effect to settle, then unmount to avoid act() warning
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+    unmount();
   });
 
   it("fetches session on mount when cloud is enabled", async () => {

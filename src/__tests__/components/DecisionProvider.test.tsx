@@ -196,8 +196,8 @@ describe("DecisionProvider", () => {
 
     // First burst
     act(() => result.current.updateTitle("First"));
-    // Advance time past the coalesce window
-    vi.advanceTimersByTime(600);
+    // Advance time past the coalesce window (wrapped in act to flush timers)
+    act(() => vi.advanceTimersByTime(600));
     // Second burst
     act(() => result.current.updateTitle("Second"));
 
