@@ -32,6 +32,7 @@ import { HybridResults } from "./HybridResults";
 import { QualityBar } from "./QualityBar";
 import { ConfidenceStrategySelector } from "./ConfidenceStrategySelector";
 import { WhatIfPanel } from "./WhatIfPanel";
+import { FrameworkComparison } from "./FrameworkComparison";
 
 const ScoreChart = lazy(() => import("./ScoreChart").then((m) => ({ default: m.ScoreChart })));
 const ParetoChart = lazy(() => import("./ParetoChart").then((m) => ({ default: m.ParetoChart })));
@@ -48,7 +49,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [whatIfOpen, setWhatIfOpen] = useState(false);
   const [scoringMethod, setScoringMethod] = useState<
-    "wsm" | "topsis" | "minimax-regret" | "consensus"
+    "wsm" | "topsis" | "minimax-regret" | "consensus" | "compare"
   >("wsm");
   const biasDetection = useBiasDetection(decision);
 
@@ -283,6 +284,18 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
               >
                 Consensus
               </button>
+              <button
+                role="radio"
+                aria-checked={scoringMethod === "compare"}
+                onClick={() => setScoringMethod("compare")}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset ${
+                  scoringMethod === "compare"
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                }`}
+              >
+                Compare
+              </button>
             </div>
             <button
               onClick={handleExportJson}
@@ -386,6 +399,13 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
             topsisResults={topsisResults}
             regretResults={regretResults}
             decision={decision}
+          />
+        ) : scoringMethod === "compare" ? (
+          <FrameworkComparison
+            decision={decision}
+            results={results}
+            topsisResults={topsisResults}
+            regretResults={regretResults}
           />
         ) : (
           <RegretRankings regretResults={regretResults} decision={decision} />
