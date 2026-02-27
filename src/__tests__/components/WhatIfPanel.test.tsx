@@ -8,7 +8,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { WhatIfPanel } from "@/components/WhatIfPanel";
 import { computeResults } from "@/lib/scoring";
-import type { Decision, DecisionResults } from "@/lib/types";
+import type { Decision } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
 // Test fixtures

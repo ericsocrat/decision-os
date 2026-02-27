@@ -1,12 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  computeConsensus,
-  kendallW,
-  spearmanCorrelation,
-  ALL_ALGORITHMS,
-  type AlgorithmId,
-  type ConsensusResult,
-} from "@/lib/consensus";
+import { computeConsensus, kendallW, spearmanCorrelation, ALL_ALGORITHMS } from "@/lib/consensus";
 import type { Decision } from "@/lib/types";
 
 // ---------------------------------------------------------------------------

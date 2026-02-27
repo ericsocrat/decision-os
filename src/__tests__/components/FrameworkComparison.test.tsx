@@ -1,11 +1,8 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FrameworkComparison } from "@/components/FrameworkComparison";
-import { computeConsensus, ALL_ALGORITHMS, type AlgorithmId } from "@/lib/consensus";
-import { computeResults } from "@/lib/scoring";
-import { computeTopsisResults } from "@/lib/topsis";
-import { computeRegretResults } from "@/lib/regret";
+import { computeConsensus } from "@/lib/consensus";
 import type { Decision } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
@@ -78,17 +75,7 @@ function tinyDecision(): Decision {
 }
 
 function renderComparison(decision: Decision) {
-  const results = computeResults(decision);
-  const topsisResults = computeTopsisResults(decision);
-  const regretResults = computeRegretResults(decision);
-  return render(
-    <FrameworkComparison
-      decision={decision}
-      results={results}
-      topsisResults={topsisResults}
-      regretResults={regretResults}
-    />
-  );
+  return render(<FrameworkComparison decision={decision} />);
 }
 
 // ---------------------------------------------------------------------------

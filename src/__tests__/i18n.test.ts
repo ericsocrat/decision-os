@@ -3,22 +3,20 @@
  * locale detection, fallback behaviour, and pluralization helpers.
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { interpolate, translate, detectLocale } from "@/lib/i18n";
 
 // ── interpolate ────────────────────────────────────────────────────
 
 describe("interpolate", () => {
   it("replaces a single placeholder", () => {
-    expect(interpolate("Hello {name}!", { name: "World" })).toBe(
-      "Hello World!",
-    );
+    expect(interpolate("Hello {name}!", { name: "World" })).toBe("Hello World!");
   });
 
   it("replaces multiple different placeholders", () => {
-    expect(
-      interpolate("{filled}/{total} scores filled", { filled: 3, total: 5 }),
-    ).toBe("3/5 scores filled");
+    expect(interpolate("{filled}/{total} scores filled", { filled: 3, total: 5 })).toBe(
+      "3/5 scores filled"
+    );
   });
 
   it("leaves unknown placeholders untouched", () => {
@@ -30,15 +28,11 @@ describe("interpolate", () => {
   });
 
   it("returns the template unchanged when no placeholders exist", () => {
-    expect(interpolate("No placeholders here", { foo: "bar" })).toBe(
-      "No placeholders here",
-    );
+    expect(interpolate("No placeholders here", { foo: "bar" })).toBe("No placeholders here");
   });
 
   it("replaces the same placeholder appearing multiple times", () => {
-    expect(interpolate("{x} + {x} = {result}", { x: 2, result: 4 })).toBe(
-      "2 + 2 = 4",
-    );
+    expect(interpolate("{x} + {x} = {result}", { x: 2, result: 4 })).toBe("2 + 2 = 4");
   });
 });
 
@@ -54,9 +48,7 @@ describe("translate", () => {
   });
 
   it("performs interpolation when params are provided", () => {
-    expect(translate("en", "header.switchTheme", { mode: "dark" })).toBe(
-      "Switch to dark mode",
-    );
+    expect(translate("en", "header.switchTheme", { mode: "dark" })).toBe("Switch to dark mode");
   });
 
   it("falls back to English for empty translations (es stub)", () => {
@@ -151,9 +143,7 @@ describe("translation file completeness", () => {
   it("fr.json values are non-empty strings", async () => {
     const fr = await import("@/lib/i18n/fr.json");
     for (const ns of Object.values(fr.default)) {
-      for (const [key, value] of Object.entries(
-        ns as Record<string, string>,
-      )) {
+      for (const [key, value] of Object.entries(ns as Record<string, string>)) {
         expect(value, `fr key "${key}" should not be empty`).not.toBe("");
       }
     }

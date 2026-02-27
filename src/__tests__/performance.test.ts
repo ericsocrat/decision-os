@@ -22,16 +22,13 @@ import { generateId } from "@/lib/utils";
  * Generate a synthetic decision with the given dimensions.
  * Scores are randomized between 1–10.
  */
-function createLargeDecision(
-  optionCount: number,
-  criterionCount: number,
-): Decision {
+function createLargeDecision(optionCount: number, criterionCount: number): Decision {
   const options: Option[] = Array.from(
     { length: optionCount },
     (_, i): Option => ({
       id: generateId(),
       name: `Option ${String(i + 1)}`,
-    }),
+    })
   );
 
   const criteria: Criterion[] = Array.from(
@@ -41,7 +38,7 @@ function createLargeDecision(
       name: `Criterion ${String(i + 1)}`,
       weight: Math.round(100 / criterionCount),
       type: i % 3 === 0 ? "cost" : "benefit",
-    }),
+    })
   );
 
   const scores: Decision["scores"] = {};
@@ -86,7 +83,6 @@ describe("Performance benchmarks", () => {
       const elapsed = measureMs(() => {
         computeResults(decision);
       });
-      // eslint-disable-next-line no-console
       console.log(`  computeResults(10×10): ${elapsed.toFixed(2)}ms`);
       expect(elapsed).toBeLessThan(100);
     });
@@ -95,7 +91,6 @@ describe("Performance benchmarks", () => {
       const elapsed = measureMs(() => {
         sensitivityAnalysis(decision, 20);
       });
-      // eslint-disable-next-line no-console
       console.log(`  sensitivityAnalysis(10×10): ${elapsed.toFixed(2)}ms`);
       expect(elapsed).toBeLessThan(100);
     });
@@ -105,7 +100,6 @@ describe("Performance benchmarks", () => {
         computeTopsisResults(decision);
         computeRegretResults(decision);
       });
-      // eslint-disable-next-line no-console
       console.log(`  TOPSIS+Regret(10×10): ${elapsed.toFixed(2)}ms`);
       expect(elapsed).toBeLessThan(100);
     });
@@ -120,7 +114,6 @@ describe("Performance benchmarks", () => {
       const elapsed = measureMs(() => {
         computeResults(decision);
       });
-      // eslint-disable-next-line no-console
       console.log(`  computeResults(20×20): ${elapsed.toFixed(2)}ms`);
       expect(elapsed).toBeLessThan(500);
     });
@@ -132,7 +125,6 @@ describe("Performance benchmarks", () => {
         computeRegretResults(decision);
         sensitivityAnalysis(decision, 20);
       });
-      // eslint-disable-next-line no-console
       console.log(`  all algorithms(20×20): ${elapsed.toFixed(2)}ms`);
       expect(elapsed).toBeLessThan(500);
     });
@@ -145,7 +137,6 @@ describe("Performance benchmarks", () => {
       const elapsed = measureMs(() => {
         createLargeDecision(10, 10);
       });
-      // eslint-disable-next-line no-console
       console.log(`  createLargeDecision(10×10): ${elapsed.toFixed(2)}ms`);
       expect(elapsed).toBeLessThan(50);
     });
@@ -154,7 +145,6 @@ describe("Performance benchmarks", () => {
       const elapsed = measureMs(() => {
         createLargeDecision(20, 20);
       });
-      // eslint-disable-next-line no-console
       console.log(`  createLargeDecision(20×20): ${elapsed.toFixed(2)}ms`);
       expect(elapsed).toBeLessThan(100);
     });

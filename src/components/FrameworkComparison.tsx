@@ -11,9 +11,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Decision, DecisionResults } from "@/lib/types";
-import type { TopsisResults } from "@/lib/topsis";
-import type { RegretResults } from "@/lib/regret";
+import type { Decision } from "@/lib/types";
 import {
   computeConsensus,
   type AlgorithmId,
@@ -169,17 +167,9 @@ function buildRecommendation(consensus: ConsensusResult): string {
 
 interface FrameworkComparisonProps {
   decision: Decision;
-  results: DecisionResults;
-  topsisResults: TopsisResults;
-  regretResults: RegretResults;
 }
 
-export function FrameworkComparison({
-  decision,
-  results,
-  topsisResults,
-  regretResults,
-}: FrameworkComparisonProps) {
+export function FrameworkComparison({ decision }: FrameworkComparisonProps) {
   const [enabledAlgorithms, setEnabledAlgorithms] = useState<Set<AlgorithmId>>(
     () => new Set(ALL_ALGORITHMS)
   );

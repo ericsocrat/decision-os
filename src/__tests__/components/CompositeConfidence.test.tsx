@@ -11,9 +11,6 @@ import {
 } from "@/lib/composite-confidence";
 import { assessDecisionQuality } from "@/lib/decision-quality";
 import { computeConsensus } from "@/lib/consensus";
-import { computeResults } from "@/lib/scoring";
-import { computeTopsisResults } from "@/lib/topsis";
-import { computeRegretResults } from "@/lib/regret";
 import { CompositeConfidenceIndicator } from "@/components/CompositeConfidenceIndicator";
 import type { Decision } from "@/lib/types";
 

@@ -77,14 +77,15 @@ function ScoreChartInner({ optionResults }: ScoreChartProps) {
     return optionResults[0].criterionScores.map((cs) => cs.criterionName);
   }, [optionResults]);
 
-  if (optionResults.length === 0) return null;
-
-  // Build accessible summary for screen readers
+  // Build accessible summary for screen readers (must be before early return to satisfy Rules of Hooks)
   const chartSummary = useMemo(() => {
+    if (optionResults.length === 0) return "";
     const sorted = [...optionResults].sort((a, b) => a.rank - b.rank);
     const topOption = sorted[0];
     return `Ranked scores: ${sorted.map((r) => `${r.optionName} (${r.totalScore.toFixed(1)})`).join(", ")}. Top choice: ${topOption.optionName} with score ${topOption.totalScore.toFixed(2)}.`;
   }, [optionResults]);
+
+  if (optionResults.length === 0) return null;
 
   return (
     <div className="space-y-6">
@@ -162,7 +163,9 @@ function ScoreChartInner({ optionResults }: ScoreChartProps) {
             <th scope="col">Total Score</th>
             <th scope="col">Rank</th>
             {criteriaNames.map((name) => (
-              <th key={name} scope="col">{name}</th>
+              <th key={name} scope="col">
+                {name}
+              </th>
             ))}
           </tr>
         </thead>

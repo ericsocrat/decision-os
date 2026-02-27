@@ -26,8 +26,10 @@ export const MAX_TEXTAREA_LENGTH = 5_000;
  * Does NOT strip HTML entities — React's JSX escaping handles those.
  */
 export function stripControlChars(input: string): string {
-  // eslint-disable-next-line no-control-regex
-  return input.replaceAll(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u200B-\u200F\u2028-\u202E\uFEFF]/g, "");
+  return input.replaceAll(
+    /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u200B-\u200F\u2028-\u202E\uFEFF]/g,
+    ""
+  );
 }
 
 /**
@@ -39,9 +41,7 @@ export function stripControlChars(input: string): string {
  * 4. Enforces maximum length
  */
 export function sanitizeText(input: string, maxLength = MAX_TEXT_LENGTH): string {
-  const cleaned = stripControlChars(input)
-    .replaceAll(/\s+/g, " ")
-    .trim();
+  const cleaned = stripControlChars(input).replaceAll(/\s+/g, " ").trim();
   return cleaned.slice(0, maxLength);
 }
 
@@ -54,10 +54,7 @@ export function sanitizeText(input: string, maxLength = MAX_TEXT_LENGTH): string
  * 4. Trims leading/trailing whitespace
  * 5. Enforces maximum length
  */
-export function sanitizeMultilineText(
-  input: string,
-  maxLength = MAX_TEXTAREA_LENGTH,
-): string {
+export function sanitizeMultilineText(input: string, maxLength = MAX_TEXTAREA_LENGTH): string {
   const cleaned = stripControlChars(input)
     .replaceAll(/\r\n?/g, "\n")
     .replaceAll(/\n{3,}/g, "\n\n")
@@ -69,12 +66,7 @@ export function sanitizeMultilineText(
  * Sanitize a numeric value, clamping it to the given range.
  * Returns `fallback` if the value is NaN or non-finite.
  */
-export function sanitizeNumber(
-  value: unknown,
-  min: number,
-  max: number,
-  fallback: number,
-): number {
+export function sanitizeNumber(value: unknown, min: number, max: number, fallback: number): number {
   const num = Number(value);
   if (!Number.isFinite(num)) return fallback;
   return Math.min(Math.max(num, min), max);

@@ -7,7 +7,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { ConfidenceStrategySelector } from "@/components/ConfidenceStrategySelector";
-import type { ConfidenceStrategy } from "@/lib/types";
 
 describe("ConfidenceStrategySelector", () => {
   it("renders all three strategy options", () => {
@@ -65,9 +64,7 @@ describe("ConfidenceStrategySelector", () => {
 
   it("shows descriptions for each strategy", () => {
     render(<ConfidenceStrategySelector value="none" onChange={vi.fn()} />);
-    expect(
-      screen.getByText(/confidence is shown but does not affect scores/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/confidence is shown but does not affect scores/i)).toBeInTheDocument();
     expect(screen.getByText(/low-confidence scores are reduced/i)).toBeInTheDocument();
     expect(screen.getByText(/widens the range for sensitivity/i)).toBeInTheDocument();
   });

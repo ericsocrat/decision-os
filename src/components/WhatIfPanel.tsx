@@ -15,24 +15,9 @@
 
 "use client";
 
-import {
-  useState,
-  useMemo,
-  useCallback,
-  useEffect,
-  useRef,
-  type ReactNode,
-} from "react";
-import {
-  X,
-  RotateCcw,
-  Check,
-  ArrowUp,
-  ArrowDown,
-  Minus,
-  FlaskConical,
-} from "lucide-react";
-import type { Decision, DecisionResults, OptionResult } from "@/lib/types";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { X, RotateCcw, Check, ArrowUp, ArrowDown, Minus, FlaskConical } from "lucide-react";
+import type { Decision, DecisionResults } from "@/lib/types";
 import { computeResults } from "@/lib/scoring";
 import { resolveScoreValue } from "@/lib/scoring";
 
@@ -59,9 +44,7 @@ function cloneWeights(decision: Decision): number[] {
   return decision.criteria.map((c) => c.weight);
 }
 
-function cloneScores(
-  decision: Decision
-): Record<string, Record<string, number | null>> {
+function cloneScores(decision: Decision): Record<string, Record<string, number | null>> {
   const out: Record<string, Record<string, number | null>> = {};
   for (const opt of decision.options) {
     out[opt.id] = {};
@@ -88,9 +71,7 @@ function buildWhatIfDecision(
     scores: Object.fromEntries(
       Object.entries(scores).map(([optId, critScores]) => [
         optId,
-        Object.fromEntries(
-          Object.entries(critScores).map(([critId, val]) => [critId, val])
-        ),
+        Object.fromEntries(Object.entries(critScores).map(([critId, val]) => [critId, val])),
       ])
     ),
   };
@@ -132,12 +113,7 @@ function RankDelta({ original, current }: { original: number; current: number })
 // Component
 // ---------------------------------------------------------------------------
 
-export function WhatIfPanel({
-  decision,
-  originalResults,
-  onApply,
-  onClose,
-}: WhatIfPanelProps) {
+export function WhatIfPanel({ decision, originalResults, onApply, onClose }: WhatIfPanelProps) {
   // ── Local sandbox state ─────────────────────────────────
   const [weights, setWeights] = useState(() => cloneWeights(decision));
   const [scores, setScores] = useState(() => cloneScores(decision));
@@ -180,12 +156,9 @@ export function WhatIfPanel({
   }, [onClose]);
 
   // ── Handlers ────────────────────────────────────────────
-  const handleWeightChange = useCallback(
-    (index: number, value: number) => {
-      setWeights((prev) => prev.map((w, i) => (i === index ? value : w)));
-    },
-    []
-  );
+  const handleWeightChange = useCallback((index: number, value: number) => {
+    setWeights((prev) => prev.map((w, i) => (i === index ? value : w)));
+  }, []);
 
   const handleScoreChange = useCallback(
     (optionId: string, criterionId: string, value: number | null) => {
@@ -299,9 +272,7 @@ export function WhatIfPanel({
 
           {/* ── Score Matrix ─────────────────────────────── */}
           <section>
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-              Scores
-            </h3>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Scores</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm" data-testid="whatif-score-matrix">
                 <thead>
@@ -321,10 +292,7 @@ export function WhatIfPanel({
                 </thead>
                 <tbody>
                   {decision.options.map((opt) => (
-                    <tr
-                      key={opt.id}
-                      className="border-b border-gray-100 dark:border-gray-700/50"
-                    >
+                    <tr key={opt.id} className="border-b border-gray-100 dark:border-gray-700/50">
                       <td className="py-2 pr-3 text-gray-700 dark:text-gray-300 font-medium truncate max-w-[120px]">
                         {opt.name}
                       </td>
@@ -376,9 +344,7 @@ export function WhatIfPanel({
                       key={r.optionId}
                       className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
                     >
-                      <span className="font-mono text-xs text-gray-400 w-5">
-                        #{r.rank}
-                      </span>
+                      <span className="font-mono text-xs text-gray-400 w-5">#{r.rank}</span>
                       <span className="flex-1 truncate">{r.optionName}</span>
                       <span className="font-mono text-xs text-gray-500">
                         {r.totalScore.toFixed(2)}
@@ -401,9 +367,7 @@ export function WhatIfPanel({
                         key={r.optionId}
                         className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
                       >
-                        <span className="font-mono text-xs text-gray-400 w-5">
-                          #{r.rank}
-                        </span>
+                        <span className="font-mono text-xs text-gray-400 w-5">#{r.rank}</span>
                         <span className="flex-1 truncate">{r.optionName}</span>
                         <RankDelta original={origRank} current={r.rank} />
                         <span className="font-mono text-xs text-gray-500">

@@ -20,7 +20,7 @@ import {
   normalizeWeights,
   CONFIDENCE_MULTIPLIERS,
 } from "@/lib/scoring";
-import type { Confidence, ConfidenceStrategy, Decision, Criterion, ScoreMatrix } from "@/lib/types";
+import type { Decision, Criterion, ScoreMatrix } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
 // Test helpers
@@ -261,8 +261,8 @@ describe("computeResults with confidence strategy", () => {
     const decision = makeDecision({
       criteria: [{ id: "c1", name: "C1", weight: 100, type: "benefit" }],
       scores: {
-        o1: { c1: { value: 10, confidence: "low" } },  // penalized: 10*0.5=5
-        o2: { c1: { value: 7, confidence: "high" } },   // penalized: 7*1.0=7
+        o1: { c1: { value: 10, confidence: "low" } }, // penalized: 10*0.5=5
+        o2: { c1: { value: 7, confidence: "high" } }, // penalized: 7*1.0=7
       },
       confidenceStrategy: "penalize",
     });

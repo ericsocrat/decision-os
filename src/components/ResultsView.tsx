@@ -23,7 +23,7 @@ import { buildShareLink } from "@/lib/share";
 import { normalizeWeights } from "@/lib/scoring";
 import type { TopsisResults } from "@/lib/topsis";
 import type { RegretResults } from "@/lib/regret";
-import type { Decision, DecisionResults, ConfidenceStrategy } from "@/lib/types";
+import type { Decision, DecisionResults } from "@/lib/types";
 import type { ValidationResult } from "@/hooks/useValidation";
 import type { CompletenessResult } from "@/lib/completeness";
 import { BiasWarnings } from "./BiasWarnings";
@@ -48,7 +48,15 @@ interface ResultsViewProps {
 }
 
 export function ResultsView({ validation, completeness, onSwitchToBuilder }: ResultsViewProps) {
-  const { decision, results, topsisResults, regretResults, setConfidenceStrategy, updateCriterion, updateScore } = useDecision();
+  const {
+    decision,
+    results,
+    topsisResults,
+    regretResults,
+    setConfidenceStrategy,
+    updateCriterion,
+    updateScore,
+  } = useDecision();
   const [shareStatus, setShareStatus] = useState<string>("");
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [whatIfOpen, setWhatIfOpen] = useState(false);
@@ -408,12 +416,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
             decision={decision}
           />
         ) : scoringMethod === "compare" ? (
-          <FrameworkComparison
-            decision={decision}
-            results={results}
-            topsisResults={topsisResults}
-            regretResults={regretResults}
-          />
+          <FrameworkComparison decision={decision} />
         ) : (
           <RegretRankings regretResults={regretResults} decision={decision} />
         )}
