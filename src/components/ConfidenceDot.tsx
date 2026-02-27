@@ -42,9 +42,11 @@ export function ConfidenceDot({ confidence, onChange, size = "sm" }: ConfidenceD
     <button
       type="button"
       onClick={() => onChange(next)}
-      className={`inline-flex items-center justify-center rounded-full ${dotSize} ${CONF_COLORS[confidence]} ring-1 ring-inset ring-black/10 dark:ring-white/20 cursor-pointer hover:scale-125 transition-transform focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1`}
+      className="inline-flex items-center justify-center rounded-full min-w-6 min-h-6 cursor-pointer hover:scale-125 transition-transform focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
       aria-label={`${CONF_LABELS[confidence]} — click to change to ${CONF_LABELS[next].toLowerCase()}`}
       title={CONF_LABELS[confidence]}
-    />
+    >
+      <span className={`block rounded-full ${dotSize} ${CONF_COLORS[confidence]} ring-1 ring-inset ring-black/10 dark:ring-white/20`} />
+    </button>
   );
 }

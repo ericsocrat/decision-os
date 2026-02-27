@@ -21,9 +21,11 @@ interface TemplatePickerProps {
 
 export function TemplatePicker({ onSelect, onClose }: TemplatePickerProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<Element | null>(null);
 
   // Focus trap and Escape handling
   useEffect(() => {
+    triggerRef.current = document.activeElement;
     const modal = modalRef.current;
     if (!modal) return;
 
@@ -55,7 +57,13 @@ export function TemplatePicker({ onSelect, onClose }: TemplatePickerProps) {
     };
 
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      // Restore focus to the element that opened the modal
+      if (triggerRef.current instanceof HTMLElement) {
+        triggerRef.current.focus();
+      }
+    };
   }, [onClose]);
 
   return (

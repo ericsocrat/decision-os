@@ -208,13 +208,13 @@ This universally disables all CSS animations and transitions when the user's sys
 
 ## Noted Items (Future Improvements)
 
-| # | Item | Severity | WCAG |
-|---|------|----------|------|
-| N1 | WhatIfPanel missing focus trap | Low | 2.4.3 |
-| N2 | ImportModal/TemplatePicker missing focus restore | Low | 2.4.3 |
-| N3 | Option/criterion inputs missing `aria-invalid` | Low | 3.3.1 |
-| N4 | ConfidenceDot touch target below 24px | Low | 2.5.8 |
-| N5 | Remaining `text-gray-400` on decorative elements | Info | 1.4.11 |
+| # | Item | Severity | WCAG | Status |
+|---|------|----------|------|--------|
+| N1 | WhatIfPanel missing focus trap | Low | 2.4.3 | ✅ Fixed — Tab trapping + panel focus on mount |
+| N2 | ImportModal/TemplatePicker missing focus restore | Low | 2.4.3 | ✅ Fixed — focus restored to trigger element on close |
+| N3 | Option/criterion inputs missing `aria-invalid` | Low | 3.3.1 | ✅ Fixed — `aria-invalid` on option and criterion name inputs |
+| N4 | ConfidenceDot touch target below 24px | Low | 2.5.8 | ✅ Fixed — min-w-6 min-h-6 (24px) touch target with inner dot |
+| N5 | Remaining `text-gray-400` on decorative elements | Info | 1.4.11 | Acceptable (decorative/non-text per WCAG 1.4.11) |
 
 ---
 
