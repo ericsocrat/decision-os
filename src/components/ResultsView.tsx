@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useState, lazy, Suspense, useMemo } from "react";
 import { buildShareLink } from "@/lib/share";
+import { createSharedLink, buildServerShareUrl } from "@/lib/share-link";
 import { normalizeWeights } from "@/lib/scoring";
 import type { TopsisResults } from "@/lib/topsis";
 import type { RegretResults } from "@/lib/regret";
@@ -160,6 +161,17 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
 
   const handleShareLink = async () => {
     try {
+      // 1. Try server-stored short URL (requires auth + Supabase)
+      const shortId = await createSharedLink(decision);
+      if (shortId) {
+        const url = buildServerShareUrl(shortId, globalThis.location.origin);
+        await navigator.clipboard.writeText(url);
+        setShareStatus("Short link copied to clipboard!");
+        setTimeout(() => setShareStatus(""), 3000);
+        return;
+      }
+
+      // 2. Fall back to client-encoded hash URL
       const shareUrl = buildShareLink(decision, globalThis.location.origin);
       if (shareUrl) {
         await navigator.clipboard.writeText(shareUrl);

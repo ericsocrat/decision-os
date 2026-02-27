@@ -51,6 +51,38 @@ export interface Database {
           },
         ];
       };
+      shared_decisions: {
+        Row: {
+          id: string;
+          decision: DecisionJsonb;
+          created_by: string | null;
+          created_at: string;
+          expires_at: string;
+        };
+        Insert: {
+          id: string;
+          decision: DecisionJsonb;
+          created_by?: string | null;
+          created_at?: string;
+          expires_at?: string;
+        };
+        Update: {
+          id?: string;
+          decision?: DecisionJsonb;
+          created_by?: string | null;
+          created_at?: string;
+          expires_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shared_decisions_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

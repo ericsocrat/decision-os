@@ -19,6 +19,7 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Trophy, TrendingUp, BarChart3, Activity, Shield, AlertTriangle } from "lucide-react";
 import { decodeShareUrl } from "@/lib/share";
+import { fetchSharedDecision } from "@/lib/share-link";
 import { computeResults, sensitivityAnalysis, normalizeWeights } from "@/lib/scoring";
 import type { Decision, DecisionResults, SensitivityAnalysis } from "@/lib/types";
 
@@ -31,33 +32,65 @@ export function ShareView() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Decode decision from URL hash on mount
+  // Load decision from URL: ?id=<shortId> (server) or #d=<encoded> (legacy)
   useEffect(() => {
-    try {
-      const hash = window.location.hash;
-      if (!hash.startsWith("#d=")) {
-        setError("No decision data found in the URL.");
-        setLoading(false);
-        return;
+    let cancelled = false;
+
+    async function loadDecision() {
+      try {
+        // 1. Check for server-stored short ID (?id=...)
+        const params = new URLSearchParams(window.location.search);
+        const shortId = params.get("id");
+
+        if (shortId) {
+          const fetched = await fetchSharedDecision(shortId);
+          if (cancelled) return;
+          if (fetched) {
+            setDecision(fetched);
+            setLoading(false);
+            return;
+          }
+          setError("Shared decision not found. The link may have expired or is invalid.");
+          setLoading(false);
+          return;
+        }
+
+        // 2. Fall back to legacy hash-based encoding (#d=...)
+        const hash = window.location.hash;
+        if (!hash.startsWith("#d=")) {
+          setError("No decision data found in the URL.");
+          setLoading(false);
+          return;
+        }
+        const encoded = hash.slice("#d=".length);
+        if (!encoded) {
+          setError("Empty share data.");
+          setLoading(false);
+          return;
+        }
+        const decoded = decodeShareUrl(encoded);
+        if (!decoded) {
+          setError("Failed to decode the shared decision. The link may be invalid or corrupted.");
+          setLoading(false);
+          return;
+        }
+        setDecision(decoded);
+      } catch {
+        if (!cancelled) {
+          setError("An error occurred while loading the shared decision.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
-      const encoded = hash.slice("#d=".length);
-      if (!encoded) {
-        setError("Empty share data.");
-        setLoading(false);
-        return;
-      }
-      const decoded = decodeShareUrl(encoded);
-      if (!decoded) {
-        setError("Failed to decode the shared decision. The link may be invalid or corrupted.");
-        setLoading(false);
-        return;
-      }
-      setDecision(decoded);
-    } catch {
-      setError("An error occurred while loading the shared decision.");
-    } finally {
-      setLoading(false);
     }
+
+    void loadDecision();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (loading) {

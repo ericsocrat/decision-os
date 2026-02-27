@@ -81,6 +81,7 @@ Decision OS is a client-side web application built with Next.js 16 (App Router),
 | --------------------- | ------------------------------------------------------------------------------------------- |
 | `comparison.ts`       | Decision comparison engine (deltas, Spearman agreement score, heatmap)                      |
 | `share.ts`            | Compact share encoding/decoding (short keys, index-based scores, lz-string)                 |
+| `share-link.ts`       | Server-stored shareable links — short IDs via Supabase `shared_decisions` table             |
 | `import.ts`           | JSON/CSV import parsing, preview, validation, and file reading                              |
 | `templates.ts`        | 8 pre-built decision templates with `instantiateTemplate()` factory                         |
 | `journal.ts`          | Decision journal — CRUD for structured entries (notes, reasoning, outcomes) in localStorage |

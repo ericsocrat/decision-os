@@ -35,6 +35,12 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+// Mock fetchSharedDecision for server-stored link tests
+const mockFetchSharedDecision = vi.fn();
+vi.mock("@/lib/share-link", () => ({
+  fetchSharedDecision: (...args: unknown[]) => mockFetchSharedDecision(...args),
+}));
+
 // ─── Fixtures ──────────────────────────────────────────────────────
 
 const sampleDecision: Decision = {
@@ -63,13 +69,18 @@ const sampleDecision: Decision = {
 // ─── Helpers ───────────────────────────────────────────────────────
 
 let originalHash: string;
+let originalSearch: string;
 
 beforeEach(() => {
   originalHash = window.location.hash;
+  originalSearch = window.location.search;
+  mockFetchSharedDecision.mockReset();
 });
 
 afterEach(() => {
   window.location.hash = originalHash;
+  // Restore search by replacing url
+  window.history.replaceState({}, "", window.location.pathname + originalSearch + originalHash);
 });
 
 // ─── Tests ─────────────────────────────────────────────────────────
@@ -209,5 +220,56 @@ describe("ShareView (/share route)", () => {
     // The page renders successfully without auth — no auth error shown
     expect(screen.queryByText(/sign in/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/login/i)).not.toBeInTheDocument();
+  });
+
+  // ─── Server-stored short URL tests ─────────────────────────────
+
+  it("loads decision from server when ?id= parameter is present", async () => {
+    window.history.replaceState({}, "", "/share?id=abc12345");
+    window.location.hash = "";
+    mockFetchSharedDecision.mockResolvedValue(sampleDecision);
+
+    renderWithProviders(<ShareView />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Best Programming Language")).toBeInTheDocument();
+    });
+
+    expect(mockFetchSharedDecision).toHaveBeenCalledWith("abc12345");
+  });
+
+  it("shows error when server-stored decision is not found", async () => {
+    window.history.replaceState({}, "", "/share?id=notfound");
+    window.location.hash = "";
+    mockFetchSharedDecision.mockResolvedValue(null);
+
+    renderWithProviders(<ShareView />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Shared decision not found. The link may have expired or is invalid."),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("prefers ?id= over #d= when both are present", async () => {
+    const encoded = encodeShareUrl(sampleDecision);
+    window.history.replaceState({}, "", "/share?id=prefer1");
+    window.location.hash = `#d=${encoded}`;
+
+    const serverDecision = {
+      ...sampleDecision,
+      title: "Server Decision",
+    };
+    mockFetchSharedDecision.mockResolvedValue(serverDecision);
+
+    renderWithProviders(<ShareView />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Server Decision")).toBeInTheDocument();
+    });
+
+    // Should have used the server path, not the hash path
+    expect(mockFetchSharedDecision).toHaveBeenCalledWith("prefer1");
   });
 });

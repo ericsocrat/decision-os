@@ -55,3 +55,39 @@ CREATE TRIGGER set_updated_at
   BEFORE UPDATE ON public.decisions
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_updated_at();
+
+-- =============================================================================
+-- 6. Shared decisions table (public read, auth write)
+-- =============================================================================
+-- Stores immutable snapshots of decisions for shareable short-URL links.
+-- Anyone can READ (public). Only authenticated users can INSERT.
+
+CREATE TABLE IF NOT EXISTS public.shared_decisions (
+  id          TEXT PRIMARY KEY,           -- 8-char alphanumeric short ID
+  decision    JSONB NOT NULL,             -- full Decision snapshot (immutable)
+  created_by  UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at  TIMESTAMPTZ DEFAULT now(),
+  expires_at  TIMESTAMPTZ DEFAULT (now() + interval '90 days')
+);
+
+-- Index for cleanup queries (expired links)
+CREATE INDEX IF NOT EXISTS idx_shared_decisions_expires
+  ON public.shared_decisions (expires_at);
+
+-- Enable RLS
+ALTER TABLE public.shared_decisions ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can view shared decisions (public links)
+CREATE POLICY "Anyone can read shared decisions"
+  ON public.shared_decisions FOR SELECT
+  USING (true);
+
+-- Only authenticated users can create shared links
+CREATE POLICY "Auth users can create shared decisions"
+  ON public.shared_decisions FOR INSERT
+  WITH CHECK (auth.uid() = created_by);
+
+-- Users can delete their own shared links
+CREATE POLICY "Users can delete own shared decisions"
+  ON public.shared_decisions FOR DELETE
+  USING (auth.uid() = created_by);
