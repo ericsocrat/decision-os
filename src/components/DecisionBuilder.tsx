@@ -35,6 +35,7 @@ import { BiasWarnings } from "./BiasWarnings";
 import { useBiasDetection } from "@/hooks/useBiasDetection";
 import { MobileScoreCards } from "./MobileScoreCards";
 import { ScoreProvenanceIndicator } from "./ScoreProvenanceIndicator";
+import { ConfidenceIndicator } from "./ConfidenceIndicator";
 import { getMetadata, canRestoreEnriched } from "@/lib/provenance";
 
 interface DecisionBuilderProps {
@@ -707,6 +708,9 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                             metadata={getMetadata(decision, opt.id, crit.id)}
                             canRestore={canRestoreEnriched(decision, opt.id, crit.id)}
                             onRestore={() => restoreEnrichedValue(opt.id, crit.id)}
+                          />
+                          <ConfidenceIndicator
+                            metadata={getMetadata(decision, opt.id, crit.id)}
                           />
                         </div>
                         {isFocused && (
