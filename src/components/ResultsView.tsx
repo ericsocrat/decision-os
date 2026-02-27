@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useDecision } from "./DecisionProvider";
+import { useDecisionData, useResultsContext, useActions } from "./DecisionProvider";
 import {
   Download,
   Link,
@@ -55,15 +55,9 @@ function methodAgreementColorClass(allAgree: boolean): string {
 }
 
 export function ResultsView({ validation, completeness, onSwitchToBuilder }: ResultsViewProps) {
-  const {
-    decision,
-    results,
-    topsisResults,
-    regretResults,
-    setConfidenceStrategy,
-    updateCriterion,
-    updateScore,
-  } = useDecision();
+  const { decision } = useDecisionData();
+  const { results, topsisResults, regretResults } = useResultsContext();
+  const { setConfidenceStrategy, updateCriterion, updateScore } = useActions();
   const [shareStatus, setShareStatus] = useState<string>("");
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [whatIfOpen, setWhatIfOpen] = useState(false);
@@ -582,7 +576,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
 }
 
 function NormalizedWeightsTable() {
-  const { decision } = useDecision();
+  const { decision } = useDecisionData();
   const nw = normalizeWeights(decision.criteria.map((c) => c.weight));
 
   return (

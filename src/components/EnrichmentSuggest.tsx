@@ -12,7 +12,7 @@
 
 import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import { Sparkles, Check, X, Loader2, AlertCircle, Database, Globe, BarChart3 } from "lucide-react";
-import { useDecision } from "./DecisionProvider";
+import { useDecisionData, useActions } from "./DecisionProvider";
 import { ProviderRegistry } from "@/lib/data/registry";
 import { EnrichmentEngine } from "@/lib/data/engine";
 import type { DataPoint, DataQuery } from "@/lib/data/provider";
@@ -261,7 +261,8 @@ function SuggestionCard({
 // ---------------------------------------------------------------------------
 
 export function EnrichmentSuggest() {
-  const { decision, updateScore } = useDecision();
+  const { decision } = useDecisionData();
+  const { updateScore } = useActions();
   const [dismissed, setDismissed] = useState<Set<string>>(() => new Set());
   const [enrichStates, setEnrichStates] = useState<
     Map<string, EnrichState>

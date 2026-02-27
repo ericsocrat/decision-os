@@ -14,7 +14,7 @@
 import { useState, useMemo } from "react";
 import { GitCompareArrows, AlertCircle, ArrowUp, ArrowDown, Minus, BarChart3 } from "lucide-react";
 import { getDecisions } from "@/lib/storage";
-import { useDecision } from "./DecisionProvider";
+import { useDecisionData } from "./DecisionProvider";
 import type { Decision } from "@/lib/types";
 import {
   compareDecisions,
@@ -347,7 +347,7 @@ function WeightComparison({ comparison }: { comparison: ComparisonResult }) {
 // ---------------------------------------------------------------------------
 
 export function CompareView() {
-  const { decision } = useDecision();
+  const { decision } = useDecisionData();
   const [decisionIdA, setDecisionIdA] = useState<string>("");
   const [decisionIdB, setDecisionIdB] = useState<string>("");
 

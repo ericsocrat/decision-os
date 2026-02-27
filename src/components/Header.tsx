@@ -12,7 +12,7 @@
 "use client";
 
 import { memo, useMemo, useState } from "react";
-import { useDecision } from "./DecisionProvider";
+import { useDecisionData, useActions } from "./DecisionProvider";
 import { useTheme } from "./ThemeProvider";
 import { useT, useTf } from "@/lib/i18n";
 import {
@@ -41,8 +41,8 @@ import { useSync } from "@/hooks/useSync";
 import { isCloudEnabled } from "@/lib/supabase";
 
 export const Header = memo(function Header() {
-  const { decision, decisions, loadDecision, createNewDecision, removeDecision, resetDemo } =
-    useDecision();
+  const { decision, decisions } = useDecisionData();
+  const { loadDecision, createNewDecision, removeDecision, resetDemo } = useActions();
   const { theme, toggleTheme } = useTheme();
   const t = useT();
   const tf = useTf();

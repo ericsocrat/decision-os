@@ -16,7 +16,7 @@ import {
   Suspense,
 } from "react";
 import { AnnouncerProvider, useAnnounce } from "@/components/Announcer";
-import { DecisionProvider, useDecision } from "@/components/DecisionProvider";
+import { DecisionProvider, useDecisionData, useActions } from "@/components/DecisionProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { TabErrorFallback } from "@/components/TabErrorFallback";
 import { Header } from "@/components/Header";
@@ -35,11 +35,10 @@ import {
   Activity,
   GitCompareArrows,
   Dices,
-  Keyboard,
-  X,
   Upload,
   HelpCircle,
 } from "lucide-react";
+import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
 import { ToastProvider, showToast } from "@/components/Toast";
 import { validateFile, readFileAsText, importFromJson } from "@/lib/import";
 import { saveDecision } from "@/lib/storage";
@@ -97,9 +96,9 @@ function AppContent() {
   );
   const [showShortcuts, setShowShortcuts] = useState(false);
   const shortcutTriggerRef = useRef<HTMLButtonElement>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
   const announce = useAnnounce();
-  const { decision, isLoading, undo, redo, loadDecision } = useDecision();
+  const { decision, isLoading } = useDecisionData();
+  const { undo, redo, loadDecision } = useActions();
   const validation = useValidation(decision);
   const completeness = useMemo(() => computeCompleteness(decision), [decision]);
   const auth = useAuth();
@@ -295,36 +294,7 @@ function AppContent() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  // Modal focus trap: move focus into modal on open, trap Tab, restore on close
-  useEffect(() => {
-    if (!showShortcuts) return;
 
-    // Focus the close button inside the modal
-    const modal = modalRef.current;
-    if (!modal) return;
-    const closeBtn = modal.querySelector<HTMLElement>("[data-modal-close]");
-    closeBtn?.focus();
-
-    const handleTrap = (e: KeyboardEvent) => {
-      if (e.key !== "Tab") return;
-      const focusable = modal.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleTrap);
-    return () => document.removeEventListener("keydown", handleTrap);
-  }, [showShortcuts]);
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: "builder", label: "Builder", icon: <Settings2 className="h-4 w-4" /> },
@@ -519,60 +489,7 @@ function AppContent() {
       )}
 
       {/* Keyboard Shortcuts Modal */}
-      {showShortcuts && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-          onClick={closeModal}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Keyboard shortcuts"
-        >
-          <div
-            ref={modalRef}
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-6 max-w-sm w-full mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <Keyboard className="h-5 w-5" />
-                Keyboard Shortcuts
-              </h2>
-              <button
-                data-modal-close
-                onClick={closeModal}
-                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-                aria-label="Close shortcuts"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <dl className="space-y-2 text-sm">
-              {[
-                ["1", "Builder tab"],
-                ["2", "Results tab"],
-                ["3", "Sensitivity tab"],
-                ["4", "Compare tab"],
-                ["5", "Monte Carlo tab"],
-                ["←/→", "Navigate tabs"],
-                ["Home/End", "First/last tab"],
-                ["Ctrl+Z", "Undo"],
-                ["Ctrl+Shift+Z", "Redo"],
-                ["?", "Toggle this dialog"],
-                ["Esc", "Close dialog"],
-              ].map(([key, desc]) => (
-                <div key={key} className="flex items-center justify-between">
-                  <dt className="text-gray-600 dark:text-gray-300">{desc}</dt>
-                  <dd>
-                    <kbd className="rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-2 py-0.5 text-xs font-mono text-gray-700 dark:text-gray-300">
-                      {key}
-                    </kbd>
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </div>
-      )}
+      <KeyboardShortcutsModal open={showShortcuts} onClose={closeModal} />
 
       {/* Global drag-and-drop overlay */}
       {showDropOverlay && (

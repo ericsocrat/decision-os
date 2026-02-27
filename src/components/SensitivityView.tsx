@@ -7,11 +7,12 @@
 
 "use client";
 
-import { useDecision } from "./DecisionProvider";
+import { useResultsContext, useActions } from "./DecisionProvider";
 import { Activity, Shield, AlertTriangle } from "lucide-react";
 
 export function SensitivityView() {
-  const { sensitivity, swingPercent, setSwingPercent, results } = useDecision();
+  const { sensitivity, swingPercent, results } = useResultsContext();
+  const { setSwingPercent } = useActions();
 
   if (results.optionResults.length === 0) {
     return (

@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useDecision } from "./DecisionProvider";
+import { useDecisionData, useActions } from "./DecisionProvider";
 import {
   Plus,
   Trash2,
@@ -61,8 +61,8 @@ interface DecisionBuilderProps {
 }
 
 export function DecisionBuilder({ validation }: DecisionBuilderProps) {
+  const { decision, canUndo, canRedo } = useDecisionData();
   const {
-    decision,
     updateTitle,
     updateDescription,
     addOption,
@@ -79,9 +79,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
     restoreEnrichedValue,
     undo,
     redo,
-    canUndo,
-    canRedo,
-  } = useDecision();
+  } = useActions();
 
   const gridRef = useRef<HTMLTableElement>(null);
   const completeness = useMemo(() => computeCompleteness(decision), [decision]);

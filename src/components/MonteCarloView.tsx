@@ -9,7 +9,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useDecision } from "./DecisionProvider";
+import { useDecisionData, useResultsContext } from "./DecisionProvider";
 import {
   Dices,
   Play,
@@ -95,7 +95,8 @@ function CICard({ option }: { option: MonteCarloOptionResult }) {
 // ---------------------------------------------------------------------------
 
 export function MonteCarloView() {
-  const { decision, results } = useDecision();
+  const { decision } = useDecisionData();
+  const { results } = useResultsContext();
 
   // Config state
   const [numSimulations, setNumSimulations] = useState(DEFAULT_CONFIG.numSimulations);

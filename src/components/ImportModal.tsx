@@ -24,7 +24,7 @@ import {
   SUPPORTED_EXTENSIONS,
 } from "@/lib/import";
 import { saveDecision } from "@/lib/storage";
-import { useDecision } from "./DecisionProvider";
+import { useActions } from "./DecisionProvider";
 import { showToast } from "./Toast";
 
 interface ImportModalProps {
@@ -32,7 +32,7 @@ interface ImportModalProps {
 }
 
 export const ImportModal = memo(function ImportModal({ onClose }: ImportModalProps) {
-  const { loadDecision } = useDecision();
+  const { loadDecision } = useActions();
   const [errors, setErrors] = useState<ImportError[]>([]);
   const [csvPreview, setCsvPreview] = useState<CsvPreviewData | null>(null);
   const [csvTitle, setCsvTitle] = useState("Imported Decision");

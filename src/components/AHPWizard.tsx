@@ -16,7 +16,7 @@ import {
   Scale,
   X,
 } from "lucide-react";
-import { useDecision } from "./DecisionProvider";
+import { useDecisionData, useActions } from "./DecisionProvider";
 import {
   computeAHP,
   generatePairs,
@@ -87,7 +87,8 @@ function crBgClass(cr: number): string {
 // ---------------------------------------------------------------------------
 
 export function AHPWizard({ onClose }: Readonly<AHPWizardProps>) {
-  const { decision, updateCriterion } = useDecision();
+  const { decision } = useDecisionData();
+  const { updateCriterion } = useActions();
 
   const criterionIds = useMemo(
     () => decision.criteria.map((c) => c.id),
