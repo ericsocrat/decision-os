@@ -266,7 +266,7 @@ describe("computeCompositeConfidence", () => {
       d,
       weakConsensus as ReturnType<typeof computeConsensus>,
       weakQuality as ReturnType<typeof assessDecisionQuality>,
-      0,
+      0
     );
     expect(result.level).toBe("low");
     expect(result.label).toContain("Low confidence");

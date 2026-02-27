@@ -4,7 +4,10 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { interpolate, translate, detectLocale } from "@/lib/i18n";
+import { interpolate, translate, detectLocale, I18nProvider, useT, useTf, useLocale } from "@/lib/i18n";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { type ReactNode } from "react";
 
 // ── interpolate ────────────────────────────────────────────────────
 
@@ -147,5 +150,67 @@ describe("translation file completeness", () => {
         expect(value, `fr key "${key}" should not be empty`).not.toBe("");
       }
     }
+  });
+});
+
+// ── React hooks (useTf, useLocale) ─────────────────────────────────
+
+function Wrapper({ children }: { children: ReactNode }) {
+  return <I18nProvider>{children}</I18nProvider>;
+}
+
+function TfConsumer({ translationKey, params }: { translationKey: string; params?: Record<string, string | number> }) {
+  const tf = useTf();
+  return <span data-testid="tf-result">{tf(translationKey, params)}</span>;
+}
+
+function TConsumer() {
+  const t = useT();
+  return <span data-testid="t-result">{t.app.title}</span>;
+}
+
+function LocaleConsumer() {
+  const { locale, setLocale } = useLocale();
+  return (
+    <div>
+      <span data-testid="locale">{locale}</span>
+      <button onClick={() => setLocale("fr")}>Switch to FR</button>
+    </div>
+  );
+}
+
+describe("useTf hook", () => {
+  it("translates keys with interpolation via I18nProvider", () => {
+    render(
+      <Wrapper>
+        <TfConsumer translationKey="app.title" />
+      </Wrapper>,
+    );
+    expect(screen.getByTestId("tf-result").textContent).toBeTruthy();
+  });
+});
+
+describe("useT hook", () => {
+  it("returns messages object for current locale", () => {
+    render(
+      <Wrapper>
+        <TConsumer />
+      </Wrapper>,
+    );
+    expect(screen.getByTestId("t-result").textContent).toBeTruthy();
+  });
+});
+
+describe("useLocale hook", () => {
+  it("returns locale and setLocale from provider", async () => {
+    const user = userEvent.setup();
+    render(
+      <Wrapper>
+        <LocaleConsumer />
+      </Wrapper>,
+    );
+    expect(screen.getByTestId("locale").textContent).toBe("en");
+    await user.click(screen.getByText("Switch to FR"));
+    expect(screen.getByTestId("locale").textContent).toBe("fr");
   });
 });

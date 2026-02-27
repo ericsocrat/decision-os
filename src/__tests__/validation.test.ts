@@ -56,6 +56,31 @@ describe("validateDecision", () => {
     const errors = validateDecision(decision);
     expect(errors.some((e) => e.message.includes("Duplicate"))).toBe(true);
   });
+
+  it("propagates option-level errors with prefixed field paths", () => {
+    const decision: Decision = {
+      ...DEMO_DECISION,
+      options: [
+        { id: "a", name: "" },
+        { id: "b", name: "Valid" },
+      ],
+    };
+    const errors = validateDecision(decision);
+    // The invalid option at index 0 should produce options[0].name error
+    expect(errors.some((e) => e.field === "options[0].name")).toBe(true);
+  });
+
+  it("propagates criterion-level errors with prefixed field paths", () => {
+    const decision: Decision = {
+      ...DEMO_DECISION,
+      criteria: [
+        { id: "c1", name: "", weight: 50, type: "benefit" },
+        { id: "c2", name: "Valid", weight: 50, type: "benefit" },
+      ],
+    };
+    const errors = validateDecision(decision);
+    expect(errors.some((e) => e.field === "criteria[0].name")).toBe(true);
+  });
 });
 
 describe("validateOption", () => {

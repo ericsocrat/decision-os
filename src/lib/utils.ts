@@ -49,5 +49,3 @@ export function safeJsonParse<T>(json: string, fallback: T): T {
     return fallback;
   }
 }
-
-

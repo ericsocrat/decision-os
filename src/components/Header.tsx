@@ -260,11 +260,7 @@ export const Header = memo(function Header() {
 
             <button
               onClick={() => {
-                if (
-                  globalThis.confirm(
-                    t.header.confirmReset
-                  )
-                ) {
+                if (globalThis.confirm(t.header.confirmReset)) {
                   resetDemo();
                 }
               }}

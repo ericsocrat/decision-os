@@ -34,9 +34,7 @@ describe("buildPairwiseMatrix", () => {
 
   it("sets reciprocal values for a single comparison", () => {
     const ids = ["x", "y"];
-    const comps: PairwiseComparison[] = [
-      { criterionA: "x", criterionB: "y", value: 5 },
-    ];
+    const comps: PairwiseComparison[] = [{ criterionA: "x", criterionB: "y", value: 5 }];
     const m = buildPairwiseMatrix(ids, comps);
     expect(m[0][1]).toBe(5);
     expect(m[1][0]).toBeCloseTo(1 / 5);
@@ -46,9 +44,7 @@ describe("buildPairwiseMatrix", () => {
 
   it("clamps values to Saaty range [1/9, 9]", () => {
     const ids = ["a", "b"];
-    const comps: PairwiseComparison[] = [
-      { criterionA: "a", criterionB: "b", value: 20 },
-    ];
+    const comps: PairwiseComparison[] = [{ criterionA: "a", criterionB: "b", value: 20 }];
     const m = buildPairwiseMatrix(ids, comps);
     expect(m[0][1]).toBe(9);
     expect(m[1][0]).toBeCloseTo(1 / 9);
@@ -56,18 +52,14 @@ describe("buildPairwiseMatrix", () => {
 
   it("ignores comparisons with unknown criterion ids", () => {
     const ids = ["a", "b"];
-    const comps: PairwiseComparison[] = [
-      { criterionA: "a", criterionB: "UNKNOWN", value: 3 },
-    ];
+    const comps: PairwiseComparison[] = [{ criterionA: "a", criterionB: "UNKNOWN", value: 3 }];
     const m = buildPairwiseMatrix(ids, comps);
     expect(m[0][1]).toBe(1);
   });
 
   it("ignores self-comparisons (same criterion on both sides)", () => {
     const ids = ["a", "b"];
-    const comps: PairwiseComparison[] = [
-      { criterionA: "a", criterionB: "a", value: 5 },
-    ];
+    const comps: PairwiseComparison[] = [{ criterionA: "a", criterionB: "a", value: 5 }];
     const m = buildPairwiseMatrix(ids, comps);
     // Self-comparison should be ignored, diagonal stays 1
     expect(m[0][0]).toBe(1);
@@ -104,9 +96,7 @@ describe("deriveWeights", () => {
 
   it("gives higher weight to more important criterion", () => {
     const ids = ["a", "b"];
-    const comps: PairwiseComparison[] = [
-      { criterionA: "a", criterionB: "b", value: 5 },
-    ];
+    const comps: PairwiseComparison[] = [{ criterionA: "a", criterionB: "b", value: 5 }];
     const m = buildPairwiseMatrix(ids, comps);
     const w = deriveWeights(m);
     expect(w[0]).toBeGreaterThan(w[1]);
@@ -163,7 +153,15 @@ describe("lambdaMax", () => {
 describe("consistencyIndex", () => {
   it("is 0 for matrices with n <= 2", () => {
     expect(consistencyIndex([[1]], [1])).toBe(0);
-    expect(consistencyIndex([[1, 3], [1 / 3, 1]], [0.75, 0.25])).toBe(0);
+    expect(
+      consistencyIndex(
+        [
+          [1, 3],
+          [1 / 3, 1],
+        ],
+        [0.75, 0.25]
+      )
+    ).toBe(0);
   });
 
   it("is near 0 for a perfectly consistent matrix", () => {
@@ -181,7 +179,15 @@ describe("consistencyIndex", () => {
 
 describe("consistencyRatio", () => {
   it("is 0 for n <= 2", () => {
-    expect(consistencyRatio([[1, 5], [0.2, 1]], [0.83, 0.17])).toBe(0);
+    expect(
+      consistencyRatio(
+        [
+          [1, 5],
+          [0.2, 1],
+        ],
+        [0.83, 0.17]
+      )
+    ).toBe(0);
   });
 
   it("is below 0.1 for consistent judgments", () => {
@@ -410,7 +416,7 @@ describe("ahpGlobalPriorities", () => {
     // Expected: [0.5*0.6+0.5*0.1, 0.5*0.3+0.5*0.3, 0.5*0.1+0.5*0.6]
     //         = [0.35, 0.30, 0.35]
     expect(globals[0]).toBeCloseTo(0.35, 5);
-    expect(globals[1]).toBeCloseTo(0.30, 5);
+    expect(globals[1]).toBeCloseTo(0.3, 5);
     expect(globals[2]).toBeCloseTo(0.35, 5);
   });
 

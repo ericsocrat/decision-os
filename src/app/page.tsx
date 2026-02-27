@@ -295,8 +295,6 @@ function AppContent() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-
-
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: "builder", label: "Builder", icon: <Settings2 className="h-4 w-4" /> },
     { id: "results", label: "Results", icon: <BarChart3 className="h-4 w-4" /> },
@@ -396,13 +394,15 @@ function AppContent() {
           aria-labelledby="tab-builder"
           className={activeTab === "builder" ? "" : "hidden"}
         >
-          {isLoading ? <DecisionSkeleton /> : <DecisionBuilder validation={validation} completeness={completeness} />}
+          {isLoading ? (
+            <DecisionSkeleton />
+          ) : (
+            <DecisionBuilder validation={validation} completeness={completeness} />
+          )}
         </div>
         {activeTab === "results" && (
           <div id="panel-results" role="tabpanel" aria-labelledby="tab-results">
-            <ErrorBoundary
-              fallback={(reset) => <TabErrorFallback tab="Results" onReset={reset} />}
-            >
+            <ErrorBoundary fallback={(reset) => <TabErrorFallback tab="Results" onReset={reset} />}>
               <ResultsView
                 validation={validation}
                 completeness={completeness}
@@ -424,9 +424,7 @@ function AppContent() {
         )}
         {activeTab === "compare" && (
           <div id="panel-compare" role="tabpanel" aria-labelledby="tab-compare">
-            <ErrorBoundary
-              fallback={(reset) => <TabErrorFallback tab="Compare" onReset={reset} />}
-            >
+            <ErrorBoundary fallback={(reset) => <TabErrorFallback tab="Compare" onReset={reset} />}>
               <Suspense fallback={<TabPanelSkeleton label="Compare" />}>
                 <CompareView />
               </Suspense>

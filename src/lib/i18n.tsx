@@ -17,14 +17,7 @@
  *   t("quality.completion", { filled: 3, total: 5 })  →  "3/5 scores filled"
  */
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useMemo,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from "react";
 import en from "./i18n/en.json";
 import fr from "./i18n/fr.json";
 import es from "./i18n/es.json";
@@ -55,10 +48,7 @@ const messages: Record<Locale, Messages> = { en, fr, es };
  *
  * @example interpolate("Hello {name}!", { name: "World" }) → "Hello World!"
  */
-export function interpolate(
-  template: string,
-  params: InterpolationValues,
-): string {
+export function interpolate(template: string, params: InterpolationValues): string {
   return template.replaceAll(/\{(\w+)\}/g, (match, key: string) => {
     const val = params[key];
     return val === undefined ? match : String(val);
@@ -79,9 +69,7 @@ export function detectLocale(): Locale {
     if (stored && isLocale(stored)) return stored;
 
     // 2. Check browser language
-    const browserLangs = globalThis.navigator.languages ?? [
-      globalThis.navigator.language,
-    ];
+    const browserLangs = globalThis.navigator.languages ?? [globalThis.navigator.language];
     for (const lang of browserLangs) {
       const code = lang.split("-")[0].toLowerCase();
       if (isLocale(code)) return code;
@@ -102,11 +90,7 @@ function isLocale(code: string): code is Locale {
  * Look up a translation by dot-notation key, with optional interpolation.
  * Falls back to English if the key is empty in the current locale.
  */
-export function translate(
-  locale: Locale,
-  key: string,
-  params?: InterpolationValues,
-): string {
+export function translate(locale: Locale, key: string, params?: InterpolationValues): string {
   const parts = key.split(".");
   if (parts.length !== 2) return key;
 
@@ -154,19 +138,16 @@ export function I18nProvider({ children }: Readonly<{ children: ReactNode }>) {
   const t = messages[currentLocale];
 
   const tf = useCallback(
-    (key: string, params?: InterpolationValues) =>
-      translate(currentLocale, key, params),
-    [currentLocale],
+    (key: string, params?: InterpolationValues) => translate(currentLocale, key, params),
+    [currentLocale]
   );
 
   const value = useMemo(
     () => ({ locale: currentLocale, setLocale, t, tf }),
-    [currentLocale, setLocale, t, tf],
+    [currentLocale, setLocale, t, tf]
   );
 
-  return (
-    <I18nContext.Provider value={value}>{children}</I18nContext.Provider>
-  );
+  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
 /** Get the full messages object for the current locale (direct property access). */

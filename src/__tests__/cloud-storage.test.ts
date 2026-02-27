@@ -85,9 +85,11 @@ function chainMock(finalResult: { data: unknown; error: unknown }) {
   chain.delete = vi.fn().mockReturnValue(chain);
   // Make chain thenable so `await chain` resolves to finalResult
   // (needed for delete chains that end with .eq())
-  chain.then = vi.fn().mockImplementation(
-    (resolve: (v: unknown) => unknown) => Promise.resolve(finalResult).then(resolve),
-  );
+  chain.then = vi
+    .fn()
+    .mockImplementation((resolve: (v: unknown) => unknown) =>
+      Promise.resolve(finalResult).then(resolve)
+    );
   mockFrom.mockImplementation(handler);
   return chain;
 }

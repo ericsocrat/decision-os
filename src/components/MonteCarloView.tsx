@@ -355,9 +355,7 @@ export function MonteCarloView() {
       {mcResults && (
         <>
           {/* Summary banner */}
-          <output
-            className="block rounded-lg border border-indigo-200 bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-900/30 p-4"
-          >
+          <output className="block rounded-lg border border-indigo-200 bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-900/30 p-4">
             <div className="flex items-start gap-2">
               <TrendingUp className="h-5 w-5 text-indigo-600 shrink-0 mt-0.5" />
               <div>

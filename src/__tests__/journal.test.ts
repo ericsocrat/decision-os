@@ -5,7 +5,7 @@
  * snapshot hashing, persistence, and edge cases.
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   addEntry,
   getEntries,
@@ -357,5 +357,38 @@ describe("edge cases", () => {
     expect(entryTypes).toContain("reasoning");
     expect(entryTypes).toContain("outcome");
     expect(entryTypes).toContain("retrospective");
+  });
+
+  it("snapshotDecision uses FNV-1a fallback when crypto.subtle is unavailable", async () => {
+    const originalCrypto = globalThis.crypto;
+    // Temporarily remove crypto.subtle
+    Object.defineProperty(globalThis, "crypto", {
+      value: { subtle: undefined },
+      configurable: true,
+      writable: true,
+    });
+
+    try {
+      const decision = makeDecision();
+      const hash = await snapshotDecision(decision);
+      // FNV-1a produces an 8-char hex string (32-bit hash)
+      expect(hash).toMatch(/^[0-9a-f]{8}$/);
+    } finally {
+      Object.defineProperty(globalThis, "crypto", {
+        value: originalCrypto,
+        configurable: true,
+        writable: true,
+      });
+    }
+  });
+
+  it("loadJournals returns empty when localStorage throws", () => {
+    // Seed good data first, then corrupt it
+    const spy = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("access denied");
+    });
+    // getEntries calls loadJournals internally
+    expect(getEntries("any")).toEqual([]);
+    spy.mockRestore();
   });
 });

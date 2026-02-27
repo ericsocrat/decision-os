@@ -252,13 +252,15 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
               aria-label="Scoring method"
             >
               <legend className="sr-only">Scoring method</legend>
-              {([
-                { value: "wsm", label: "WSM" },
-                { value: "topsis", label: "TOPSIS" },
-                { value: "minimax-regret", label: "Regret" },
-                { value: "consensus", label: "Consensus" },
-                { value: "compare", label: "Compare" },
-              ] as const).map((method) => (
+              {(
+                [
+                  { value: "wsm", label: "WSM" },
+                  { value: "topsis", label: "TOPSIS" },
+                  { value: "minimax-regret", label: "Regret" },
+                  { value: "consensus", label: "Consensus" },
+                  { value: "compare", label: "Compare" },
+                ] as const
+              ).map((method) => (
                 <label
                   key={method.value}
                   className={`cursor-pointer px-3 py-1.5 text-sm font-medium transition-colors focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-inset ${
@@ -647,9 +649,9 @@ function ScoringMethodExplanation({ scoringMethod }: { readonly scoringMethod: s
     return (
       <p>
         <strong>How TOPSIS works:</strong> Scores are vector-normalized per criterion, then
-        weighted. The ideal (best possible) and anti-ideal (worst possible) solutions are identified.
-        Each option is ranked by how close it is to the ideal and how far from the anti-ideal
-        (closeness coefficient C* ∈ [0,&nbsp;1]).
+        weighted. The ideal (best possible) and anti-ideal (worst possible) solutions are
+        identified. Each option is ranked by how close it is to the ideal and how far from the
+        anti-ideal (closeness coefficient C* ∈ [0,&nbsp;1]).
       </p>
     );
   }
@@ -671,7 +673,13 @@ function MethodAgreementMessage({
   methodAgreement,
   decision,
 }: {
-  readonly methodAgreement: { allAgree: boolean; fullAgreement: boolean; wsmWinner: string; topsisWinner: string; regretWinner: string | null };
+  readonly methodAgreement: {
+    allAgree: boolean;
+    fullAgreement: boolean;
+    wsmWinner: string;
+    topsisWinner: string;
+    regretWinner: string | null;
+  };
   readonly decision: Decision;
 }) {
   if (methodAgreement.allAgree) {

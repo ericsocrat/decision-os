@@ -61,7 +61,10 @@ interface DecisionBuilderProps {
   completeness: CompletenessResult;
 }
 
-export const DecisionBuilder = memo(function DecisionBuilder({ validation, completeness }: DecisionBuilderProps) {
+export const DecisionBuilder = memo(function DecisionBuilder({
+  validation,
+  completeness,
+}: DecisionBuilderProps) {
   const { decision, canUndo, canRedo } = useDecisionData();
   const {
     updateTitle,

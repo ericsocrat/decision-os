@@ -307,4 +307,48 @@ describe("EnrichmentEngine", () => {
     const decision = makeDecision();
     expect(engine.suggestEnrichments(decision)).toEqual([]);
   });
+
+  it("enrich() short-circuits on tier 1 with >= 0.9 confidence", async () => {
+    const fastProvider = new StubProvider(
+      "fast",
+      ["test"],
+      makePoint({ tier: 1, confidence: 0.95 }),
+    );
+    const slowProvider = new StubProvider(
+      "slow",
+      ["test"],
+      makePoint({ tier: 1, confidence: 1.0, value: 999 }),
+    );
+    reg.register(fastProvider);
+    reg.register(slowProvider);
+
+    const result = await engine.enrich(baseQuery);
+    // Should get fastProvider's result because it short-circuits
+    expect(result).not.toBeNull();
+    expect(result!.confidence).toBe(0.95);
+    expect(result!.value).not.toBe(999);
+  });
+
+  it("suggestEnrichments() deduplicates locations from duplicate option names", () => {
+    reg.register(new StubProvider("col", ["cost-of-living"]));
+    const decision = makeDecision({
+      options: [
+        { id: "o1", name: "Berlin, DE" },
+        { id: "o2", name: "Berlin, DE" },
+      ],
+      criteria: [{ id: "c1", name: "Cost of Living", weight: 50, type: "cost" }],
+    });
+    const suggestions = engine.suggestEnrichments(decision);
+    // Only 1 unique location → 1 suggestion, not 2
+    expect(suggestions.length).toBe(1);
+    expect(suggestions[0].city).toBe("Berlin");
+    expect(suggestions[0].country).toBe("DE");
+  });
+
+  it("enrichBatch() handles rejected promises gracefully", async () => {
+    reg.register(new FailingProvider());
+    const results = await engine.enrichBatch([baseQuery]);
+    const key = "us|boston|test|alpha";
+    expect(results.get(key)).toBeNull();
+  });
 });
