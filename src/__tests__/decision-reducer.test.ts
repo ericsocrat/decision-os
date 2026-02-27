@@ -170,6 +170,90 @@ describe("Decision mutations", () => {
     expect(next.decision.scores["o1"]["c2"]).toBe(4);
   });
 
+  // -------------------------------------------------------------------------
+  // REORDER_OPTIONS
+  // -------------------------------------------------------------------------
+
+  it("REORDER_OPTIONS moves an option to a new position", () => {
+    const d = makeDecision({
+      options: [
+        { id: "o1", name: "A" },
+        { id: "o2", name: "B" },
+        { id: "o3", name: "C" },
+      ],
+    });
+    const state = init(d);
+    const next = dispatch(state, { type: "REORDER_OPTIONS", fromIndex: 0, toIndex: 2 });
+    expect(next.decision.options.map((o) => o.id)).toEqual(["o2", "o3", "o1"]);
+    expect(next.isDirty).toBe(true);
+  });
+
+  it("REORDER_OPTIONS with same fromIndex and toIndex returns unchanged state", () => {
+    const state = init();
+    const next = dispatch(state, { type: "REORDER_OPTIONS", fromIndex: 1, toIndex: 1 });
+    // No-op: state reference should be identical
+    expect(next).toBe(state);
+  });
+
+  it("REORDER_OPTIONS with out-of-bounds index returns unchanged state", () => {
+    const state = init();
+    const next = dispatch(state, { type: "REORDER_OPTIONS", fromIndex: 0, toIndex: 5 });
+    expect(next).toBe(state);
+    const next2 = dispatch(state, { type: "REORDER_OPTIONS", fromIndex: -1, toIndex: 0 });
+    expect(next2).toBe(state);
+  });
+
+  it("REORDER_OPTIONS preserves score matrix data", () => {
+    const state = init();
+    const next = dispatch(state, { type: "REORDER_OPTIONS", fromIndex: 0, toIndex: 1 });
+    // Options reversed: [o2, o1] but score keys are by ID, unchanged
+    expect(next.decision.options[0].id).toBe("o2");
+    expect(next.decision.options[1].id).toBe("o1");
+    expect(next.decision.scores["o1"]).toEqual({ c1: 7, c2: 4 });
+    expect(next.decision.scores["o2"]).toEqual({ c1: 5, c2: 8 });
+  });
+
+  // -------------------------------------------------------------------------
+  // REORDER_CRITERIA
+  // -------------------------------------------------------------------------
+
+  it("REORDER_CRITERIA moves a criterion to a new position", () => {
+    const d = makeDecision({
+      criteria: [
+        { id: "c1", name: "X", weight: 30, type: "benefit" },
+        { id: "c2", name: "Y", weight: 40, type: "cost" },
+        { id: "c3", name: "Z", weight: 30, type: "benefit" },
+      ],
+    });
+    const state = init(d);
+    const next = dispatch(state, { type: "REORDER_CRITERIA", fromIndex: 2, toIndex: 0 });
+    expect(next.decision.criteria.map((c) => c.id)).toEqual(["c3", "c1", "c2"]);
+    expect(next.isDirty).toBe(true);
+  });
+
+  it("REORDER_CRITERIA with same index is no-op", () => {
+    const state = init();
+    const next = dispatch(state, { type: "REORDER_CRITERIA", fromIndex: 0, toIndex: 0 });
+    expect(next).toBe(state);
+  });
+
+  it("REORDER_CRITERIA with out-of-bounds index is no-op", () => {
+    const state = init();
+    const next = dispatch(state, { type: "REORDER_CRITERIA", fromIndex: 0, toIndex: 10 });
+    expect(next).toBe(state);
+  });
+
+  it("REORDER_CRITERIA preserves score matrix data", () => {
+    const state = init();
+    const next = dispatch(state, { type: "REORDER_CRITERIA", fromIndex: 1, toIndex: 0 });
+    // Criteria reversed: [c2, c1]
+    expect(next.decision.criteria[0].id).toBe("c2");
+    expect(next.decision.criteria[1].id).toBe("c1");
+    // Score matrix keyed by ID — unchanged
+    expect(next.decision.scores["o1"]["c1"]).toBe(7);
+    expect(next.decision.scores["o1"]["c2"]).toBe(4);
+  });
+
   it("UPDATE_SCORE sets a numeric score (clamped 0-10)", () => {
     const state = init();
     const next = dispatch(state, {
@@ -479,6 +563,24 @@ describe("Undo / Redo", () => {
     }
     // Should cap at 50 entries
     expect(state.past.length).toBeLessThanOrEqual(50);
+  });
+
+  it("UNDO restores original order after REORDER_OPTIONS", () => {
+    const state = init();
+    const reordered = dispatch(state, { type: "REORDER_OPTIONS", fromIndex: 0, toIndex: 1 });
+    expect(reordered.decision.options[0].id).toBe("o2");
+    expect(reordered.decision.options[1].id).toBe("o1");
+    const undone = dispatch(reordered, { type: "UNDO" });
+    expect(undone.decision.options[0].id).toBe("o1");
+    expect(undone.decision.options[1].id).toBe("o2");
+  });
+
+  it("UNDO restores original order after REORDER_CRITERIA", () => {
+    const state = init();
+    const reordered = dispatch(state, { type: "REORDER_CRITERIA", fromIndex: 0, toIndex: 1 });
+    expect(reordered.decision.criteria[0].id).toBe("c2");
+    const undone = dispatch(reordered, { type: "UNDO" });
+    expect(undone.decision.criteria[0].id).toBe("c1");
   });
 });
 

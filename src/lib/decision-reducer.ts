@@ -13,7 +13,16 @@
  * @see https://github.com/ericsocrat/decision-os/issues/77
  */
 
-import type { Confidence, ConfidenceStrategy, Criterion, Decision, Option, ScoreMatrix, ScoreMetadataMatrix, ScoreValue } from "./types";
+import type {
+  Confidence,
+  ConfidenceStrategy,
+  Criterion,
+  Decision,
+  Option,
+  ScoreMatrix,
+  ScoreMetadataMatrix,
+  ScoreValue,
+} from "./types";
 import { generateId } from "./utils";
 import { resolveScoreValue } from "./scoring";
 import {
@@ -79,6 +88,7 @@ export type DecisionAction =
   | { type: "ADD_OPTION" }
   | { type: "UPDATE_OPTION"; optionId: string; updates: Partial<Option>; timestamp: number }
   | { type: "REMOVE_OPTION"; optionId: string }
+  | { type: "REORDER_OPTIONS"; fromIndex: number; toIndex: number }
 
   // Criteria
   | { type: "ADD_CRITERION" }
@@ -89,6 +99,7 @@ export type DecisionAction =
       timestamp: number;
     }
   | { type: "REMOVE_CRITERION"; criterionId: string }
+  | { type: "REORDER_CRITERIA"; fromIndex: number; toIndex: number }
 
   // Scores
   | { type: "UPDATE_SCORE"; optionId: string; criterionId: string; value: number | null }
@@ -215,6 +226,22 @@ function applyDecisionMutation(decision: Decision, action: DecisionAction): Deci
       });
     }
 
+    case "REORDER_OPTIONS": {
+      if (
+        action.fromIndex === action.toIndex ||
+        action.fromIndex < 0 ||
+        action.toIndex < 0 ||
+        action.fromIndex >= decision.options.length ||
+        action.toIndex >= decision.options.length
+      ) {
+        return null;
+      }
+      const newOptions = [...decision.options];
+      const [moved] = newOptions.splice(action.fromIndex, 1);
+      newOptions.splice(action.toIndex, 0, moved);
+      return stampNow({ ...decision, options: newOptions });
+    }
+
     case "ADD_CRITERION": {
       const newCrit: Criterion = {
         id: generateId(),
@@ -255,6 +282,22 @@ function applyDecisionMutation(decision: Decision, action: DecisionAction): Deci
       });
     }
 
+    case "REORDER_CRITERIA": {
+      if (
+        action.fromIndex === action.toIndex ||
+        action.fromIndex < 0 ||
+        action.toIndex < 0 ||
+        action.fromIndex >= decision.criteria.length ||
+        action.toIndex >= decision.criteria.length
+      ) {
+        return null;
+      }
+      const newCriteria = [...decision.criteria];
+      const [moved] = newCriteria.splice(action.fromIndex, 1);
+      newCriteria.splice(action.toIndex, 0, moved);
+      return stampNow({ ...decision, criteria: newCriteria });
+    }
+
     case "UPDATE_SCORE": {
       const newScores = { ...decision.scores };
       if (!newScores[action.optionId]) newScores[action.optionId] = {};
@@ -285,7 +328,7 @@ function applyDecisionMutation(decision: Decision, action: DecisionAction): Deci
           newMetadata,
           action.optionId,
           action.criterionId,
-          createOverrideMetadata(existingMeta),
+          createOverrideMetadata(existingMeta)
         );
       }
       return stampNow({ ...decision, scores: newScores, scoreMetadata: newMetadata });
@@ -302,15 +345,13 @@ function applyDecisionMutation(decision: Decision, action: DecisionAction): Deci
           : undefined;
       newScores[action.optionId] = {
         ...newScores[action.optionId],
-        [action.criterionId]: existingConf
-          ? { value: clamped, confidence: existingConf }
-          : clamped,
+        [action.criterionId]: existingConf ? { value: clamped, confidence: existingConf } : clamped,
       };
       const newMetadata = setMetadataCell(
         decision.scoreMetadata,
         action.optionId,
         action.criterionId,
-        createEnrichedMetadata(clamped, action.source, action.tier),
+        createEnrichedMetadata(clamped, action.source, action.tier)
       );
       return stampNow({ ...decision, scores: newScores, scoreMetadata: newMetadata });
     }
@@ -330,16 +371,14 @@ function applyDecisionMutation(decision: Decision, action: DecisionAction): Deci
           : undefined;
       newScores[action.optionId] = {
         ...newScores[action.optionId],
-        [action.criterionId]: existingConf
-          ? { value, confidence: existingConf }
-          : value,
+        [action.criterionId]: existingConf ? { value, confidence: existingConf } : value,
       };
       // Restore to enriched provenance
       const newMetadata = setMetadataCell(
         decision.scoreMetadata,
         action.optionId,
         action.criterionId,
-        createEnrichedMetadata(value, meta.enrichedSource ?? "", meta.enrichedTier ?? 2),
+        createEnrichedMetadata(value, meta.enrichedSource ?? "", meta.enrichedTier ?? 2)
       );
       return stampNow({ ...decision, scores: newScores, scoreMetadata: newMetadata });
     }
@@ -418,8 +457,10 @@ function classifyAction(
     case "SET_DECISION":
     case "ADD_OPTION":
     case "REMOVE_OPTION":
+    case "REORDER_OPTIONS":
     case "ADD_CRITERION":
     case "REMOVE_CRITERION":
+    case "REORDER_CRITERIA":
     case "UPDATE_SCORE":
     case "UPDATE_CONFIDENCE":
     case "SET_CONFIDENCE_STRATEGY":

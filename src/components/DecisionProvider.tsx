@@ -37,7 +37,15 @@ import {
   type ReactNode,
   type Dispatch,
 } from "react";
-import type { Confidence, ConfidenceStrategy, Criterion, Decision, DecisionResults, Option, SensitivityAnalysis } from "@/lib/types";
+import type {
+  Confidence,
+  ConfidenceStrategy,
+  Criterion,
+  Decision,
+  DecisionResults,
+  Option,
+  SensitivityAnalysis,
+} from "@/lib/types";
 import type { TopsisResults } from "@/lib/topsis";
 import type { RegretResults } from "@/lib/regret";
 import {
@@ -106,9 +114,11 @@ export interface ActionsValue {
   addOption: () => void;
   updateOption: (optionId: string, updates: Partial<Option>) => void;
   removeOption: (optionId: string) => void;
+  reorderOptions: (fromIndex: number, toIndex: number) => void;
   addCriterion: () => void;
   updateCriterion: (criterionId: string, updates: Partial<Criterion>) => void;
   removeCriterion: (criterionId: string) => void;
+  reorderCriteria: (fromIndex: number, toIndex: number) => void;
   updateScore: (optionId: string, criterionId: string, value: number | null) => void;
   updateConfidence: (optionId: string, criterionId: string, confidence: Confidence) => void;
   updateReasoning: (optionId: string, criterionId: string, text: string) => void;
@@ -117,7 +127,7 @@ export interface ActionsValue {
     criterionId: string,
     value: number,
     source: string,
-    tier: EnrichmentTier,
+    tier: EnrichmentTier
   ) => void;
   restoreEnrichedValue: (optionId: string, criterionId: string) => void;
   undo: () => void;
@@ -145,9 +155,11 @@ export interface DecisionContextValue extends DecisionStateValue {
   addOption: () => void;
   updateOption: (optionId: string, updates: Partial<Option>) => void;
   removeOption: (optionId: string) => void;
+  reorderOptions: (fromIndex: number, toIndex: number) => void;
   addCriterion: () => void;
   updateCriterion: (criterionId: string, updates: Partial<Criterion>) => void;
   removeCriterion: (criterionId: string) => void;
+  reorderCriteria: (fromIndex: number, toIndex: number) => void;
   updateScore: (optionId: string, criterionId: string, value: number | null) => void;
   updateConfidence: (optionId: string, criterionId: string, confidence: Confidence) => void;
   updateReasoning: (optionId: string, criterionId: string, text: string) => void;
@@ -156,7 +168,7 @@ export interface DecisionContextValue extends DecisionStateValue {
     criterionId: string,
     value: number,
     source: string,
-    tier: EnrichmentTier,
+    tier: EnrichmentTier
   ) => void;
   restoreEnrichedValue: (optionId: string, criterionId: string) => void;
   undo: () => void;
@@ -293,6 +305,12 @@ export function DecisionProvider({ children }: Readonly<{ children: ReactNode }>
     [dispatch]
   );
 
+  const reorderOptions = useCallback(
+    (fromIndex: number, toIndex: number) =>
+      dispatch({ type: "REORDER_OPTIONS", fromIndex, toIndex }),
+    [dispatch]
+  );
+
   const addCriterion = useCallback(() => {
     dispatch({ type: "ADD_CRITERION" });
   }, [dispatch]);
@@ -305,6 +323,12 @@ export function DecisionProvider({ children }: Readonly<{ children: ReactNode }>
 
   const removeCriterion = useCallback(
     (criterionId: string) => dispatch({ type: "REMOVE_CRITERION", criterionId }),
+    [dispatch]
+  );
+
+  const reorderCriteria = useCallback(
+    (fromIndex: number, toIndex: number) =>
+      dispatch({ type: "REORDER_CRITERIA", fromIndex, toIndex }),
     [dispatch]
   );
 
@@ -423,14 +447,7 @@ export function DecisionProvider({ children }: Readonly<{ children: ReactNode }>
       canUndo: state.canUndo,
       canRedo: state.canRedo,
     }),
-    [
-      state.decision,
-      state.decisions,
-      state.isDirty,
-      state.isLoading,
-      state.canUndo,
-      state.canRedo,
-    ]
+    [state.decision, state.decisions, state.isDirty, state.isLoading, state.canUndo, state.canRedo]
   );
 
   // Focused context: derived results (re-renders only when results change)
@@ -454,9 +471,11 @@ export function DecisionProvider({ children }: Readonly<{ children: ReactNode }>
       addOption,
       updateOption,
       removeOption,
+      reorderOptions,
       addCriterion,
       updateCriterion,
       removeCriterion,
+      reorderCriteria,
       updateScore,
       updateConfidence,
       updateReasoning,
@@ -478,9 +497,11 @@ export function DecisionProvider({ children }: Readonly<{ children: ReactNode }>
       addOption,
       updateOption,
       removeOption,
+      reorderOptions,
       addCriterion,
       updateCriterion,
       removeCriterion,
+      reorderCriteria,
       updateScore,
       updateConfidence,
       updateReasoning,

@@ -39,6 +39,21 @@ import { ScoreProvenanceIndicator } from "./ScoreProvenanceIndicator";
 import { ConfidenceIndicator } from "./ConfidenceIndicator";
 import { getMetadata, canRestoreEnriched } from "@/lib/provenance";
 import { AHPWizard } from "./AHPWizard";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { SortableItem } from "./SortableItem";
 
 interface DecisionBuilderProps {
   validation: ValidationResult;
@@ -52,9 +67,11 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
     addOption,
     updateOption,
     removeOption,
+    reorderOptions,
     addCriterion,
     updateCriterion,
     removeCriterion,
+    reorderCriteria,
     updateScore,
     updateConfidence,
     updateReasoning,
@@ -147,6 +164,38 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
       }
     },
     [autoNormalize, decision.criteria, updateCriterion]
+  );
+
+  // ── Drag-and-drop sensors and handlers ──────────────────
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleOptionDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      const oldIndex = decision.options.findIndex((o) => o.id === active.id);
+      const newIndex = decision.options.findIndex((o) => o.id === over.id);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        reorderOptions(oldIndex, newIndex);
+      }
+    },
+    [decision.options, reorderOptions]
+  );
+
+  const handleCriteriaDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      const oldIndex = decision.criteria.findIndex((c) => c.id === active.id);
+      const newIndex = decision.criteria.findIndex((c) => c.id === over.id);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        reorderCriteria(oldIndex, newIndex);
+      }
+    },
+    [decision.criteria, reorderCriteria]
   );
 
   /** Arrow-key navigation within the score matrix (WAI-ARIA grid pattern) */
@@ -316,97 +365,108 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
             Add Option
           </button>
         </div>
-        <div className="space-y-2">
-          {decision.options.map((opt, index) => {
-            // Labels: A-Z, then AA, AB, ...
-            const label =
-              index < 26
-                ? String.fromCharCode(65 + index)
-                : String.fromCharCode(65 + Math.floor(index / 26) - 1) +
-                  String.fromCharCode(65 + (index % 26));
-            const optIssues = validation.byId.get(opt.id);
-            const hasIssue = !!optIssues && optIssues.length > 0;
-            return (
-              <div key={opt.id}>
-                <div className="flex items-center gap-2">
-                  <span className="w-6 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
-                    {label}
-                  </span>
-                  <input
-                    type="text"
-                    value={opt.name}
-                    onChange={(e) => updateOption(opt.id, { name: e.target.value })}
-                    className={`flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                      hasIssue
-                        ? "border-orange-400 focus:border-orange-500 focus:ring-orange-500"
-                        : "border-gray-300 dark:border-gray-600 focus:border-blue-500"
-                    } dark:bg-gray-700 dark:text-gray-100`}
-                    placeholder={`Option ${label}`}
-                    aria-label={`Option ${index + 1} name`}
-                    maxLength={80}
-                    aria-invalid={hasIssue || undefined}
-                  />
-                  {decision.options.length > 2 && (
-                    <button
-                      onClick={() => {
-                        removeOption(opt.id);
-                        showToast({
-                          text: `Option "${opt.name}" removed`,
-                          action: { label: "Undo", onClick: undo },
-                        });
-                      }}
-                      className="rounded-md p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
-                      aria-label={`Remove option ${opt.name}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-                {/* Description toggle + textarea */}
-                <div className="ml-8 mt-1">
-                  <button
-                    type="button"
-                    onClick={() => toggleDesc(`opt-${opt.id}`)}
-                    className="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                    aria-expanded={expandedDescs.has(`opt-${opt.id}`)}
-                    aria-controls={`opt-desc-${opt.id}`}
-                  >
-                    {expandedDescs.has(`opt-${opt.id}`) ? (
-                      <ChevronUp className="h-3 w-3" />
-                    ) : (
-                      <ChevronDown className="h-3 w-3" />
-                    )}
-                    {opt.description ? "Edit description" : "Add description"}
-                  </button>
-                  {expandedDescs.has(`opt-${opt.id}`) && (
-                    <div className="mt-1" id={`opt-desc-${opt.id}`}>
-                      <textarea
-                        value={opt.description ?? ""}
-                        onChange={(e) =>
-                          updateOption(opt.id, { description: e.target.value.slice(0, 500) })
-                        }
-                        className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
-                        placeholder="Add notes about this option..."
-                        rows={2}
-                        maxLength={500}
-                        aria-label={`Description for option ${opt.name}`}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleOptionDragEnd}
+        >
+          <SortableContext
+            items={decision.options.map((o) => o.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-2">
+              {decision.options.map((opt, index) => {
+                // Labels: A-Z, then AA, AB, ...
+                const label =
+                  index < 26
+                    ? String.fromCharCode(65 + index)
+                    : String.fromCharCode(65 + Math.floor(index / 26) - 1) +
+                      String.fromCharCode(65 + (index % 26));
+                const optIssues = validation.byId.get(opt.id);
+                const hasIssue = !!optIssues && optIssues.length > 0;
+                return (
+                  <SortableItem key={opt.id} id={opt.id} dragLabel={`Reorder option ${opt.name}`}>
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
+                        {label}
+                      </span>
+                      <input
+                        type="text"
+                        value={opt.name}
+                        onChange={(e) => updateOption(opt.id, { name: e.target.value })}
+                        className={`flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                          hasIssue
+                            ? "border-orange-400 focus:border-orange-500 focus:ring-orange-500"
+                            : "border-gray-300 dark:border-gray-600 focus:border-blue-500"
+                        } dark:bg-gray-700 dark:text-gray-100`}
+                        placeholder={`Option ${label}`}
+                        aria-label={`Option ${index + 1} name`}
+                        maxLength={80}
+                        aria-invalid={hasIssue || undefined}
                       />
-                      <p className="text-right text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
-                        {(opt.description ?? "").length}/500
-                      </p>
+                      {decision.options.length > 2 && (
+                        <button
+                          onClick={() => {
+                            removeOption(opt.id);
+                            showToast({
+                              text: `Option "${opt.name}" removed`,
+                              action: { label: "Undo", onClick: undo },
+                            });
+                          }}
+                          className="rounded-md p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                          aria-label={`Remove option ${opt.name}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
-                  )}
-                </div>
-                {hasIssue && (
-                  <p className="ml-8 mt-0.5 text-xs text-orange-600 dark:text-orange-400 flex items-center gap-1">
-                    <AlertTriangle className="h-3 w-3 shrink-0" />
-                    {optIssues![0].message}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                    {/* Description toggle + textarea */}
+                    <div className="ml-8 mt-1">
+                      <button
+                        type="button"
+                        onClick={() => toggleDesc(`opt-${opt.id}`)}
+                        className="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                        aria-expanded={expandedDescs.has(`opt-${opt.id}`)}
+                        aria-controls={`opt-desc-${opt.id}`}
+                      >
+                        {expandedDescs.has(`opt-${opt.id}`) ? (
+                          <ChevronUp className="h-3 w-3" />
+                        ) : (
+                          <ChevronDown className="h-3 w-3" />
+                        )}
+                        {opt.description ? "Edit description" : "Add description"}
+                      </button>
+                      {expandedDescs.has(`opt-${opt.id}`) && (
+                        <div className="mt-1" id={`opt-desc-${opt.id}`}>
+                          <textarea
+                            value={opt.description ?? ""}
+                            onChange={(e) =>
+                              updateOption(opt.id, { description: e.target.value.slice(0, 500) })
+                            }
+                            className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                            placeholder="Add notes about this option..."
+                            rows={2}
+                            maxLength={500}
+                            aria-label={`Description for option ${opt.name}`}
+                          />
+                          <p className="text-right text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                            {(opt.description ?? "").length}/500
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    {hasIssue && (
+                      <p className="ml-8 mt-0.5 text-xs text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3 shrink-0" />
+                        {optIssues![0].message}
+                      </p>
+                    )}
+                  </SortableItem>
+                );
+              })}
+            </div>
+          </SortableContext>
+        </DndContext>
       </section>
 
       {/* Criteria */}
@@ -446,122 +506,137 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
             Add Criterion
           </button>
         </div>
-        <div className="space-y-2">
-          {validation.byField.has("weights") && (
-            <div className="rounded-md border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/30 px-3 py-2 text-sm text-red-700 dark:text-red-300 flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              {validation.byField.get("weights")![0].message}
-            </div>
-          )}
-          {decision.criteria.map((crit, critIndex) => {
-            const critIssues = validation.byId.get(crit.id);
-            const critWarning = critIssues?.find((i) => i.severity === "warning");
-            const critInfo = critIssues?.find((i) => i.severity === "info");
-            return (
-              <div key={crit.id}>
-                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                  <input
-                    type="text"
-                    value={crit.name}
-                    onChange={(e) => updateCriterion(crit.id, { name: e.target.value })}
-                    className={`flex-1 min-w-[120px] rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                      critWarning
-                        ? "border-orange-400 focus:border-orange-500 focus:ring-orange-500"
-                        : "border-gray-300 dark:border-gray-600 focus:border-blue-500"
-                    } dark:bg-gray-700 dark:text-gray-100`}
-                    placeholder="Criterion name"
-                    aria-label={`Criterion name: ${crit.name}`}
-                    maxLength={80}
-                    aria-invalid={!!critWarning || undefined}
-                  />
-                  <select
-                    value={crit.type}
-                    onChange={(e) =>
-                      updateCriterion(crit.id, { type: e.target.value as CriterionType })
-                    }
-                    className="rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 px-2 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    aria-label={`Type for ${crit.name}`}
-                  >
-                    <option value="benefit">Benefit ↑</option>
-                    <option value="cost">Cost ↓</option>
-                  </select>
-                  {decision.criteria.length > 1 && (
-                    <button
-                      onClick={() => {
-                        removeCriterion(crit.id);
-                        showToast({
-                          text: `Criterion "${crit.name}" removed`,
-                          action: { label: "Undo", onClick: undo },
-                        });
-                      }}
-                      className="rounded-md p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
-                      aria-label={`Remove criterion ${crit.name}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  )}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleCriteriaDragEnd}
+        >
+          <SortableContext
+            items={decision.criteria.map((c) => c.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-2">
+              {validation.byField.has("weights") && (
+                <div className="rounded-md border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/30 px-3 py-2 text-sm text-red-700 dark:text-red-300 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  {validation.byField.get("weights")![0].message}
                 </div>
-                <WeightSlider
-                  id={crit.id}
-                  name={crit.name}
-                  value={crit.weight}
-                  onChange={(v) => handleWeightChange(crit.id, v)}
-                  colorIndex={critIndex}
-                  isHighest={crit.id === highestWeightId}
-                />
-                {/* Criterion description toggle + textarea */}
-                <div className="mt-1">
-                  <button
-                    type="button"
-                    onClick={() => toggleDesc(`crit-${crit.id}`)}
-                    className="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                    aria-expanded={expandedDescs.has(`crit-${crit.id}`)}
-                    aria-controls={`crit-desc-${crit.id}`}
+              )}
+              {decision.criteria.map((crit, critIndex) => {
+                const critIssues = validation.byId.get(crit.id);
+                const critWarning = critIssues?.find((i) => i.severity === "warning");
+                const critInfo = critIssues?.find((i) => i.severity === "info");
+                return (
+                  <SortableItem
+                    key={crit.id}
+                    id={crit.id}
+                    dragLabel={`Reorder criterion ${crit.name}`}
                   >
-                    {expandedDescs.has(`crit-${crit.id}`) ? (
-                      <ChevronUp className="h-3 w-3" />
-                    ) : (
-                      <ChevronDown className="h-3 w-3" />
-                    )}
-                    {crit.description ? "Edit description" : "Add description"}
-                  </button>
-                  {expandedDescs.has(`crit-${crit.id}`) && (
-                    <div className="mt-1" id={`crit-desc-${crit.id}`}>
-                      <textarea
-                        value={crit.description ?? ""}
-                        onChange={(e) =>
-                          updateCriterion(crit.id, {
-                            description: e.target.value.slice(0, 500),
-                          })
-                        }
-                        className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
-                        placeholder="Describe what this criterion measures..."
-                        rows={2}
-                        maxLength={500}
-                        aria-label={`Description for criterion ${crit.name}`}
+                    <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                      <input
+                        type="text"
+                        value={crit.name}
+                        onChange={(e) => updateCriterion(crit.id, { name: e.target.value })}
+                        className={`flex-1 min-w-[120px] rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                          critWarning
+                            ? "border-orange-400 focus:border-orange-500 focus:ring-orange-500"
+                            : "border-gray-300 dark:border-gray-600 focus:border-blue-500"
+                        } dark:bg-gray-700 dark:text-gray-100`}
+                        placeholder="Criterion name"
+                        aria-label={`Criterion name: ${crit.name}`}
+                        maxLength={80}
+                        aria-invalid={!!critWarning || undefined}
                       />
-                      <p className="text-right text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
-                        {(crit.description ?? "").length}/500
-                      </p>
+                      <select
+                        value={crit.type}
+                        onChange={(e) =>
+                          updateCriterion(crit.id, { type: e.target.value as CriterionType })
+                        }
+                        className="rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 px-2 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        aria-label={`Type for ${crit.name}`}
+                      >
+                        <option value="benefit">Benefit ↑</option>
+                        <option value="cost">Cost ↓</option>
+                      </select>
+                      {decision.criteria.length > 1 && (
+                        <button
+                          onClick={() => {
+                            removeCriterion(crit.id);
+                            showToast({
+                              text: `Criterion "${crit.name}" removed`,
+                              action: { label: "Undo", onClick: undo },
+                            });
+                          }}
+                          className="rounded-md p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                          aria-label={`Remove criterion ${crit.name}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
-                  )}
-                </div>
-                {critWarning && (
-                  <p className="mt-0.5 text-xs text-orange-600 dark:text-orange-400 flex items-center gap-1">
-                    <AlertTriangle className="h-3 w-3 shrink-0" />
-                    {critWarning.message}
-                  </p>
-                )}
-                {critInfo && !critWarning && (
-                  <p className="mt-0.5 text-xs text-yellow-600 dark:text-yellow-400 flex items-center gap-1">
-                    <Info className="h-3 w-3 shrink-0" />
-                    {critInfo.message}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                    <WeightSlider
+                      id={crit.id}
+                      name={crit.name}
+                      value={crit.weight}
+                      onChange={(v) => handleWeightChange(crit.id, v)}
+                      colorIndex={critIndex}
+                      isHighest={crit.id === highestWeightId}
+                    />
+                    {/* Criterion description toggle + textarea */}
+                    <div className="mt-1">
+                      <button
+                        type="button"
+                        onClick={() => toggleDesc(`crit-${crit.id}`)}
+                        className="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                        aria-expanded={expandedDescs.has(`crit-${crit.id}`)}
+                        aria-controls={`crit-desc-${crit.id}`}
+                      >
+                        {expandedDescs.has(`crit-${crit.id}`) ? (
+                          <ChevronUp className="h-3 w-3" />
+                        ) : (
+                          <ChevronDown className="h-3 w-3" />
+                        )}
+                        {crit.description ? "Edit description" : "Add description"}
+                      </button>
+                      {expandedDescs.has(`crit-${crit.id}`) && (
+                        <div className="mt-1" id={`crit-desc-${crit.id}`}>
+                          <textarea
+                            value={crit.description ?? ""}
+                            onChange={(e) =>
+                              updateCriterion(crit.id, {
+                                description: e.target.value.slice(0, 500),
+                              })
+                            }
+                            className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                            placeholder="Describe what this criterion measures..."
+                            rows={2}
+                            maxLength={500}
+                            aria-label={`Description for criterion ${crit.name}`}
+                          />
+                          <p className="text-right text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                            {(crit.description ?? "").length}/500
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    {critWarning && (
+                      <p className="mt-0.5 text-xs text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3 shrink-0" />
+                        {critWarning.message}
+                      </p>
+                    )}
+                    {critInfo && !critWarning && (
+                      <p className="mt-0.5 text-xs text-yellow-600 dark:text-yellow-400 flex items-center gap-1">
+                        <Info className="h-3 w-3 shrink-0" />
+                        {critInfo.message}
+                      </p>
+                    )}
+                  </SortableItem>
+                );
+              })}
+            </div>
+          </SortableContext>
+        </DndContext>
 
         {/* Weight Distribution Bar */}
         <WeightDistributionBar criteria={decision.criteria} />
@@ -627,7 +702,10 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
           >
             <thead>
               <tr>
-                <th scope="col" className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+                <th
+                  scope="col"
+                  className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-3 py-2 border-b border-gray-200 dark:border-gray-700"
+                >
                   Option / Criterion
                 </th>
                 {decision.criteria.map((crit) => (
@@ -665,7 +743,10 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
             <tbody>
               {decision.options.map((opt, rowIdx) => (
                 <tr key={opt.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                  <th scope="row" className="px-3 py-2 text-sm font-medium text-gray-900 dark:text-gray-100 border-b border-gray-100 dark:border-gray-700 text-left">
+                  <th
+                    scope="row"
+                    className="px-3 py-2 text-sm font-medium text-gray-900 dark:text-gray-100 border-b border-gray-100 dark:border-gray-700 text-left"
+                  >
                     {opt.name}
                   </th>
                   {decision.criteria.map((crit, colIdx) => {
@@ -733,9 +814,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                             canRestore={canRestoreEnriched(decision, opt.id, crit.id)}
                             onRestore={() => restoreEnrichedValue(opt.id, crit.id)}
                           />
-                          <ConfidenceIndicator
-                            metadata={getMetadata(decision, opt.id, crit.id)}
-                          />
+                          <ConfidenceIndicator metadata={getMetadata(decision, opt.id, crit.id)} />
                         </div>
                         {isFocused && (
                           <ScoringPrompt
