@@ -1,12 +1,28 @@
 /**
  * KeyboardShortcutsModal — accessible modal displaying global keyboard shortcuts.
  * Implements focus trap, backdrop click dismiss, and focus restoration.
+ * Detects macOS for platform-specific modifier symbols.
  */
 
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { Keyboard, X } from "lucide-react";
+
+// ---------------------------------------------------------------------------
+// Platform detection & key formatting
+// ---------------------------------------------------------------------------
+
+function isMac(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+}
+
+/** Replace Ctrl/Alt/Shift with Mac symbols when on macOS */
+export function formatKey(key: string): string {
+  if (!isMac()) return key;
+  return key.replace("Ctrl+", "\u2318").replace("Alt+", "\u2325").replace("Shift+", "\u21E7");
+}
 
 const SHORTCUTS: ReadonlyArray<readonly [string, string]> = [
   ["1", "Builder tab"],
@@ -62,6 +78,11 @@ export function KeyboardShortcutsModal({ open, onClose }: KeyboardShortcutsModal
     return () => document.removeEventListener("keydown", handleTrap);
   }, [open]);
 
+  const formatted = useMemo(
+    () => SHORTCUTS.map(([key, desc]) => [formatKey(key), desc] as const),
+    []
+  );
+
   if (!open) return null;
 
   return (
@@ -92,7 +113,7 @@ export function KeyboardShortcutsModal({ open, onClose }: KeyboardShortcutsModal
           </button>
         </div>
         <dl className="space-y-2 text-sm">
-          {SHORTCUTS.map(([key, desc]) => (
+          {formatted.map(([key, desc]) => (
             <div key={key} className="flex items-center justify-between">
               <dt className="text-gray-600 dark:text-gray-300">{desc}</dt>
               <dd>
@@ -103,6 +124,13 @@ export function KeyboardShortcutsModal({ open, onClose }: KeyboardShortcutsModal
             </div>
           ))}
         </dl>
+        <p className="mt-4 text-xs text-gray-400 dark:text-gray-500">
+          Tip: Press{" "}
+          <kbd className="rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-1.5 py-0.5 text-xs font-mono">
+            ?
+          </kbd>{" "}
+          at any time to show this modal
+        </p>
       </div>
     </div>
   );

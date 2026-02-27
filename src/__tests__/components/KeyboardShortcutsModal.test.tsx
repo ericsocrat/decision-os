@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
+import { KeyboardShortcutsModal, formatKey } from "@/components/KeyboardShortcutsModal";
 
 describe("KeyboardShortcutsModal", () => {
   it("renders nothing when closed", () => {
@@ -69,5 +69,30 @@ describe("KeyboardShortcutsModal", () => {
     const kbdTexts = Array.from(kbds).map((k) => k.textContent);
     expect(kbdTexts).toContain("Ctrl+Z");
     expect(kbdTexts).toContain("?");
+  });
+});
+
+describe("formatKey", () => {
+  it("returns key unchanged on non-Mac platforms", () => {
+    // JSDOM navigator.platform defaults to empty or non-Mac
+    expect(formatKey("Ctrl+Z")).toBe("Ctrl+Z");
+    expect(formatKey("Alt+1")).toBe("Alt+1");
+    expect(formatKey("Ctrl+Shift+Z")).toBe("Ctrl+Shift+Z");
+  });
+
+  it("replaces modifiers with Mac symbols on macOS", () => {
+    const original = Object.getOwnPropertyDescriptor(navigator, "platform");
+    Object.defineProperty(navigator, "platform", { value: "MacIntel", configurable: true });
+    try {
+      expect(formatKey("Ctrl+Z")).toBe("\u2318Z");
+      expect(formatKey("Alt+1")).toBe("\u23251");
+      expect(formatKey("Ctrl+Shift+Z")).toBe("\u2318\u21E7Z");
+    } finally {
+      if (original) {
+        Object.defineProperty(navigator, "platform", original);
+      } else {
+        Object.defineProperty(navigator, "platform", { value: "", configurable: true });
+      }
+    }
   });
 });

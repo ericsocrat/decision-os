@@ -11,7 +11,7 @@
 
 "use client";
 
-import { memo, useMemo, useState } from "react";
+import { memo, useMemo, useState, type RefObject } from "react";
 import { useDecisionData, useActions } from "./DecisionProvider";
 import { useTheme } from "./ThemeProvider";
 import { useT, useTf } from "@/lib/i18n";
@@ -26,6 +26,7 @@ import {
   Cloud,
   LogIn,
   LogOut,
+  Keyboard,
 } from "lucide-react";
 import Image from "next/image";
 import { TemplatePicker, instantiateTemplate } from "./TemplatePicker";
@@ -43,7 +44,12 @@ import { useCollaboration } from "./DecisionProvider";
 import { PresenceAvatars } from "./PresenceAvatars";
 import { CollaborationBadge } from "./CollaborationBadge";
 
-export const Header = memo(function Header() {
+interface HeaderProps {
+  onShowShortcuts?: () => void;
+  shortcutsTriggerRef?: RefObject<HTMLButtonElement | null>;
+}
+
+export const Header = memo(function Header({ onShowShortcuts, shortcutsTriggerRef }: HeaderProps) {
   const { decision, decisions } = useDecisionData();
   const { loadDecision, createNewDecision, removeDecision, resetDemo } = useActions();
   const { theme, toggleTheme } = useTheme();
@@ -312,7 +318,20 @@ export const Header = memo(function Header() {
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
 
-            {/* ── Mobile overflow menu (< 640px) ── */}
+            {/* Keyboard shortcuts — desktop only */}
+            {onShowShortcuts && (
+              <button
+                ref={shortcutsTriggerRef}
+                onClick={onShowShortcuts}
+                className="hidden sm:inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                aria-label="Keyboard shortcuts"
+                title="Keyboard shortcuts (?)"
+              >
+                <Keyboard className="h-4 w-4" />
+              </button>
+            )}
+
+                        {/* ── Mobile overflow menu (< 640px) ── */}
             <MobileOverflowMenu items={overflowItems} />
           </div>
         </div>

@@ -329,7 +329,10 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-      <Header />
+      <Header
+        onShowShortcuts={() => setShowShortcuts(true)}
+        shortcutsTriggerRef={shortcutTriggerRef}
+      />
 
       {/* Cloud migration banner (shown once for new sign-ins with local data) */}
       <MigrationBanner
@@ -456,9 +459,7 @@ function AppContent() {
         )}
         {activeTab === "history" && (
           <div id="panel-history" role="tabpanel" aria-labelledby="tab-history">
-            <ErrorBoundary
-              fallback={(reset) => <TabErrorFallback tab="History" onReset={reset} />}
-            >
+            <ErrorBoundary fallback={(reset) => <TabErrorFallback tab="History" onReset={reset} />}>
               <Suspense fallback={<TabPanelSkeleton label="History" />}>
                 <VersionHistory />
               </Suspense>

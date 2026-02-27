@@ -63,4 +63,28 @@ describe("Header", () => {
     renderWithProviders(<Header />);
     expect(screen.getByRole("button", { name: /reset demo/i })).toBeInTheDocument();
   });
+
+  it("renders keyboard shortcuts button when onShowShortcuts is provided", () => {
+    const onShowShortcuts = vi.fn();
+    renderWithProviders(<Header onShowShortcuts={onShowShortcuts} />);
+    const btn = screen.getByRole("button", { name: /keyboard shortcuts/i });
+    expect(btn).toBeInTheDocument();
+  });
+
+  it("does not render keyboard shortcuts button without onShowShortcuts", () => {
+    renderWithProviders(<Header />);
+    expect(
+      screen.queryByRole("button", { name: /keyboard shortcuts/i })
+    ).not.toBeInTheDocument();
+  });
+
+  it("calls onShowShortcuts when keyboard button is clicked", async () => {
+    const onShowShortcuts = vi.fn();
+    const { user } = renderWithProviders(
+      <Header onShowShortcuts={onShowShortcuts} />
+    );
+    const btn = screen.getByRole("button", { name: /keyboard shortcuts/i });
+    await user.click(btn);
+    expect(onShowShortcuts).toHaveBeenCalledOnce();
+  });
 });
