@@ -33,6 +33,7 @@ import { HybridResults } from "./HybridResults";
 import { QualityBar } from "./QualityBar";
 import { ConfidenceStrategySelector } from "./ConfidenceStrategySelector";
 import { WhatIfPanel } from "./WhatIfPanel";
+import { CsvExportMenu } from "./CsvExportMenu";
 import { FrameworkComparison } from "./FrameworkComparison";
 import { CompositeConfidenceIndicator } from "./CompositeConfidenceIndicator";
 import { OutcomeTracker } from "./OutcomeTracker";
@@ -301,6 +302,12 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
               <Download className="h-4 w-4" />
               <span className="hidden sm:inline">Export JSON</span>
             </button>
+            <CsvExportMenu
+              decision={decision}
+              results={results}
+              topsisResults={topsisResults}
+              regretResults={regretResults}
+            />
             <button
               onClick={handlePrintPdf}
               className="inline-flex items-center gap-1 rounded-md border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors print:hidden"
