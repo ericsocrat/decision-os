@@ -59,7 +59,7 @@
 - [x] Cloud sync (local-first with last-write-wins bidirectional merge)
 - [x] localStorage → cloud migration (one-click MigrationBanner)
 - [x] Offline fallback (app works fully without connectivity)
-- [ ] Collaborative decision-making (real-time)
+- [x] Collaborative decision-making (real-time)
 - [x] Decision history / versioning
 - [x] Shareable decision links (server-stored, short URLs)
 

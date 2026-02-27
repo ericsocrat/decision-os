@@ -128,6 +128,9 @@ export type DecisionAction =
   // Version history
   | { type: "RESTORE_VERSION"; decision: Decision }
 
+  // Realtime collaboration
+  | { type: "APPLY_REMOTE"; decision: Decision }
+
   // Undo / Redo
   | { type: "UNDO" }
   | { type: "REDO" }
@@ -567,6 +570,19 @@ export function decisionReducer(
       ...state,
       decision: action.decision,
       isDirty: true,
+      past: [],
+      future: [],
+      canUndo: false,
+      canRedo: false,
+      _coalesce: null,
+    };
+  }
+
+  // ── Realtime: apply remote decision (no undo history, no dirty flag) ──
+  if (action.type === "APPLY_REMOTE") {
+    return {
+      ...state,
+      decision: action.decision,
       past: [],
       future: [],
       canUndo: false,

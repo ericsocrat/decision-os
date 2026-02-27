@@ -69,6 +69,8 @@ import { DEMO_DECISION } from "@/lib/demo-data";
 import { generateId } from "@/lib/utils";
 import { useAnnounce } from "./Announcer";
 import { autoVersion, resetAutoVersionThrottle } from "@/lib/version-history";
+import { CollaborationProvider } from "./CollaborationProvider";
+import { useAuth } from "@/hooks/useAuth";
 
 // ---------------------------------------------------------------------------
 // Derived state (computed from decision via useMemo)
@@ -241,6 +243,10 @@ export function useDecision(): DecisionContextValue {
   return ctx;
 }
 
+/** Re-export collaboration hook for convenience. */
+export { useCollaboration } from "./CollaborationProvider";
+export type { CollaborationValue } from "./CollaborationProvider";
+
 // ---------------------------------------------------------------------------
 // Provider
 // ---------------------------------------------------------------------------
@@ -253,12 +259,20 @@ export function DecisionProvider({ children }: Readonly<{ children: ReactNode }>
   });
 
   const announce = useAnnounce();
+  const auth = useAuth();
 
   // Keep announce ref stable for use in callbacks
   const announceRef = useRef(announce);
   useEffect(() => {
     announceRef.current = announce;
   }, [announce]);
+
+  // Keep a ref to the latest decision for the collaboration snapshot getter
+  const decisionRef = useRef(state.decision);
+  useEffect(() => {
+    decisionRef.current = state.decision;
+  }, [state.decision]);
+  const getLatestDecision = useCallback(() => decisionRef.current, []);
 
   // ── Auto-save side effect (with auto-versioning) ────────
   useEffect(() => {
@@ -569,7 +583,18 @@ export function DecisionProvider({ children }: Readonly<{ children: ReactNode }>
         <ActionsCtx value={actionsValue}>
           <DecisionStateContext value={stateValue}>
             <DecisionDispatchContext value={dispatch}>
-              <DecisionContext value={contextValue}>{children}</DecisionContext>
+              <DecisionContext value={contextValue}>
+                <CollaborationProvider
+                  decisionId={state.decision.id}
+                  userId={auth.user?.id ?? null}
+                  displayName={auth.user?.user_metadata?.full_name ?? auth.user?.email ?? "Anonymous"}
+                  avatarUrl={auth.user?.user_metadata?.avatar_url ?? ""}
+                  dispatch={dispatch}
+                  getDecision={getLatestDecision}
+                >
+                  {children}
+                </CollaborationProvider>
+              </DecisionContext>
             </DecisionDispatchContext>
           </DecisionStateContext>
         </ActionsCtx>

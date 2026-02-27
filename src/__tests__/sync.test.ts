@@ -39,6 +39,13 @@ vi.mock("@/lib/supabase", () => ({
   getSupabase: () => ({}),
 }));
 
+// ─── Mock realtime channel state ───────────────────────────────────
+
+let mockChannelActive = false;
+vi.mock("@/lib/realtime", () => ({
+  isChannelActive: () => mockChannelActive,
+}));
+
 // Import AFTER mocking
 const { fullSync, hasMigrated, syncSaveDecision, syncDeleteDecision } =
   await import("@/lib/sync");
@@ -66,11 +73,21 @@ const MIGRATION_KEY = "decision-os:cloud-migrated";
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
+  mockChannelActive = false;
 });
 
 // ─── Tests ─────────────────────────────────────────────────────────
 
 describe("fullSync", () => {
+  it("skips sync when a realtime channel is active", async () => {
+    mockChannelActive = true;
+    const result = await fullSync();
+    expect(result.status).toBe("done");
+    expect(result.uploaded).toBe(0);
+    expect(result.downloaded).toBe(0);
+    expect(mockCloudGet).not.toHaveBeenCalled();
+  });
+
   it("performs initial migration when cloud is empty and not yet migrated", async () => {
     const local = [makeDecision("d1", "2025-06-01T00:00:00Z")];
     mockLocalGet.mockReturnValue(local);

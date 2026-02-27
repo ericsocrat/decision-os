@@ -39,6 +39,9 @@ import { saveDecision } from "@/lib/storage";
 import { useAuth } from "@/hooks/useAuth";
 import { useSync } from "@/hooks/useSync";
 import { isCloudEnabled } from "@/lib/supabase";
+import { useCollaboration } from "./DecisionProvider";
+import { PresenceAvatars } from "./PresenceAvatars";
+import { CollaborationBadge } from "./CollaborationBadge";
 
 export const Header = memo(function Header() {
   const { decision, decisions } = useDecisionData();
@@ -48,6 +51,7 @@ export const Header = memo(function Header() {
   const tf = useTf();
   const auth = useAuth();
   const sync = useSync(!!auth.user);
+  const collab = useCollaboration();
   const [showTemplates, setShowTemplates] = useState(false);
   const [showImport, setShowImport] = useState(false);
 
@@ -271,6 +275,17 @@ export const Header = memo(function Header() {
               <RotateCcw className="h-4 w-4" />
               <span>{t.header.resetDemo}</span>
             </button>
+
+            {/* Collaboration presence — desktop only */}
+            {collab.connectionStatus !== "disconnected" && (
+              <div className="hidden sm:flex items-center gap-2">
+                <PresenceAvatars collaborators={collab.collaborators} />
+                <CollaborationBadge
+                  connectionStatus={collab.connectionStatus}
+                  collaboratorCount={collab.collaborators.length}
+                />
+              </div>
+            )}
 
             {/* Cloud sync status — desktop only */}
             <div className="hidden sm:block">

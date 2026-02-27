@@ -68,12 +68,14 @@ Decision OS is a client-side web application built with Next.js 16 (App Router),
 
 | File                | Responsibility                                                           |
 | ------------------- | ------------------------------------------------------------------------ |
-| `storage.ts`        | localStorage CRUD operations                                             |
-| `cloud-storage.ts`  | Supabase cloud CRUD (guarded, returns empty when offline)                |
-| `sync.ts`           | Bidirectional sync engine (local ↔ cloud, last-write-wins)               |
-| `supabase.ts`       | Supabase client singleton with feature-flag guard                        |
-| `supabase-types.ts` | Generated Supabase Database types for the decisions table                |
-| `rate-limiter.ts`   | Client-side rate limiter with exponential backoff for Supabase API calls |
+| `storage.ts`          | localStorage CRUD operations                                             |
+| `cloud-storage.ts`    | Supabase cloud CRUD (guarded, returns empty when offline)                |
+| `sync.ts`             | Bidirectional sync engine (local ↔ cloud, last-write-wins)               |
+| `supabase.ts`         | Supabase client singleton with feature-flag guard                        |
+| `supabase-types.ts`   | Generated Supabase Database types for the decisions table                |
+| `rate-limiter.ts`     | Client-side rate limiter with exponential backoff for Supabase API calls |
+| `realtime.ts`         | Realtime collaboration engine (Broadcast + Presence via Supabase)        |
+| `realtime-types.ts`   | Type definitions for realtime collaboration (presence, broadcast, config) |
 
 #### Feature Modules
 
@@ -203,6 +205,14 @@ Decision OS is a client-side web application built with Next.js 16 (App Router),
 | `SyncStatus.tsx`      | Cloud sync status indicator with manual retry               |
 | `MigrationBanner.tsx` | One-time localStorage → cloud migration prompt              |
 
+#### Collaboration (Real-Time)
+
+| File                       | Responsibility                                                        |
+| -------------------------- | --------------------------------------------------------------------- |
+| `CollaborationProvider.tsx` | Context provider wrapping `useRealtime` hook for the component tree   |
+| `CollaborationBadge.tsx`    | Connection status indicator (green/yellow dot) with live count        |
+| `PresenceAvatars.tsx`       | Stacked avatar circles for connected collaborators with overflow      |
+
 #### UX & Onboarding
 
 | File                         | Responsibility                                                  |
@@ -212,13 +222,14 @@ Decision OS is a client-side web application built with Next.js 16 (App Router),
 | `MobileOverflowMenu.tsx`     | Kebab-triggered dropdown for header actions on narrow viewports |
 | `LanguageSwitcher.tsx`       | Locale-switching dropdown (en/es/fr) persisted to localStorage  |
 
-### `/src/hooks/` — Custom React Hooks (6 files)
+### `/src/hooks/` — Custom React Hooks (7 files)
 
 | File                     | Responsibility                                                          |
 | ------------------------ | ----------------------------------------------------------------------- |
 | `useValidation.ts`       | Memoized real-time validation — errors, warnings, infos for inline UI   |
 | `useAuth.ts`             | Supabase auth state — user, session, sign in/out, loading               |
 | `useSync.ts`             | Cloud sync status — auto-sync on mount/focus, manual trigger            |
+| `useRealtime.ts`         | Realtime collaboration — channel lifecycle, broadcast, presence state   |
 | `useBiasDetection.ts`    | Debounced (500ms) bias detection with per-type dismissal management     |
 | `useMonteCarloWorker.ts` | Runs Monte Carlo in a Web Worker with progress, cancellation, fallback  |
 | `useOnboarding.ts`       | Onboarding state machine (idle → step1–3), auto-triggers on first visit |
@@ -281,6 +292,8 @@ Decision OS is a client-side web application built with Next.js 16 (App Router),
 
 15. **i18n**: React context-based i18n with `useTranslation()` hook. Locale files in `src/lib/i18n/` (en, es, fr). Persisted to localStorage via `LanguageSwitcher`.
 
+16. **Real-time collaboration**: Supabase Realtime Broadcast + Presence enables live multi-user editing. The `realtime.ts` engine manages channel lifecycle, action broadcast, and presence tracking. Periodic snapshot reconciliation (every 10s) ensures late joiners and missed messages are handled. `fullSync()` is skipped when a Realtime channel is active to avoid conflicts. Zero additional bundle cost since Supabase Realtime is included in the existing SDK.
+
 ## Data Flow
 
 ```
@@ -304,12 +317,10 @@ User Input → DecisionProvider (useReducer) → decision-reducer.ts
 
 ## Testing
 
-- **Unit tests**: 1502 tests across 84 files (Vitest + React Testing Library)
+- **Unit tests**: 1772+ tests across 104 files (Vitest + React Testing Library)
 - **E2E tests**: 43 tests across 5 specs (Playwright — smoke, accessibility, visual, workflows, features)
 - **Coverage**: V8 provider with enforced thresholds per `vitest.config.ts`
 
 ## Future Architecture
 
-- **Real-time collaboration**: Supabase Realtime for live multi-user editing
 - **Team workspaces**: Shared decision collections with role-based access
-- **Shareable decision links**: Server-stored decisions for persistent sharing

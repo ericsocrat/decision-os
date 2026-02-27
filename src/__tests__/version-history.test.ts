@@ -17,7 +17,7 @@ import {
   resetAutoVersionThrottle,
   diffVersions,
 } from "@/lib/version-history";
-import type { Decision } from "@/lib/types";
+import type { Decision, DecisionVersion } from "@/lib/types";
 
 // ── Helpers ────────────────────────────────────────────────────────
 

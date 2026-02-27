@@ -365,6 +365,28 @@ describe("RESTORE_VERSION", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Realtime collaboration — APPLY_REMOTE
+// ---------------------------------------------------------------------------
+
+describe("APPLY_REMOTE", () => {
+  it("replaces decision with remote state, clears history, not dirty", () => {
+    const state = init();
+    // Build up some undo history
+    let s = dispatch(state, { type: "ADD_OPTION" });
+    expect(s.canUndo).toBe(true);
+
+    const remote = makeDecision({ id: state.decision.id, title: "Remote Update" });
+    s = dispatch(s, { type: "APPLY_REMOTE", decision: remote });
+
+    expect(s.decision.title).toBe("Remote Update");
+    expect(s.canUndo).toBe(false);
+    expect(s.canRedo).toBe(false);
+    // Unlike RESTORE_VERSION, APPLY_REMOTE does NOT mark dirty
+    // (the remote user's client already saved)
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Navigation actions
 // ---------------------------------------------------------------------------
 

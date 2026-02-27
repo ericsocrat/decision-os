@@ -16,6 +16,7 @@
 import type { Decision } from "./types";
 import { getDecisions as localGetDecisions, saveDecision as localSaveDecision } from "./storage";
 import { cloudGetDecisions, cloudSaveDecision, cloudSaveAllDecisions } from "./cloud-storage";
+import { isChannelActive } from "./realtime";
 
 const MIGRATION_KEY = "decision-os:cloud-migrated";
 
@@ -59,6 +60,12 @@ export interface SyncResult {
  * 4. Save any cloud-only or newer-cloud decisions locally
  */
 export async function fullSync(): Promise<SyncResult> {
+  // Skip sync pull when a Realtime channel is active — the channel provides
+  // live state updates, so a full sync would cause conflicts.
+  if (isChannelActive()) {
+    return { status: "done", uploaded: 0, downloaded: 0, merged: 0 };
+  }
+
   const result: SyncResult = { status: "syncing", uploaded: 0, downloaded: 0, merged: 0 };
 
   try {
