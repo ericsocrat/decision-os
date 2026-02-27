@@ -91,6 +91,14 @@ export interface DecisionContextValue extends DecisionStateValue {
   updateScore: (optionId: string, criterionId: string, value: number | null) => void;
   updateConfidence: (optionId: string, criterionId: string, confidence: Confidence) => void;
   updateReasoning: (optionId: string, criterionId: string, text: string) => void;
+  setEnrichedScore: (
+    optionId: string,
+    criterionId: string,
+    value: number,
+    source: string,
+    tier: 1 | 2 | 3,
+  ) => void;
+  restoreEnrichedValue: (optionId: string, criterionId: string) => void;
   undo: () => void;
   redo: () => void;
   setSwingPercent: (value: number) => void;
@@ -234,6 +242,18 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     [dispatch]
   );
 
+  const setEnrichedScore = useCallback(
+    (optionId: string, criterionId: string, value: number, source: string, tier: 1 | 2 | 3) =>
+      dispatch({ type: "SET_ENRICHED_SCORE", optionId, criterionId, value, source, tier }),
+    [dispatch]
+  );
+
+  const restoreEnrichedValue = useCallback(
+    (optionId: string, criterionId: string) =>
+      dispatch({ type: "RESTORE_ENRICHED_VALUE", optionId, criterionId }),
+    [dispatch]
+  );
+
   const undo = useCallback(() => {
     dispatch({ type: "UNDO" });
     announceRef.current("Undone");
@@ -343,6 +363,8 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
       updateScore,
       updateConfidence,
       updateReasoning,
+      setEnrichedScore,
+      restoreEnrichedValue,
       undo,
       redo,
       setSwingPercent,
@@ -366,6 +388,8 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
       updateScore,
       updateConfidence,
       updateReasoning,
+      setEnrichedScore,
+      restoreEnrichedValue,
       undo,
       redo,
       setSwingPercent,

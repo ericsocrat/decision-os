@@ -34,6 +34,8 @@ import type { CalibrationData } from "./ScoringPrompt";
 import { BiasWarnings } from "./BiasWarnings";
 import { useBiasDetection } from "@/hooks/useBiasDetection";
 import { MobileScoreCards } from "./MobileScoreCards";
+import { ScoreProvenanceIndicator } from "./ScoreProvenanceIndicator";
+import { getMetadata, canRestoreEnriched } from "@/lib/provenance";
 
 interface DecisionBuilderProps {
   validation: ValidationResult;
@@ -53,6 +55,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
     updateScore,
     updateConfidence,
     updateReasoning,
+    restoreEnrichedValue,
     undo,
     redo,
     canUndo,
@@ -699,6 +702,11 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                             onChange={(text) => updateReasoning(opt.id, crit.id, text)}
                             optionName={opt.name}
                             criterionName={crit.name}
+                          />
+                          <ScoreProvenanceIndicator
+                            metadata={getMetadata(decision, opt.id, crit.id)}
+                            canRestore={canRestoreEnriched(decision, opt.id, crit.id)}
+                            onRestore={() => restoreEnrichedValue(opt.id, crit.id)}
                           />
                         </div>
                         {isFocused && (

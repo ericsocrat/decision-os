@@ -57,6 +57,31 @@ export type ScoreValue = number | ScoredCell | null;
  */
 export type ScoreMatrix = Record<string, Record<string, ScoreValue>>;
 
+// ---------------------------------------------------------------------------
+// Score provenance
+// ---------------------------------------------------------------------------
+
+/** Tracks where a score value originated */
+export type ScoreProvenance = "manual" | "enriched" | "overridden";
+
+/** Per-cell metadata tracking the origin and history of a score */
+export interface ScoreMetadata {
+  provenance: ScoreProvenance;
+  /** Original enriched value (preserved when user overrides) */
+  enrichedValue?: number;
+  /** Data provider that supplied the enriched value */
+  enrichedSource?: string;
+  /** Tier of the enriched data (1=live, 2=bundled, 3=estimated) */
+  enrichedTier?: 1 | 2 | 3;
+  /** ISO timestamp when the user overrode an enriched score */
+  overriddenAt?: string;
+  /** Optional explanation for why the user overrode the score */
+  overrideReason?: string;
+}
+
+/** Matrix of per-cell provenance metadata: optionId → criterionId → ScoreMetadata */
+export type ScoreMetadataMatrix = Record<string, Record<string, ScoreMetadata>>;
+
 /** A complete decision with all its data */
 export interface Decision {
   id: string;
@@ -67,6 +92,8 @@ export interface Decision {
   scores: ScoreMatrix;
   /** Optional per-score reasoning notes: optionId → criterionId → text */
   reasoning?: Record<string, Record<string, string>>;
+  /** Optional per-score provenance metadata: optionId → criterionId → ScoreMetadata */
+  scoreMetadata?: ScoreMetadataMatrix;
   /** Strategy for how per-score confidence affects results (default: "none") */
   confidenceStrategy?: ConfidenceStrategy;
   createdAt: string; // ISO 8601
