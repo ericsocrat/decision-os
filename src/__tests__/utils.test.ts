@@ -3,9 +3,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { generateId, safeJsonParse, decodeDecisionFromUrl, formatRelativeTime } from "@/lib/utils";
-import { compressToEncodedURIComponent } from "lz-string";
-import { DEMO_DECISION } from "@/lib/demo-data";
+import { generateId, safeJsonParse, formatRelativeTime } from "@/lib/utils";
 
 describe("generateId", () => {
   it("returns a non-empty string", () => {
@@ -31,23 +29,6 @@ describe("safeJsonParse", () => {
 
   it("returns fallback for empty string", () => {
     expect(safeJsonParse("", [])).toEqual([]);
-  });
-});
-
-describe("decodeDecisionFromUrl (legacy format)", () => {
-  it("decodes a legacy lz-string encoded decision", () => {
-    const encoded = compressToEncodedURIComponent(JSON.stringify(DEMO_DECISION));
-    expect(encoded.length).toBeGreaterThan(0);
-    const decoded = decodeDecisionFromUrl(encoded, null);
-    expect(decoded).toEqual(DEMO_DECISION);
-  });
-
-  it("returns fallback on invalid encoded data", () => {
-    expect(decodeDecisionFromUrl("%%%invalid%%%", "fallback")).toBe("fallback");
-  });
-
-  it("returns fallback on empty string", () => {
-    expect(decodeDecisionFromUrl("", null)).toBeNull();
   });
 });
 

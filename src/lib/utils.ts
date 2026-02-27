@@ -13,8 +13,6 @@ export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
 
-import { decompressFromEncodedURIComponent } from "lz-string";
-
 /**
  * Format a relative time string from an ISO timestamp (e.g. "2 hours ago").
  * Falls back to the absolute date if the timestamp is older than 30 days.
@@ -52,26 +50,4 @@ export function safeJsonParse<T>(json: string, fallback: T): T {
   }
 }
 
-/**
- * @deprecated Use `decodeShareUrl` from `@/lib/share` for compact share URLs.
- * Retained for backward compatibility with legacy `#data=` share links.
- *
- * Decode a decision from an lz-string compressed URL component.
- * Falls back to legacy base64 decoding for backward compatibility.
- */
-export function decodeDecisionFromUrl<T>(encoded: string, fallback: T): T {
-  try {
-    // Try lz-string first
-    const json = decompressFromEncodedURIComponent(encoded);
-    if (json) return JSON.parse(json) as T;
-    // Fall back to legacy base64
-    const legacyJson = decodeURIComponent(
-      Array.from(atob(encoded))
-        .map((c) => "%" + ("00" + (c.codePointAt(0) ?? 0).toString(16)).slice(-2))
-        .join("")
-    );
-    return JSON.parse(legacyJson) as T;
-  } catch {
-    return fallback;
-  }
-}
+
