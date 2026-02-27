@@ -265,9 +265,50 @@ export const DECISION_TYPES: DecisionTypeCard[] = [
   },
 ];
 
+/** Placeholder text and example option names per decision type */
+export interface TypeExamples {
+  placeholder: string;
+  examples: string[];
+}
+
+export const TYPE_EXAMPLES: Record<string, TypeExamples> = {
+  "job-career": {
+    placeholder: 'e.g., "Google", "Startup XYZ", "Current job"',
+    examples: ["Google", "Startup XYZ", "Current Job", "Freelancing"],
+  },
+  housing: {
+    placeholder: 'e.g., "Downtown Studio", "Suburban 2BR"',
+    examples: ["Downtown Studio", "Suburban 2BR", "The Lakewood", "123 Main St Apt 4B"],
+  },
+  purchase: {
+    placeholder: 'e.g., "MacBook Pro", "ThinkPad X1"',
+    examples: ["MacBook Pro", "ThinkPad X1", "Surface Laptop", "Dell XPS"],
+  },
+  investment: {
+    placeholder: 'e.g., "Index Fund", "Real Estate"',
+    examples: ["S&P 500 Index Fund", "Real Estate", "Bonds", "Crypto"],
+  },
+  education: {
+    placeholder: 'e.g., "MIT", "Stanford", "State University"',
+    examples: ["MIT", "Stanford", "State University", "Online Bootcamp"],
+  },
+  custom: {
+    placeholder: 'e.g., "Option A"',
+    examples: ["Option A", "Option B", "Option C"],
+  },
+};
+
 /**
  * Look up a decision type by ID.
  */
 export function getDecisionType(typeId: string): DecisionTypeCard | undefined {
   return DECISION_TYPES.find((t) => t.id === typeId);
+}
+
+/**
+ * Get placeholder text and examples for a decision type.
+ * Falls back to custom if the type is unknown.
+ */
+export function getTypeExamples(typeId: string | null): TypeExamples {
+  return TYPE_EXAMPLES[typeId ?? "custom"] ?? TYPE_EXAMPLES.custom;
 }
