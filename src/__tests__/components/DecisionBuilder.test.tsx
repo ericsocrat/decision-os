@@ -37,7 +37,7 @@ beforeEach(() => {
   localStorage.clear();
 });
 
-describe("DecisionBuilder", () => {
+describe("DecisionBuilder", { timeout: 15_000 }, () => {
   it("renders Decision Details heading", () => {
     renderWithProviders(
       <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />
@@ -68,7 +68,7 @@ describe("DecisionBuilder", () => {
     );
     expect(screen.getByText("Options")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /add option/i })).toBeInTheDocument();
-  }, 15_000);
+  });
 
   it("renders Criteria section with Add Criterion button", () => {
     renderWithProviders(
@@ -111,7 +111,7 @@ describe("DecisionBuilder", () => {
     await user.click(screen.getByRole("button", { name: /add option/i }));
     const newInputs = screen.getAllByRole("textbox");
     expect(newInputs.length).toBeGreaterThan(initialCount);
-  }, 15_000);
+  });
 
   it("renders score inputs in the grid", () => {
     renderWithProviders(

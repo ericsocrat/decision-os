@@ -2,6 +2,20 @@
  * Utility functions for Decision OS.
  */
 
+import type { Decision } from "./types";
+
+/**
+ * Returns true when a decision has no meaningful user content —
+ * empty/blank title AND zero options AND zero criteria.
+ */
+export function isEmptyDecision(decision: Decision): boolean {
+  return (
+    (!decision.title || decision.title.trim() === "") &&
+    decision.options.length === 0 &&
+    decision.criteria.length === 0
+  );
+}
+
 /**
  * Generate a unique ID (simple, no external dependency).
  * Uses crypto.randomUUID when available, falls back to timestamp + random.

@@ -3,7 +3,8 @@
  */
 
 import { describe, it, expect, vi } from "vitest";
-import { generateId, safeJsonParse, formatRelativeTime } from "@/lib/utils";
+import { generateId, safeJsonParse, formatRelativeTime, isEmptyDecision } from "@/lib/utils";
+import type { Decision } from "@/lib/types";
 
 describe("generateId", () => {
   it("returns a non-empty string", () => {
@@ -72,5 +73,51 @@ describe("formatRelativeTime", () => {
     // Should be a locale-formatted date string (e.g. "May 1, 2025"), not "Xd ago"
     expect(result).not.toContain("d ago");
     expect(result).toMatch(/\d{4}/); // contains a 4-digit year
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isEmptyDecision
+// ---------------------------------------------------------------------------
+
+const blankDecision: Decision = {
+  id: "test-1",
+  title: "",
+  options: [],
+  criteria: [],
+  scores: {},
+  createdAt: "2025-01-01T00:00:00Z",
+  updatedAt: "2025-01-01T00:00:00Z",
+};
+
+describe("isEmptyDecision", () => {
+  it("returns true for a blank decision", () => {
+    expect(isEmptyDecision(blankDecision)).toBe(true);
+  });
+
+  it("returns true for whitespace-only title", () => {
+    expect(isEmptyDecision({ ...blankDecision, title: "   " })).toBe(true);
+  });
+
+  it("returns false when title is set", () => {
+    expect(isEmptyDecision({ ...blankDecision, title: "My Decision" })).toBe(false);
+  });
+
+  it("returns false when options exist", () => {
+    expect(
+      isEmptyDecision({
+        ...blankDecision,
+        options: [{ id: "o1", name: "Option 1" }],
+      })
+    ).toBe(false);
+  });
+
+  it("returns false when criteria exist", () => {
+    expect(
+      isEmptyDecision({
+        ...blankDecision,
+        criteria: [{ id: "c1", name: "Cost", weight: 50, type: "cost" }],
+      })
+    ).toBe(false);
   });
 });

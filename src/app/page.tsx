@@ -28,6 +28,8 @@ import { ImportModal } from "@/components/ImportModal";
 import { useValidation } from "@/hooks/useValidation";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { computeCompleteness } from "@/lib/completeness";
+import { isEmptyDecision, generateId } from "@/lib/utils";
+import type { Decision } from "@/lib/types";
 import { CoachmarkOverlay } from "@/components/CoachmarkOverlay";
 import {
   Settings2,
@@ -45,6 +47,8 @@ import { ToastProvider, showToast } from "@/components/Toast";
 import { validateFile, readFileAsText, importFromJson } from "@/lib/import";
 import { saveDecision } from "@/lib/storage";
 import { useAuth } from "@/hooks/useAuth";
+import { EmptyState } from "@/components/EmptyState";
+import { DEMO_DECISION } from "@/lib/demo-data";
 import pkg from "../../package.json";
 
 /* Lazy-load heavy tab views — only downloaded when their tab is first shown */
@@ -106,6 +110,41 @@ function AppContent() {
   const validation = useValidation(decision);
   const completeness = useMemo(() => computeCompleteness(decision), [decision]);
   const auth = useAuth();
+
+  // ── Empty-state detection ──
+  const isEmpty = !isLoading && isEmptyDecision(decision);
+
+  /** Template quick-start: instantiate and save the decision. */
+  const handleLoadTemplate = useCallback(
+    (templateDecision: Decision) => {
+      saveDecision(templateDecision);
+      loadDecision(templateDecision.id);
+    },
+    [loadDecision]
+  );
+
+  /** Load the built-in demo decision. */
+  const handleLoadDemo = useCallback(() => {
+    saveDecision(DEMO_DECISION);
+    loadDecision(DEMO_DECISION.id);
+  }, [loadDecision]);
+
+  /** Start a blank decision in the builder. */
+  const handleStartBlank = useCallback(() => {
+    // Create an empty decision shell with a fresh ID
+    const blank: Decision = {
+      id: generateId(),
+      title: "",
+      options: [],
+      criteria: [],
+      scores: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    saveDecision(blank);
+    loadDecision(blank.id);
+    setActiveTab("builder");
+  }, [loadDecision]);
 
   // ── Onboarding: tab switching handled in callbacks (no effect) ──
   const handleOnboardingNext = useCallback(() => {
@@ -341,130 +380,146 @@ function AppContent() {
       />
 
       <main id="main-content" className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6">
-        {/* Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
-          <nav role="tablist" aria-label="Decision sections" className="flex">
-            {tabs.map((tab) => (
+        {isEmpty ? (
+          <EmptyState
+            onLoadTemplate={handleLoadTemplate}
+            onLoadDemo={handleLoadDemo}
+            onStartBlank={handleStartBlank}
+          />
+        ) : (
+          <>
+            {/* Tabs */}
+            <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
+              <nav role="tablist" aria-label="Decision sections" className="flex">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    id={`tab-${tab.id}`}
+                    role="tab"
+                    aria-selected={activeTab === tab.id}
+                    aria-controls={`panel-${tab.id}`}
+                    tabIndex={activeTab === tab.id ? 0 : -1}
+                    onClick={() => setActiveTab(tab.id)}
+                    onKeyDown={handleTabKeyDown}
+                    className={`inline-flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-t-md ${
+                      activeTab === tab.id
+                        ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200"
+                    }`}
+                  >
+                    {tab.icon}
+                    {tab.label}
+                    {tab.id === "builder" && validation.errorCount > 0 && (
+                      <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white px-1">
+                        {validation.errorCount}
+                      </span>
+                    )}
+                    {tab.id === "results" &&
+                      completeness.total > 0 &&
+                      (completeness.percent === 100 ? (
+                        <span
+                          className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white px-1"
+                          title="All scores filled"
+                        >
+                          ✓
+                        </span>
+                      ) : completeness.percent < 50 ? (
+                        <span
+                          className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white px-1"
+                          title={`${completeness.percent}% of scores filled`}
+                        >
+                          ⚠
+                        </span>
+                      ) : null)}
+                  </button>
+                ))}
+              </nav>
+
+              {/* Keyboard shortcut hint */}
               <button
-                key={tab.id}
-                id={`tab-${tab.id}`}
-                role="tab"
-                aria-selected={activeTab === tab.id}
-                aria-controls={`panel-${tab.id}`}
-                tabIndex={activeTab === tab.id ? 0 : -1}
-                onClick={() => setActiveTab(tab.id)}
-                onKeyDown={handleTabKeyDown}
-                className={`inline-flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-t-md ${
-                  activeTab === tab.id
-                    ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200"
-                }`}
+                ref={shortcutTriggerRef}
+                onClick={() => setShowShortcuts(true)}
+                className="ml-auto text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors hidden sm:inline-flex items-center gap-1"
+                aria-label="Show keyboard shortcuts"
               >
-                {tab.icon}
-                {tab.label}
-                {tab.id === "builder" && validation.errorCount > 0 && (
-                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white px-1">
-                    {validation.errorCount}
-                  </span>
-                )}
-                {tab.id === "results" &&
-                  completeness.total > 0 &&
-                  (completeness.percent === 100 ? (
-                    <span
-                      className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white px-1"
-                      title="All scores filled"
-                    >
-                      ✓
-                    </span>
-                  ) : completeness.percent < 50 ? (
-                    <span
-                      className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white px-1"
-                      title={`${completeness.percent}% of scores filled`}
-                    >
-                      ⚠
-                    </span>
-                  ) : null)}
+                <Keyboard className="h-3.5 w-3.5" />
+                <kbd className="rounded border border-gray-300 dark:border-gray-600 px-1 py-0.5 text-[10px] font-mono">
+                  ?
+                </kbd>
               </button>
-            ))}
-          </nav>
+            </div>
 
-          {/* Keyboard shortcut hint */}
-          <button
-            ref={shortcutTriggerRef}
-            onClick={() => setShowShortcuts(true)}
-            className="ml-auto text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors hidden sm:inline-flex items-center gap-1"
-            aria-label="Show keyboard shortcuts"
-          >
-            <Keyboard className="h-3.5 w-3.5" />
-            <kbd className="rounded border border-gray-300 dark:border-gray-600 px-1 py-0.5 text-[10px] font-mono">
-              ?
-            </kbd>
-          </button>
-        </div>
-
-        {/* Tab Panels */}
-        <div
-          id="panel-builder"
-          role="tabpanel"
-          aria-labelledby="tab-builder"
-          className={activeTab === "builder" ? "" : "hidden"}
-        >
-          {isLoading ? (
-            <DecisionSkeleton />
-          ) : (
-            <DecisionBuilder validation={validation} completeness={completeness} />
-          )}
-        </div>
-        {activeTab === "results" && (
-          <div id="panel-results" role="tabpanel" aria-labelledby="tab-results">
-            <ErrorBoundary fallback={(reset) => <TabErrorFallback tab="Results" onReset={reset} />}>
-              <ResultsView
-                validation={validation}
-                completeness={completeness}
-                onSwitchToBuilder={() => setActiveTab("builder")}
-              />
-            </ErrorBoundary>
-          </div>
-        )}
-        {activeTab === "sensitivity" && (
-          <div id="panel-sensitivity" role="tabpanel" aria-labelledby="tab-sensitivity">
-            <ErrorBoundary
-              fallback={(reset) => <TabErrorFallback tab="Sensitivity" onReset={reset} />}
+            {/* Tab Panels */}
+            <div
+              id="panel-builder"
+              role="tabpanel"
+              aria-labelledby="tab-builder"
+              className={activeTab === "builder" ? "" : "hidden"}
             >
-              <Suspense fallback={<TabPanelSkeleton label="Sensitivity" />}>
-                <SensitivityView />
-              </Suspense>
-            </ErrorBoundary>
-          </div>
-        )}
-        {activeTab === "compare" && (
-          <div id="panel-compare" role="tabpanel" aria-labelledby="tab-compare">
-            <ErrorBoundary fallback={(reset) => <TabErrorFallback tab="Compare" onReset={reset} />}>
-              <Suspense fallback={<TabPanelSkeleton label="Compare" />}>
-                <CompareView />
-              </Suspense>
-            </ErrorBoundary>
-          </div>
-        )}
-        {activeTab === "montecarlo" && (
-          <div id="panel-montecarlo" role="tabpanel" aria-labelledby="tab-montecarlo">
-            <ErrorBoundary
-              fallback={(reset) => <TabErrorFallback tab="Monte Carlo" onReset={reset} />}
-            >
-              <Suspense fallback={<TabPanelSkeleton label="Monte Carlo" />}>
-                <MonteCarloView />
-              </Suspense>
-            </ErrorBoundary>
-          </div>
-        )}
-        {activeTab === "history" && (
-          <div id="panel-history" role="tabpanel" aria-labelledby="tab-history">
-            <ErrorBoundary fallback={(reset) => <TabErrorFallback tab="History" onReset={reset} />}>
-              <Suspense fallback={<TabPanelSkeleton label="History" />}>
-                <VersionHistory />
-              </Suspense>
-            </ErrorBoundary>
-          </div>
+              {isLoading ? (
+                <DecisionSkeleton />
+              ) : (
+                <DecisionBuilder validation={validation} completeness={completeness} />
+              )}
+            </div>
+            {activeTab === "results" && (
+              <div id="panel-results" role="tabpanel" aria-labelledby="tab-results">
+                <ErrorBoundary
+                  fallback={(reset) => <TabErrorFallback tab="Results" onReset={reset} />}
+                >
+                  <ResultsView
+                    validation={validation}
+                    completeness={completeness}
+                    onSwitchToBuilder={() => setActiveTab("builder")}
+                  />
+                </ErrorBoundary>
+              </div>
+            )}
+            {activeTab === "sensitivity" && (
+              <div id="panel-sensitivity" role="tabpanel" aria-labelledby="tab-sensitivity">
+                <ErrorBoundary
+                  fallback={(reset) => <TabErrorFallback tab="Sensitivity" onReset={reset} />}
+                >
+                  <Suspense fallback={<TabPanelSkeleton label="Sensitivity" />}>
+                    <SensitivityView />
+                  </Suspense>
+                </ErrorBoundary>
+              </div>
+            )}
+            {activeTab === "compare" && (
+              <div id="panel-compare" role="tabpanel" aria-labelledby="tab-compare">
+                <ErrorBoundary
+                  fallback={(reset) => <TabErrorFallback tab="Compare" onReset={reset} />}
+                >
+                  <Suspense fallback={<TabPanelSkeleton label="Compare" />}>
+                    <CompareView />
+                  </Suspense>
+                </ErrorBoundary>
+              </div>
+            )}
+            {activeTab === "montecarlo" && (
+              <div id="panel-montecarlo" role="tabpanel" aria-labelledby="tab-montecarlo">
+                <ErrorBoundary
+                  fallback={(reset) => <TabErrorFallback tab="Monte Carlo" onReset={reset} />}
+                >
+                  <Suspense fallback={<TabPanelSkeleton label="Monte Carlo" />}>
+                    <MonteCarloView />
+                  </Suspense>
+                </ErrorBoundary>
+              </div>
+            )}
+            {activeTab === "history" && (
+              <div id="panel-history" role="tabpanel" aria-labelledby="tab-history">
+                <ErrorBoundary
+                  fallback={(reset) => <TabErrorFallback tab="History" onReset={reset} />}
+                >
+                  <Suspense fallback={<TabPanelSkeleton label="History" />}>
+                    <VersionHistory />
+                  </Suspense>
+                </ErrorBoundary>
+              </div>
+            )}
+          </>
         )}
       </main>
 

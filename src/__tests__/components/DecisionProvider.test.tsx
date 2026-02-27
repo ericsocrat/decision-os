@@ -19,6 +19,9 @@ function wrapper({ children }: { children: ReactNode }) {
 
 beforeEach(() => {
   localStorage.clear();
+  // Seed the demo decision so tests have data to work with
+  // (storage now starts blank for new users to show EmptyState)
+  localStorage.setItem("decision-os:decisions", JSON.stringify([DEMO_DECISION]));
 });
 
 describe("DecisionProvider", () => {

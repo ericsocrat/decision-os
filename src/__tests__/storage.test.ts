@@ -38,10 +38,13 @@ beforeEach(() => {
 });
 
 describe("getDecisions", () => {
-  it("returns demo data when localStorage is empty", () => {
+  it("returns a blank decision when localStorage is empty (empty state)", () => {
     const decs = getDecisions();
     expect(decs).toHaveLength(1);
-    expect(decs[0].id).toBe(DEMO_DECISION.id);
+    // New users get a blank decision so the EmptyState screen shows
+    expect(decs[0].title).toBe("");
+    expect(decs[0].options).toEqual([]);
+    expect(decs[0].criteria).toEqual([]);
   });
 
   it("returns saved decisions from localStorage", () => {
@@ -52,18 +55,18 @@ describe("getDecisions", () => {
     expect(decs[0].id).toBe("custom-1");
   });
 
-  it("resets to demo on corrupt localStorage data", () => {
+  it("resets to blank on corrupt localStorage data", () => {
     localStorage.setItem(STORAGE_KEY, "not-json");
     const decs = getDecisions();
     expect(decs).toHaveLength(1);
-    expect(decs[0].id).toBe(DEMO_DECISION.id);
+    expect(decs[0].title).toBe("");
   });
 
-  it("resets to demo when stored data is empty array", () => {
+  it("resets to blank when stored data is empty array", () => {
     localStorage.setItem(STORAGE_KEY, "[]");
     const decs = getDecisions();
     expect(decs).toHaveLength(1);
-    expect(decs[0].id).toBe(DEMO_DECISION.id);
+    expect(decs[0].title).toBe("");
   });
 });
 
@@ -110,9 +113,9 @@ describe("deleteDecision", () => {
   });
 
   it("refuses to delete when only one decision remains", () => {
-    // Start with demo only
-    getDecisions();
-    const result = deleteDecision(DEMO_DECISION.id);
+    // Start with blank decision (first-time user)
+    const initial = getDecisions();
+    const result = deleteDecision(initial[0].id);
     expect(result).toBe(false);
     expect(getDecisions()).toHaveLength(1);
   });
@@ -135,19 +138,19 @@ describe("resetToDemo", () => {
 // ---------------------------------------------------------------------------
 
 describe("getDecisions — edge-case branches", () => {
-  it("resets to demo when stored data is valid JSON but not a Decision array", () => {
+  it("resets to blank when stored data is valid JSON but not a Decision array", () => {
     // Valid JSON object, but not an array of decisions
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ foo: "bar" }));
     const decs = getDecisions();
     expect(decs).toHaveLength(1);
-    expect(decs[0].id).toBe(DEMO_DECISION.id);
+    expect(decs[0].title).toBe("");
   });
 
-  it("resets to demo when stored data is a JSON array of non-Decision objects", () => {
+  it("resets to blank when stored data is a JSON array of non-Decision objects", () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([{ notA: "decision" }]));
     const decs = getDecisions();
     expect(decs).toHaveLength(1);
-    expect(decs[0].id).toBe(DEMO_DECISION.id);
+    expect(decs[0].title).toBe("");
   });
 
   it("returns demo when localStorage.getItem throws", () => {

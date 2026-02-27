@@ -7,14 +7,31 @@
 
 import type { Decision } from "./types";
 import { DEMO_DECISION } from "./demo-data";
-import { safeJsonParse } from "./utils";
+import { safeJsonParse, generateId } from "./utils";
 import { isDecisionArray } from "./validation";
 
 const STORAGE_KEY = "decision-os:decisions";
 
 /**
+ * Create a minimal blank decision for first-time users.
+ * This lets the EmptyState screen render instead of dumping users into demo data.
+ */
+function createBlankDecision(): Decision {
+  const now = new Date().toISOString();
+  return {
+    id: generateId(),
+    title: "",
+    options: [],
+    criteria: [],
+    scores: {},
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+/**
  * Get all saved decisions from localStorage.
- * Returns the demo decision if no decisions exist or storage is unavailable.
+ * New users get a blank decision (shows EmptyState). SSR returns the demo.
  */
 export function getDecisions(): Decision[] {
   if (globalThis.window === undefined) return [DEMO_DECISION];
@@ -22,16 +39,16 @@ export function getDecisions(): Decision[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      // Initialize with demo
-      const initial = [DEMO_DECISION];
+      // First visit — start with a blank decision so EmptyState shows
+      const initial = [createBlankDecision()];
       localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
       return initial;
     }
 
     const parsed = safeJsonParse<unknown>(raw, null);
     if (!isDecisionArray(parsed) || parsed.length === 0) {
-      console.warn("[DecisionOS] localStorage data invalid — resetting to demo");
-      const initial = [DEMO_DECISION];
+      console.warn("[DecisionOS] localStorage data invalid — resetting to blank");
+      const initial = [createBlankDecision()];
       localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
       return initial;
     }
