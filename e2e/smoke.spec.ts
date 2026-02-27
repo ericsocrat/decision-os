@@ -19,7 +19,7 @@ test.describe("Decision OS — Smoke Tests", () => {
     await expect(page).toHaveTitle(/Decision OS/);
     await expect(page.locator("h1")).toContainText("Decision OS");
     // Demo decision should be selected
-    await expect(page.locator('select[aria-label="Select decision"]')).toBeVisible();
+    await expect(page.getByRole("combobox", { name: "Select decision" })).toBeVisible();
   });
 
   test("tab navigation works", async ({ page }) => {
@@ -83,11 +83,10 @@ test.describe("Decision OS — Smoke Tests", () => {
   });
 
   test("New Decision creates empty decision", async ({ page }) => {
-    await page.locator('button[aria-label="Create new decision"]').click();
+    await page.getByRole("button", { name: "New" }).click();
     // The select should now have an "Untitled Decision" option
-    await expect(
-      page.locator('select[aria-label="Select decision"] option:has-text("Untitled Decision")')
-    ).toBeAttached();
+    const selector = page.getByRole("combobox", { name: "Select decision" });
+    await expect(selector).toContainText("Untitled Decision");
   });
 
   test("404 page renders for unknown route", async ({ page }) => {

@@ -112,13 +112,12 @@ export function translate(
 
   const [ns, k] = parts;
   const msgs = messages[locale];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const nsObj = (msgs as any)?.[ns];
+  const nsObj = msgs[ns as keyof Messages] as Record<string, string> | undefined;
   const value: string | undefined = nsObj?.[k];
 
   // Fall back to English for empty or missing translations
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const fallback: string | undefined = (messages.en as any)?.[ns]?.[k];
+  const enNsObj = messages.en[ns as keyof Messages] as Record<string, string> | undefined;
+  const fallback: string | undefined = enNsObj?.[k];
   const resolved = value || fallback || key;
 
   return params ? interpolate(resolved, params) : resolved;

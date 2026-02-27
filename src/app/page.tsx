@@ -58,13 +58,13 @@ const MonteCarloView = lazy(() =>
 );
 
 /** Skeleton fallback for lazy-loaded tab panels */
-function TabPanelSkeleton({ label }: { label: string }) {
+function TabPanelSkeleton({ label }: Readonly<{ label: string }>) {
   return (
-    <div className="animate-pulse space-y-4 py-6" role="status" aria-label={`Loading ${label}…`}>
+    <output className="block animate-pulse space-y-4 py-6" aria-label={`Loading ${label}…`}>
       <div className="h-6 w-48 rounded bg-gray-200 dark:bg-gray-700" />
       <div className="h-64 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700" />
       <div className="h-4 w-32 rounded bg-gray-200 dark:bg-gray-700" />
-    </div>
+    </output>
   );
 }
 

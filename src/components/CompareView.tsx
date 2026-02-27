@@ -394,10 +394,11 @@ export function CompareView() {
       {/* Comparison selector */}
       <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 shrink-0">
+          <label htmlFor="compare-decision-a" className="text-sm font-medium text-gray-700 dark:text-gray-300 shrink-0">
             Compare:
           </label>
           <select
+            id="compare-decision-a"
             value={decisionIdA}
             onChange={(e) => setDecisionIdA(e.target.value)}
             className="flex-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-w-0"

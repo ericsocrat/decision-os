@@ -355,9 +355,8 @@ export function MonteCarloView() {
       {mcResults && (
         <>
           {/* Summary banner */}
-          <section
-            className="rounded-lg border border-indigo-200 bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-900/30 p-4"
-            role="status"
+          <output
+            className="block rounded-lg border border-indigo-200 bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-900/30 p-4"
           >
             <div className="flex items-start gap-2">
               <TrendingUp className="h-5 w-5 text-indigo-600 shrink-0 mt-0.5" />
@@ -368,7 +367,7 @@ export function MonteCarloView() {
                 <p className="text-sm text-indigo-700 dark:text-indigo-400">{mcResults.summary}</p>
               </div>
             </div>
-          </section>
+          </output>
 
           {/* Win Probabilities */}
           <section aria-labelledby="mc-win-heading">

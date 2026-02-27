@@ -66,13 +66,12 @@ export function SensitivityView() {
         </div>
 
         {/* Summary */}
-        <div
-          className={`rounded-lg border p-4 mb-4 ${
+        <output
+          className={`block rounded-lg border p-4 mb-4 ${
             isRobust
               ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/30"
               : "border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/30"
           }`}
-          role="status"
         >
           <div className="flex items-start gap-2">
             {isRobust ? (
@@ -93,7 +92,7 @@ export function SensitivityView() {
               </p>
             </div>
           </div>
-        </div>
+        </output>
 
         {/* Detailed Points */}
         <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">

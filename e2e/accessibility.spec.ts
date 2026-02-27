@@ -94,7 +94,7 @@ test.describe("Accessibility — axe-core scans", () => {
 
   test("New empty decision has no a11y violations", async ({ page }) => {
     // Create a new decision
-    await page.getByRole("button", { name: "Create new decision" }).click();
+    await page.getByRole("button", { name: "New" }).click();
 
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])

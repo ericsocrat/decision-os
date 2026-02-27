@@ -59,14 +59,9 @@ export function CoachmarkOverlay({ step, onNext, onDismiss }: CoachmarkOverlayPr
   const cardRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<Position | null>(null);
 
-  if (step === "idle") return null;
-
-  const config = STEPS[step];
-  const stepNum = step === "step1" ? 1 : step === "step2" ? 2 : 3;
-
   // Position the coachmark relative to the target element's tab button
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const updatePosition = useCallback(() => {
+    if (step === "idle") return;
     // Position relative to the corresponding tab button
     const tabId =
       step === "step1" ? "tab-results" : step === "step2" ? "tab-builder" : "tab-sensitivity";
@@ -93,8 +88,8 @@ export function CoachmarkOverlay({ step, onNext, onDismiss }: CoachmarkOverlayPr
     });
   }, [step]);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
+    if (step === "idle") return;
     updatePosition();
     window.addEventListener("resize", updatePosition);
     window.addEventListener("scroll", updatePosition, true);
@@ -102,11 +97,11 @@ export function CoachmarkOverlay({ step, onNext, onDismiss }: CoachmarkOverlayPr
       window.removeEventListener("resize", updatePosition);
       window.removeEventListener("scroll", updatePosition, true);
     };
-  }, [updatePosition]);
+  }, [step, updatePosition]);
 
   // Escape key handler — always active while overlay is visible
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
+    if (step === "idle") return;
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
@@ -115,11 +110,11 @@ export function CoachmarkOverlay({ step, onNext, onDismiss }: CoachmarkOverlayPr
     };
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [onDismiss]);
+  }, [step, onDismiss]);
 
   // Focus trap: focus the card when it appears and trap Tab
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
+    if (step === "idle") return;
     const card = cardRef.current;
     if (!card) return;
 
@@ -147,6 +142,11 @@ export function CoachmarkOverlay({ step, onNext, onDismiss }: CoachmarkOverlayPr
     document.addEventListener("keydown", handleTrap);
     return () => document.removeEventListener("keydown", handleTrap);
   }, [step, position]);
+
+  if (step === "idle") return null;
+
+  const config = STEPS[step];
+  const stepNum = step === "step1" ? 1 : step === "step2" ? 2 : 3;
 
   return (
     <div
