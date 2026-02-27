@@ -56,6 +56,17 @@ import {
 } from "@dnd-kit/sortable";
 import { SortableItem } from "./SortableItem";
 import { CriterionTooltip } from "./CriterionTooltip";
+import {
+  type ComplexityTier,
+  getComplexityTier,
+  getSavedDecisionCount,
+  isTierVisible,
+  loadTierPreferences,
+  saveTierPreferences,
+  TIER_LABELS,
+  type TierPreferences,
+} from "@/lib/complexity-tiers";
+import { Eye, EyeOff } from "lucide-react";
 
 interface DecisionBuilderProps {
   validation: ValidationResult;
@@ -89,6 +100,21 @@ export const DecisionBuilder = memo(function DecisionBuilder({
   const gridRef = useRef<HTMLTableElement>(null);
   const [autoNormalize, setAutoNormalize] = useState(false);
   const biasDetection = useBiasDetection(decision);
+
+  // ── Progressive complexity tiers ──────────────────
+  const [tierPrefs, setTierPrefs] = useState<TierPreferences>(loadTierPreferences);
+  const savedCount = useMemo(() => getSavedDecisionCount(), []);
+  const tier: ComplexityTier = useMemo(
+    () => getComplexityTier(decision, tierPrefs, savedCount),
+    [decision, tierPrefs, savedCount],
+  );
+  const isIntermediate = isTierVisible(tier, "intermediate");
+  const isExpert = isTierVisible(tier, "expert");
+  const toggleShowAll = useCallback(() => {
+    const next: TierPreferences = { ...tierPrefs, showAllFeatures: !tierPrefs.showAllFeatures };
+    setTierPrefs(next);
+    saveTierPreferences(next);
+  }, [tierPrefs]);
 
   /** Track which score cell is focused (for guided scoring prompt) */
   const [focusedCell, setFocusedCell] = useState<{
@@ -239,6 +265,40 @@ export const DecisionBuilder = memo(function DecisionBuilder({
 
   return (
     <div className="space-y-6">
+      {/* Tier indicator + Show all features toggle */}
+      <div className="flex items-center justify-between rounded-md bg-gray-50 dark:bg-gray-800/50 px-3 py-1.5" data-testid="tier-indicator">
+        <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+          <span
+            className={`inline-block h-2 w-2 rounded-full ${
+              tier === "expert"
+                ? "bg-purple-500"
+                : tier === "intermediate"
+                  ? "bg-blue-500"
+                  : "bg-gray-400"
+            }`}
+          />
+          {TIER_LABELS[tier]} mode
+        </span>
+        <button
+          type="button"
+          onClick={toggleShowAll}
+          className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+          data-testid="toggle-show-all"
+        >
+          {tierPrefs.showAllFeatures ? (
+            <>
+              <EyeOff className="h-3 w-3" />
+              Auto tier
+            </>
+          ) : (
+            <>
+              <Eye className="h-3 w-3" />
+              Show all features
+            </>
+          )}
+        </button>
+      </div>
+
       {/* Undo/Redo toolbar */}
       <div className="flex items-center gap-1">
         <button
@@ -369,7 +429,7 @@ export const DecisionBuilder = memo(function DecisionBuilder({
           </button>
         </div>
         <DndContext
-          sensors={sensors}
+          sensors={isExpert ? sensors : []}
           collisionDetection={closestCenter}
           onDragEnd={handleOptionDragEnd}
         >
@@ -388,7 +448,7 @@ export const DecisionBuilder = memo(function DecisionBuilder({
                 const optIssues = validation.byId.get(opt.id);
                 const hasIssue = !!optIssues && optIssues.length > 0;
                 return (
-                  <SortableItem key={opt.id} id={opt.id} dragLabel={`Reorder option ${opt.name}`}>
+                  <SortableItem key={opt.id} id={opt.id} dragLabel={`Reorder option ${opt.name}`} showHandle={isExpert}>
                     <div className="flex items-center gap-2">
                       <span className="w-6 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
                         {label}
@@ -497,7 +557,7 @@ export const DecisionBuilder = memo(function DecisionBuilder({
           </button>
         </div>
         <DndContext
-          sensors={sensors}
+          sensors={isExpert ? sensors : []}
           collisionDetection={closestCenter}
           onDragEnd={handleCriteriaDragEnd}
         >
@@ -521,6 +581,7 @@ export const DecisionBuilder = memo(function DecisionBuilder({
                     key={crit.id}
                     id={crit.id}
                     dragLabel={`Reorder criterion ${crit.name}`}
+                    showHandle={isExpert}
                   >
                     <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                       <input
@@ -649,7 +710,7 @@ export const DecisionBuilder = memo(function DecisionBuilder({
         </label>
 
         {/* AHP Wizard */}
-        {decision.criteria.length >= 2 && (
+        {isExpert && decision.criteria.length >= 2 && (
           <div className="mt-3">
             {showAHP ? (
               <AHPWizard onClose={() => setShowAHP(false)} />
@@ -786,26 +847,32 @@ export const DecisionBuilder = memo(function DecisionBuilder({
                               isFocused ? `score-range-desc ${promptId}` : "score-range-desc"
                             }
                           />
-                          {confidence && (
+                          {isIntermediate && confidence && (
                             <ConfidenceDot
                               confidence={confidence}
                               onChange={(next) => updateConfidence(opt.id, crit.id, next)}
                             />
                           )}
-                          <ReasoningPopover
-                            value={decision.reasoning?.[opt.id]?.[crit.id]}
-                            onChange={(text) => updateReasoning(opt.id, crit.id, text)}
-                            optionName={opt.name}
-                            criterionName={crit.name}
-                          />
-                          <ScoreProvenanceIndicator
-                            metadata={getMetadata(decision, opt.id, crit.id)}
-                            canRestore={canRestoreEnriched(decision, opt.id, crit.id)}
-                            onRestore={() => restoreEnrichedValue(opt.id, crit.id)}
-                          />
-                          <ConfidenceIndicator metadata={getMetadata(decision, opt.id, crit.id)} />
+                          {isIntermediate && (
+                            <ReasoningPopover
+                              value={decision.reasoning?.[opt.id]?.[crit.id]}
+                              onChange={(text) => updateReasoning(opt.id, crit.id, text)}
+                              optionName={opt.name}
+                              criterionName={crit.name}
+                            />
+                          )}
+                          {isExpert && (
+                            <ScoreProvenanceIndicator
+                              metadata={getMetadata(decision, opt.id, crit.id)}
+                              canRestore={canRestoreEnriched(decision, opt.id, crit.id)}
+                              onRestore={() => restoreEnrichedValue(opt.id, crit.id)}
+                            />
+                          )}
+                          {isExpert && (
+                            <ConfidenceIndicator metadata={getMetadata(decision, opt.id, crit.id)} />
+                          )}
                         </div>
-                        {isFocused && (
+                        {isExpert && isFocused && (
                           <ScoringPrompt
                             criterionType={crit.type}
                             promptId={promptId}
@@ -830,11 +897,13 @@ export const DecisionBuilder = memo(function DecisionBuilder({
       </section>
 
       {/* Bias Detection Warnings */}
-      <BiasWarnings
-        warnings={biasDetection.warnings}
-        onDismiss={biasDetection.dismiss}
-        onDismissAll={biasDetection.dismissAll}
-      />
+      {isIntermediate && (
+        <BiasWarnings
+          warnings={biasDetection.warnings}
+          onDismiss={biasDetection.dismiss}
+          onDismissAll={biasDetection.dismissAll}
+        />
+      )}
     </div>
   );
 });

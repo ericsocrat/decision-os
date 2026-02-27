@@ -21,9 +21,11 @@ interface SortableItemProps {
   children: ReactNode;
   /** Accessible label for the drag handle */
   dragLabel?: string;
+  /** Whether to show the drag handle (default: true). Hidden handles remain in DOM but are invisible and non-interactive. */
+  showHandle?: boolean;
 }
 
-export function SortableItem({ id, children, dragLabel = "Drag to reorder" }: SortableItemProps) {
+export function SortableItem({ id, children, dragLabel = "Drag to reorder", showHandle = true }: SortableItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
   });
@@ -42,11 +44,13 @@ export function SortableItem({ id, children, dragLabel = "Drag to reorder" }: So
       <div className="flex items-center gap-1">
         <button
           type="button"
-          className="cursor-grab touch-none shrink-0 rounded p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 active:cursor-grabbing transition-colors"
+          className={`cursor-grab touch-none shrink-0 rounded p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 active:cursor-grabbing transition-all duration-300 ${showHandle ? "opacity-100" : "opacity-0 pointer-events-none w-0 p-0 overflow-hidden"}`}
           {...attributes}
           {...listeners}
           aria-label={dragLabel}
           aria-roledescription="sortable"
+          tabIndex={showHandle ? 0 : -1}
+          aria-hidden={!showHandle || undefined}
         >
           <GripVertical className="h-4 w-4" />
         </button>
