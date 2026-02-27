@@ -79,6 +79,13 @@ function ScoreChartInner({ optionResults }: ScoreChartProps) {
 
   if (optionResults.length === 0) return null;
 
+  // Build accessible summary for screen readers
+  const chartSummary = useMemo(() => {
+    const sorted = [...optionResults].sort((a, b) => a.rank - b.rank);
+    const topOption = sorted[0];
+    return `Ranked scores: ${sorted.map((r) => `${r.optionName} (${r.totalScore.toFixed(1)})`).join(", ")}. Top choice: ${topOption.optionName} with score ${topOption.totalScore.toFixed(2)}.`;
+  }, [optionResults]);
+
   return (
     <div className="space-y-6">
       {/* Total Score Chart */}
@@ -86,7 +93,7 @@ function ScoreChartInner({ optionResults }: ScoreChartProps) {
         <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Total Weighted Scores
         </h3>
-        <div className="h-[200px] w-full">
+        <div className="h-[200px] w-full" role="img" aria-label={chartSummary}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={totalData}
@@ -115,7 +122,7 @@ function ScoreChartInner({ optionResults }: ScoreChartProps) {
         <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Criterion Contribution Breakdown
         </h3>
-        <div className="h-[200px] w-full">
+        <div className="h-[200px] w-full" aria-hidden="true">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={stackedData}
@@ -146,6 +153,32 @@ function ScoreChartInner({ optionResults }: ScoreChartProps) {
           </ResponsiveContainer>
         </div>
       </div>
+
+      {/* Screen-reader-only data table as text alternative for charts */}
+      <table className="sr-only" aria-label="Score breakdown by option and criterion">
+        <thead>
+          <tr>
+            <th scope="col">Option</th>
+            <th scope="col">Total Score</th>
+            <th scope="col">Rank</th>
+            {criteriaNames.map((name) => (
+              <th key={name} scope="col">{name}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {optionResults.map((r) => (
+            <tr key={r.optionName}>
+              <th scope="row">{r.optionName}</th>
+              <td>{r.totalScore.toFixed(2)}</td>
+              <td>{r.rank}</td>
+              {r.criterionScores.map((cs) => (
+                <td key={cs.criterionName}>{cs.effectiveScore.toFixed(2)}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

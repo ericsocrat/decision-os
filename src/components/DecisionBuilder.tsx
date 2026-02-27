@@ -239,6 +239,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
               } dark:bg-gray-700 dark:text-gray-100`}
               placeholder="What are you deciding?"
               maxLength={100}
+              aria-required="true"
               aria-invalid={validation.byField.has("title") || undefined}
               aria-describedby={validation.byField.has("title") ? "title-error" : undefined}
             />
@@ -328,7 +329,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
             return (
               <div key={opt.id}>
                 <div className="flex items-center gap-2">
-                  <span className="w-6 text-center text-xs font-medium text-gray-400 dark:text-gray-500">
+                  <span className="w-6 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
                     {label}
                   </span>
                   <input
@@ -390,7 +391,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                         maxLength={500}
                         aria-label={`Description for option ${opt.name}`}
                       />
-                      <p className="text-right text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
+                      <p className="text-right text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
                         {(opt.description ?? "").length}/500
                       </p>
                     </div>
@@ -539,7 +540,7 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                         maxLength={500}
                         aria-label={`Description for criterion ${crit.name}`}
                       />
-                      <p className="text-right text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
+                      <p className="text-right text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
                         {(crit.description ?? "").length}/500
                       </p>
                     </div>
@@ -626,12 +627,13 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
           >
             <thead>
               <tr>
-                <th className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+                <th scope="col" className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-3 py-2 border-b border-gray-200 dark:border-gray-700">
                   Option / Criterion
                 </th>
                 {decision.criteria.map((crit) => (
                   <th
                     key={crit.id}
+                    scope="col"
                     className="text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-3 py-2 border-b border-gray-200 dark:border-gray-700"
                   >
                     <div className="group relative inline-block">
@@ -663,9 +665,9 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
             <tbody>
               {decision.options.map((opt, rowIdx) => (
                 <tr key={opt.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                  <td className="px-3 py-2 text-sm font-medium text-gray-900 dark:text-gray-100 border-b border-gray-100 dark:border-gray-700">
+                  <th scope="row" className="px-3 py-2 text-sm font-medium text-gray-900 dark:text-gray-100 border-b border-gray-100 dark:border-gray-700 text-left">
                     {opt.name}
-                  </td>
+                  </th>
                   {decision.criteria.map((crit, colIdx) => {
                     const cellValue = readScore(decision.scores, opt.id, crit.id);
                     const isNull = cellValue === null;

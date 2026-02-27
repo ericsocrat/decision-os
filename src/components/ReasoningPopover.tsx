@@ -79,13 +79,15 @@ export function ReasoningPopover({
           ref={popoverRef}
           className="absolute z-50 mt-1 left-1/2 -translate-x-1/2 w-56 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg p-2"
           role="dialog"
+          aria-modal="true"
           aria-label={`Reasoning for ${optionName} on ${criterionName}`}
           onKeyDown={handleKeyDown}
         >
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+          <label htmlFor={`reasoning-${optionName}-${criterionName}`} className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
             Why this score?
           </label>
           <textarea
+            id={`reasoning-${optionName}-${criterionName}`}
             className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-gray-100 px-2 py-1.5 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
             rows={3}
             value={value ?? ""}
