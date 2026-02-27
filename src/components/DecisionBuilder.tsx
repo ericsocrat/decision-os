@@ -616,8 +616,8 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
           updateReasoning={updateReasoning}
         />
 
-        {/* Desktop: Table layout (≥ 640px) */}
-        <div className="hidden sm:block overflow-x-auto">
+        {/* Desktop: Table layout (≥ 640px) — CSS containment for paint isolation */}
+        <div className="hidden sm:block overflow-x-auto" style={{ contain: "content" }}>
           <table
             ref={gridRef}
             className="min-w-full border-collapse"

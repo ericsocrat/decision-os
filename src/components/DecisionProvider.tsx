@@ -1,10 +1,16 @@
 /**
- * Decision OS — State Management Provider (useReducer + Dual-Context)
+ * Decision OS — State Management Provider (useReducer + Multi-Context Split)
  *
- * Architecture:
- *   DecisionStateContext   — state values (re-renders consumers on change)
- *   DecisionDispatchContext — stable dispatch (never causes re-renders)
- *   DecisionContext         — backward-compatible context (convenience methods + state)
+ * Architecture (4 focused contexts + 1 backward-compatible):
+ *   DecisionDataContext    — decision data & navigation state (re-renders on decision changes)
+ *   ResultsContext         — derived computations (results, TOPSIS, regret, sensitivity)
+ *   ActionsContext         — stable action wrappers (never causes re-renders)
+ *   DecisionDispatchContext — stable raw dispatch (never causes re-renders)
+ *   DecisionContext         — backward-compatible context (all state + all methods)
+ *
+ * Focused hooks (`useDecisionData`, `useResultsContext`, `useActions`) let
+ * components subscribe only to the slice they need, eliminating unnecessary
+ * re-renders. E.g. Header uses only data/actions; SensitivityView uses only results.
  *
  * The pure `decisionReducer` lives in `@/lib/decision-reducer.ts` and is tested
  * independently. This component handles:
@@ -15,6 +21,7 @@
  *   - Convenience action wrappers for backward-compatible API
  *
  * @see https://github.com/ericsocrat/decision-os/issues/77
+ * @see https://github.com/ericsocrat/decision-os/issues/121
  */
 
 "use client";
@@ -30,10 +37,9 @@ import {
   type ReactNode,
   type Dispatch,
 } from "react";
-import type { Confidence, ConfidenceStrategy, Criterion, Decision, DecisionResults, Option } from "@/lib/types";
+import type { Confidence, ConfidenceStrategy, Criterion, Decision, DecisionResults, Option, SensitivityAnalysis } from "@/lib/types";
 import type { TopsisResults } from "@/lib/topsis";
 import type { RegretResults } from "@/lib/regret";
-import type { SensitivityAnalysis } from "@/lib/types";
 import {
   type DecisionAction,
   type InternalReducerState,
@@ -59,6 +65,9 @@ import { useAnnounce } from "./Announcer";
 // Derived state (computed from decision via useMemo)
 // ---------------------------------------------------------------------------
 
+/** Data enrichment confidence tier. */
+type EnrichmentTier = 1 | 2 | 3;
+
 interface DerivedState {
   results: DecisionResults;
   topsisResults: TopsisResults;
@@ -69,6 +78,57 @@ interface DerivedState {
 // ---------------------------------------------------------------------------
 // Context value types
 // ---------------------------------------------------------------------------
+
+/** Decision data: the decision object, navigation, and undo/redo state. */
+export interface DecisionDataValue {
+  decision: Decision;
+  decisions: Decision[];
+  isDirty: boolean;
+  isLoading: boolean;
+  canUndo: boolean;
+  canRedo: boolean;
+}
+
+/** Derived computation results (isolated so score-only consumers don't re-render). */
+export interface ResultsValue {
+  results: DecisionResults;
+  topsisResults: TopsisResults;
+  regretResults: RegretResults;
+  sensitivity: SensitivityAnalysis;
+  swingPercent: number;
+}
+
+/** Stable action wrappers (dispatch-only — never triggers re-renders). */
+export interface ActionsValue {
+  dispatch: Dispatch<DecisionAction>;
+  updateTitle: (title: string) => void;
+  updateDescription: (description: string) => void;
+  addOption: () => void;
+  updateOption: (optionId: string, updates: Partial<Option>) => void;
+  removeOption: (optionId: string) => void;
+  addCriterion: () => void;
+  updateCriterion: (criterionId: string, updates: Partial<Criterion>) => void;
+  removeCriterion: (criterionId: string) => void;
+  updateScore: (optionId: string, criterionId: string, value: number | null) => void;
+  updateConfidence: (optionId: string, criterionId: string, confidence: Confidence) => void;
+  updateReasoning: (optionId: string, criterionId: string, text: string) => void;
+  setEnrichedScore: (
+    optionId: string,
+    criterionId: string,
+    value: number,
+    source: string,
+    tier: EnrichmentTier,
+  ) => void;
+  restoreEnrichedValue: (optionId: string, criterionId: string) => void;
+  undo: () => void;
+  redo: () => void;
+  setSwingPercent: (value: number) => void;
+  setConfidenceStrategy: (strategy: ConfidenceStrategy) => void;
+  loadDecision: (id: string) => void;
+  createNewDecision: () => void;
+  removeDecision: (id: string) => void;
+  resetDemo: () => void;
+}
 
 /** Read-only state: reducer state + derived computations */
 export type DecisionStateValue = ReducerState & DerivedState;
@@ -96,7 +156,7 @@ export interface DecisionContextValue extends DecisionStateValue {
     criterionId: string,
     value: number,
     source: string,
-    tier: 1 | 2 | 3,
+    tier: EnrichmentTier,
   ) => void;
   restoreEnrichedValue: (optionId: string, criterionId: string) => void;
   undo: () => void;
@@ -110,9 +170,12 @@ export interface DecisionContextValue extends DecisionStateValue {
 }
 
 // ---------------------------------------------------------------------------
-// Contexts
+// Contexts (4 focused + 1 backward-compatible)
 // ---------------------------------------------------------------------------
 
+const DecisionDataCtx = createContext<DecisionDataValue | null>(null);
+const ResultsCtx = createContext<ResultsValue | null>(null);
+const ActionsCtx = createContext<ActionsValue | null>(null);
 const DecisionStateContext = createContext<DecisionStateValue | null>(null);
 const DecisionDispatchContext = createContext<DecisionDispatchValue | null>(null);
 const DecisionContext = createContext<DecisionContextValue | null>(null);
@@ -120,6 +183,27 @@ const DecisionContext = createContext<DecisionContextValue | null>(null);
 // ---------------------------------------------------------------------------
 // Hooks
 // ---------------------------------------------------------------------------
+
+/** Decision data only — does NOT re-render on result changes. */
+export function useDecisionData(): DecisionDataValue {
+  const ctx = useContext(DecisionDataCtx);
+  if (!ctx) throw new Error("useDecisionData must be used within DecisionProvider");
+  return ctx;
+}
+
+/** Derived results only — does NOT re-render on metadata changes. */
+export function useResultsContext(): ResultsValue {
+  const ctx = useContext(ResultsCtx);
+  if (!ctx) throw new Error("useResultsContext must be used within DecisionProvider");
+  return ctx;
+}
+
+/** Stable action wrappers — NEVER triggers re-renders. */
+export function useActions(): ActionsValue {
+  const ctx = useContext(ActionsCtx);
+  if (!ctx) throw new Error("useActions must be used within DecisionProvider");
+  return ctx;
+}
 
 /** Read-only state (re-renders on state changes) */
 export function useDecisionState(): DecisionStateValue {
@@ -146,7 +230,7 @@ export function useDecision(): DecisionContextValue {
 // Provider
 // ---------------------------------------------------------------------------
 
-export function DecisionProvider({ children }: { children: ReactNode }) {
+export function DecisionProvider({ children }: Readonly<{ children: ReactNode }>) {
   // ── Bootstrap from localStorage ──────────────────────────
   const [state, dispatch] = useReducer(decisionReducer, undefined, (): InternalReducerState => {
     const decisions = getDecisions();
@@ -243,7 +327,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
   );
 
   const setEnrichedScore = useCallback(
-    (optionId: string, criterionId: string, value: number, source: string, tier: 1 | 2 | 3) =>
+    (optionId: string, criterionId: string, value: number, source: string, tier: EnrichmentTier) =>
       dispatch({ type: "SET_ENRICHED_SCORE", optionId, criterionId, value, source, tier }),
     [dispatch]
   );
@@ -329,28 +413,41 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
 
   // ── Assemble context values ──────────────────────────────
 
-  const stateValue = useMemo<DecisionStateValue>(
+  // Focused context: decision data (re-renders only on decision/list changes)
+  const dataValue = useMemo<DecisionDataValue>(
     () => ({
       decision: state.decision,
       decisions: state.decisions,
       isDirty: state.isDirty,
       isLoading: state.isLoading,
-      swingPercent: state.swingPercent,
-      past: state.past,
-      future: state.future,
       canUndo: state.canUndo,
       canRedo: state.canRedo,
+    }),
+    [
+      state.decision,
+      state.decisions,
+      state.isDirty,
+      state.isLoading,
+      state.canUndo,
+      state.canRedo,
+    ]
+  );
+
+  // Focused context: derived results (re-renders only when results change)
+  const resultsValue = useMemo<ResultsValue>(
+    () => ({
       results,
       topsisResults,
       regretResults,
       sensitivity,
+      swingPercent: state.swingPercent,
     }),
-    [state, results, topsisResults, regretResults, sensitivity]
+    [results, topsisResults, regretResults, sensitivity, state.swingPercent]
   );
 
-  const contextValue = useMemo<DecisionContextValue>(
+  // Focused context: stable actions (reference-stable — never re-renders)
+  const actionsValue = useMemo<ActionsValue>(
     () => ({
-      ...stateValue,
       dispatch,
       updateTitle,
       updateDescription,
@@ -375,7 +472,6 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
       resetDemo,
     }),
     [
-      stateValue,
       dispatch,
       updateTitle,
       updateDescription,
@@ -401,11 +497,46 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     ]
   );
 
+  // Legacy: full state value (for DecisionStateContext backward-compat)
+  const stateValue = useMemo<DecisionStateValue>(
+    () => ({
+      decision: state.decision,
+      decisions: state.decisions,
+      isDirty: state.isDirty,
+      isLoading: state.isLoading,
+      swingPercent: state.swingPercent,
+      past: state.past,
+      future: state.future,
+      canUndo: state.canUndo,
+      canRedo: state.canRedo,
+      results,
+      topsisResults,
+      regretResults,
+      sensitivity,
+    }),
+    [state, results, topsisResults, regretResults, sensitivity]
+  );
+
+  // Legacy: backward-compatible combined context
+  const contextValue = useMemo<DecisionContextValue>(
+    () => ({
+      ...stateValue,
+      ...actionsValue,
+    }),
+    [stateValue, actionsValue]
+  );
+
   return (
-    <DecisionStateContext value={stateValue}>
-      <DecisionDispatchContext value={dispatch}>
-        <DecisionContext value={contextValue}>{children}</DecisionContext>
-      </DecisionDispatchContext>
-    </DecisionStateContext>
+    <DecisionDataCtx value={dataValue}>
+      <ResultsCtx value={resultsValue}>
+        <ActionsCtx value={actionsValue}>
+          <DecisionStateContext value={stateValue}>
+            <DecisionDispatchContext value={dispatch}>
+              <DecisionContext value={contextValue}>{children}</DecisionContext>
+            </DecisionDispatchContext>
+          </DecisionStateContext>
+        </ActionsCtx>
+      </ResultsCtx>
+    </DecisionDataCtx>
   );
 }
