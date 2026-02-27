@@ -471,6 +471,7 @@ function AppContent() {
                     validation={validation}
                     completeness={completeness}
                     onSwitchToBuilder={() => setActiveTab("builder")}
+                    onTabChange={(tab) => setActiveTab(tab as Tab)}
                   />
                 </ErrorBoundary>
               </div>

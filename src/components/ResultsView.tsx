@@ -41,6 +41,7 @@ import { OutcomeTracker } from "./OutcomeTracker";
 import { RetrospectiveView } from "./RetrospectiveView";
 import { PatternInsights } from "./PatternInsights";
 import { HelpTooltip } from "./HelpTooltip";
+import { ProactiveInsights } from "./ProactiveInsights";
 
 const ScoreChart = lazy(() => import("./ScoreChart").then((m) => ({ default: m.ScoreChart })));
 const ParetoChart = lazy(() => import("./ParetoChart").then((m) => ({ default: m.ParetoChart })));
@@ -49,6 +50,7 @@ interface ResultsViewProps {
   readonly validation: ValidationResult;
   readonly completeness: CompletenessResult;
   readonly onSwitchToBuilder: () => void;
+  readonly onTabChange?: (tab: string) => void;
 }
 
 /** Color class for method agreement indicator (non-full-agreement cases). */
@@ -58,7 +60,12 @@ function methodAgreementColorClass(allAgree: boolean): string {
     : "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300";
 }
 
-export function ResultsView({ validation, completeness, onSwitchToBuilder }: ResultsViewProps) {
+export function ResultsView({
+  validation,
+  completeness,
+  onSwitchToBuilder,
+  onTabChange,
+}: ResultsViewProps) {
   const { decision } = useDecisionData();
   const { results, topsisResults, regretResults } = useResultsContext();
   const { setConfidenceStrategy, updateCriterion, updateScore } = useActions();
@@ -413,7 +420,11 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
       {decision.criteria.length >= 2 && decision.options.length >= 2 && (
         <CollapsibleSection
           sectionId="pareto"
-          title={<>Trade-Off Explorer <HelpTooltip topic="pareto" /></>}
+          title={
+            <>
+              Trade-Off Explorer <HelpTooltip topic="pareto" />
+            </>
+          }
           ariaLabel="Trade-Off Explorer"
           icon={<Crosshair className="h-4 w-4 text-blue-600 dark:text-blue-400" />}
         >
@@ -471,6 +482,9 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
           })}
         </div>
       </section>
+
+      {/* Proactive Insights */}
+      <ProactiveInsights onTabChange={onTabChange} />
 
       {/* Explain Results */}
       <section aria-labelledby="explain-heading">
@@ -556,7 +570,10 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
           </p>
           {biasDetection.warnings.length > 0 && (
             <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-1 mb-1"><span className="text-sm font-medium">Bias Warnings</span><HelpTooltip topic="bias-detection" /></div>
+              <div className="flex items-center gap-1 mb-1">
+                <span className="text-sm font-medium">Bias Warnings</span>
+                <HelpTooltip topic="bias-detection" />
+              </div>
               <BiasWarnings
                 warnings={biasDetection.warnings}
                 onDismiss={biasDetection.dismiss}
