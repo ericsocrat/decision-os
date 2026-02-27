@@ -54,6 +54,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { SortableItem } from "./SortableItem";
+import { CriterionTooltip } from "./CriterionTooltip";
 
 interface DecisionBuilderProps {
   validation: ValidationResult;
@@ -547,6 +548,12 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                         maxLength={80}
                         aria-invalid={!!critWarning || undefined}
                       />
+                      {crit.description && (
+                        <CriterionTooltip
+                          description={crit.description}
+                          criterionName={crit.name}
+                        />
+                      )}
                       <select
                         value={crit.type}
                         onChange={(e) =>
@@ -714,21 +721,13 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
                     scope="col"
                     className="text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-3 py-2 border-b border-gray-200 dark:border-gray-700"
                   >
-                    <div className="group relative inline-block">
-                      <span
-                        tabIndex={crit.description ? 0 : undefined}
-                        aria-describedby={crit.description ? `crit-tooltip-${crit.id}` : undefined}
-                      >
-                        {crit.name}
-                      </span>
+                    <div className="inline-flex items-center gap-1">
+                      <span>{crit.name}</span>
                       {crit.description && (
-                        <div
-                          id={`crit-tooltip-${crit.id}`}
-                          role="tooltip"
-                          className="absolute left-1/2 top-full z-20 mt-1 -translate-x-1/2 hidden group-hover:block group-focus-within:block w-48 rounded-md bg-gray-900 dark:bg-gray-700 px-3 py-2 text-[11px] font-normal normal-case tracking-normal text-white shadow-lg text-left"
-                        >
-                          {crit.description}
-                        </div>
+                        <CriterionTooltip
+                          description={crit.description}
+                          criterionName={crit.name}
+                        />
                       )}
                     </div>
                     <span
