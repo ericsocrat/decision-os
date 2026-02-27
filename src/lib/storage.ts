@@ -113,6 +113,35 @@ export function deleteDecision(id: string): boolean {
 }
 
 /**
+ * Duplicate a decision — copies everything except outcomes/retrospective.
+ * Returns the new decision, or null on failure.
+ */
+export function duplicateDecision(id: string): Decision | null {
+  const source = getDecision(id);
+  if (!source) return null;
+
+  const now = new Date().toISOString();
+  const copy: Decision = {
+    ...structuredClone(source),
+    id: generateId(),
+    title: `Copy of ${source.title || "Untitled"}`,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  saveDecision(copy);
+  return copy;
+}
+
+/**
+ * Export all decisions as a JSON string for download.
+ */
+export function exportAllDecisions(): string {
+  const decisions = getDecisions();
+  return JSON.stringify(decisions, null, 2);
+}
+
+/**
  * Reset all decisions back to demo data only.
  */
 export function resetToDemo(): void {

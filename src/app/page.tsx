@@ -50,6 +50,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { EmptyState } from "@/components/EmptyState";
 import { useWizardMode } from "@/hooks/useWizardMode";
 import { ModeToggle } from "@/components/ModeToggle";
+import { Dashboard } from "@/components/Dashboard";
 import { DEMO_DECISION } from "@/lib/demo-data";
 import pkg from "../../package.json";
 
@@ -108,9 +109,10 @@ function AppContent() {
     onboarding.step === "step1" ? "results" : "builder"
   );
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
   const shortcutTriggerRef = useRef<HTMLButtonElement>(null);
   const announce = useAnnounce();
-  const { decision, isLoading } = useDecisionData();
+  const { decision, decisions, isLoading } = useDecisionData();
   const { undo, redo, loadDecision } = useActions();
   const validation = useValidation(decision);
   const completeness = useMemo(() => computeCompleteness(decision), [decision]);
@@ -152,6 +154,37 @@ function AppContent() {
     loadDecision(blank.id);
     setActiveTab("builder");
   }, [loadDecision]);
+
+  /** Navigate from dashboard to a specific decision (already loaded by Dashboard). */
+  const handleOpenFromDashboard = useCallback(
+    (..._args: [string]) => {
+      void _args;
+      setShowDashboard(false);
+    },
+    []
+  );
+
+  /** Navigate from dashboard to a new blank decision. */
+  const handleNewFromDashboard = useCallback(() => {
+    const blank: Decision = {
+      id: generateId(),
+      title: "",
+      options: [],
+      criteria: [],
+      scores: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    saveDecision(blank);
+    loadDecision(blank.id);
+    setShowDashboard(false);
+    setActiveTab("builder");
+  }, [loadDecision]);
+
+  /** Go back to the dashboard from the decision view. */
+  const handleBackToDashboard = useCallback(() => {
+    setShowDashboard(true);
+  }, []);
 
   // ── Onboarding: tab switching handled in callbacks (no effect) ──
   const handleOnboardingNext = useCallback(() => {
@@ -391,19 +424,37 @@ function AppContent() {
       />
 
       <main id="main-content" className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6">
-        {isEmpty ? (
+        {showDashboard ? (
+          <Dashboard
+            onOpenDecision={handleOpenFromDashboard}
+            onNewDecision={handleNewFromDashboard}
+          />
+        ) : isEmpty ? (
           <EmptyState
             onLoadTemplate={handleLoadTemplate}
             onLoadDemo={handleLoadDemo}
             onStartBlank={handleStartBlank}
           />
-        ) : !isAdvanced ? (
-          <Suspense fallback={<DecisionSkeleton />}>
-            <GuidedWizard onSwitchToAdvanced={() => setMode("advanced")} />
-          </Suspense>
         ) : (
           <>
-            {/* Tabs */}
+            {/* Back to Dashboard link (when multiple decisions exist) */}
+            {decisions.length > 1 && (
+              <button
+                onClick={handleBackToDashboard}
+                className="mb-4 inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                data-testid="back-to-dashboard"
+              >
+                ← Back to Dashboard
+              </button>
+            )}
+
+            {!isAdvanced ? (
+              <Suspense fallback={<DecisionSkeleton />}>
+                <GuidedWizard onSwitchToAdvanced={() => setMode("advanced")} />
+              </Suspense>
+            ) : (
+              <>
+                {/* Tabs */}
             <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
               <nav role="tablist" aria-label="Decision sections" className="flex">
                 {tabs.map((tab) => (
@@ -535,10 +586,12 @@ function AppContent() {
                 </ErrorBoundary>
               </div>
             )}
+              </>
+            )}
           </>
         )}
         {/* Mode toggle — visible when decision has data */}
-        {!isEmpty && (
+        {!showDashboard && !isEmpty && (
           <ModeToggle
             mode={mode}
             onModeChange={setMode}
