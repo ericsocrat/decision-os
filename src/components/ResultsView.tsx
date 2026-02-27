@@ -36,6 +36,7 @@ import { FrameworkComparison } from "./FrameworkComparison";
 import { CompositeConfidenceIndicator } from "./CompositeConfidenceIndicator";
 import { OutcomeTracker } from "./OutcomeTracker";
 import { RetrospectiveView } from "./RetrospectiveView";
+import { PatternInsights } from "./PatternInsights";
 
 const ScoreChart = lazy(() => import("./ScoreChart").then((m) => ({ default: m.ScoreChart })));
 const ParetoChart = lazy(() => import("./ParetoChart").then((m) => ({ default: m.ParetoChart })));
@@ -644,6 +645,9 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
 
       {/* Retrospective Timeline */}
       <RetrospectiveView decision={decision} />
+
+      {/* Cross-Decision Pattern Insights */}
+      <PatternInsights decision={decision} />
     </div>
   );
 }
