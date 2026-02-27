@@ -11,8 +11,11 @@ import {
   pairCount,
   generatePairs,
   saatyLabel,
+  ahpLocalPriorities,
+  ahpGlobalPriorities,
+  ahpFullAnalysis,
 } from "@/lib/ahp";
-import type { PairwiseComparison } from "@/lib/ahp";
+import type { PairwiseComparison, AHPComparisons } from "@/lib/ahp";
 
 // ---------------------------------------------------------------------------
 // buildPairwiseMatrix
@@ -311,5 +314,169 @@ describe("saatyLabel", () => {
     expect(saatyLabel(5)).toBe("Strongly more");
     expect(saatyLabel(7)).toBe("Very strongly more");
     expect(saatyLabel(9)).toBe("Extremely more");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ahpLocalPriorities (Level 2)
+// ---------------------------------------------------------------------------
+
+describe("ahpLocalPriorities", () => {
+  it("returns equal priorities when all options are equal", () => {
+    const result = ahpLocalPriorities(["o1", "o2", "o3"], []);
+    expect(result.priorities).toHaveLength(3);
+    for (const p of result.priorities) {
+      expect(p).toBeCloseTo(1 / 3, 5);
+    }
+    expect(result.isConsistent).toBe(true);
+  });
+
+  it("gives higher priority to preferred option", () => {
+    const comps: PairwiseComparison[] = [
+      { criterionA: "o1", criterionB: "o2", value: 5 },
+      { criterionA: "o1", criterionB: "o3", value: 7 },
+      { criterionA: "o2", criterionB: "o3", value: 3 },
+    ];
+    const result = ahpLocalPriorities(["o1", "o2", "o3"], comps);
+    expect(result.priorities[0]).toBeGreaterThan(result.priorities[1]);
+    expect(result.priorities[1]).toBeGreaterThan(result.priorities[2]);
+    expect(result.isConsistent).toBe(true);
+  });
+
+  it("detects inconsistency in option comparisons", () => {
+    const comps: PairwiseComparison[] = [
+      { criterionA: "o1", criterionB: "o2", value: 9 },
+      { criterionA: "o2", criterionB: "o3", value: 9 },
+      { criterionA: "o1", criterionB: "o3", value: 1 / 9 },
+    ];
+    const result = ahpLocalPriorities(["o1", "o2", "o3"], comps);
+    expect(result.isConsistent).toBe(false);
+    expect(result.cr).toBeGreaterThan(0.1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ahpGlobalPriorities (Synthesis)
+// ---------------------------------------------------------------------------
+
+describe("ahpGlobalPriorities", () => {
+  it("returns empty for empty inputs", () => {
+    expect(ahpGlobalPriorities([], [])).toEqual([]);
+  });
+
+  it("synthesizes global priorities from weights and local priorities", () => {
+    // 2 criteria, 3 options
+    const localPriorities = [
+      [0.6, 0.3, 0.1], // criterion 1: option priorities
+      [0.1, 0.3, 0.6], // criterion 2: option priorities
+    ];
+    const weights = [0.5, 0.5]; // equal weights
+    const globals = ahpGlobalPriorities(localPriorities, weights);
+    expect(globals).toHaveLength(3);
+    // Expected: [0.5*0.6+0.5*0.1, 0.5*0.3+0.5*0.3, 0.5*0.1+0.5*0.6]
+    //         = [0.35, 0.30, 0.35]
+    expect(globals[0]).toBeCloseTo(0.35, 5);
+    expect(globals[1]).toBeCloseTo(0.30, 5);
+    expect(globals[2]).toBeCloseTo(0.35, 5);
+  });
+
+  it("gives higher global priority when weight favors strong local priority", () => {
+    const localPriorities = [
+      [0.8, 0.2], // criterion 1: option A dominates
+      [0.3, 0.7], // criterion 2: option B dominates
+    ];
+    const weights = [0.9, 0.1]; // criterion 1 strongly favored
+    const globals = ahpGlobalPriorities(localPriorities, weights);
+    expect(globals[0]).toBeGreaterThan(globals[1]); // A should win
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ahpFullAnalysis
+// ---------------------------------------------------------------------------
+
+describe("ahpFullAnalysis", () => {
+  const criterionIds = ["c1", "c2"];
+  const optionIds = ["o1", "o2", "o3"];
+
+  const comparisons: AHPComparisons = {
+    criteriaComparisons: [
+      { criterionA: "c1", criterionB: "c2", value: 3 }, // c1 moderately more important
+    ],
+    optionComparisons: {
+      c1: [
+        { criterionA: "o1", criterionB: "o2", value: 5 },
+        { criterionA: "o1", criterionB: "o3", value: 7 },
+        { criterionA: "o2", criterionB: "o3", value: 3 },
+      ],
+      c2: [
+        { criterionA: "o1", criterionB: "o2", value: 1 / 3 },
+        { criterionA: "o1", criterionB: "o3", value: 1 / 5 },
+        { criterionA: "o2", criterionB: "o3", value: 1 / 3 },
+      ],
+    },
+  };
+
+  it("produces rankings with correct count", () => {
+    const result = ahpFullAnalysis(criterionIds, optionIds, comparisons);
+    expect(result.rankings).toHaveLength(3);
+    expect(result.rankings[0].rank).toBe(1);
+    expect(result.rankings[1].rank).toBe(2);
+    expect(result.rankings[2].rank).toBe(3);
+  });
+
+  it("derives criterion weights", () => {
+    const result = ahpFullAnalysis(criterionIds, optionIds, comparisons);
+    expect(result.criterionWeights).toHaveLength(2);
+    // c1 weighted 3× more than c2
+    expect(result.criterionWeights[0]).toBeGreaterThan(result.criterionWeights[1]);
+    expect(result.criterionWeights100.reduce((s, v) => s + v, 0)).toBe(100);
+  });
+
+  it("computes local priorities per criterion", () => {
+    const result = ahpFullAnalysis(criterionIds, optionIds, comparisons);
+    expect(result.localPriorities).toHaveLength(2);
+    // For c1: o1 > o2 > o3
+    const c1Local = result.localPriorities[0].optionPriorities;
+    expect(c1Local[0]).toBeGreaterThan(c1Local[1]);
+    expect(c1Local[1]).toBeGreaterThan(c1Local[2]);
+    // For c2: o3 > o2 > o1 (reciprocal favors o3)
+    const c2Local = result.localPriorities[1].optionPriorities;
+    expect(c2Local[2]).toBeGreaterThan(c2Local[1]);
+    expect(c2Local[1]).toBeGreaterThan(c2Local[0]);
+  });
+
+  it("reports overall consistency", () => {
+    const result = ahpFullAnalysis(criterionIds, optionIds, comparisons);
+    expect(result.overallConsistent).toBe(true);
+    expect(result.criterionConsistent).toBe(true);
+  });
+
+  it("issues size warning for large problems", () => {
+    // 11 criteria × 11 options = 55 + 11*55 = 660 comparisons > 100
+    const manyIds = Array.from({ length: 11 }, (_, i) => `c${i}`);
+    const manyOpts = Array.from({ length: 11 }, (_, i) => `o${i}`);
+    const emptyComps: AHPComparisons = { criteriaComparisons: [], optionComparisons: {} };
+    const result = ahpFullAnalysis(manyIds, manyOpts, emptyComps);
+    expect(result.sizeWarning).not.toBeNull();
+    expect(result.sizeWarning).toContain("comparisons");
+  });
+
+  it("returns no size warning for small problems", () => {
+    const result = ahpFullAnalysis(criterionIds, optionIds, comparisons);
+    expect(result.sizeWarning).toBeNull();
+  });
+
+  it("handles missing option comparisons gracefully", () => {
+    const partial: AHPComparisons = {
+      criteriaComparisons: comparisons.criteriaComparisons,
+      optionComparisons: {}, // no option comparisons
+    };
+    const result = ahpFullAnalysis(criterionIds, optionIds, partial);
+    // Without comparisons, all options get equal local priorities
+    expect(result.globalPriorities).toHaveLength(3);
+    for (const gp of result.globalPriorities) {
+      expect(gp).toBeCloseTo(1 / 3, 5);
+    }
   });
 });

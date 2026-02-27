@@ -299,3 +299,165 @@ export function saatyLabel(value: number): string {
     default: return "Equal";
   }
 }
+
+// ---------------------------------------------------------------------------
+// Level 2 — Option Priorities per Criterion
+// ---------------------------------------------------------------------------
+
+/**
+ * All comparisons needed for a full AHP analysis.
+ *
+ * - `criteriaComparisons`: pairwise comparisons among criteria (Level 1)
+ * - `optionComparisons`: for each criterion id, pairwise comparisons among
+ *   options with respect to that criterion (Level 2)
+ */
+export interface AHPComparisons {
+  readonly criteriaComparisons: readonly PairwiseComparison[];
+  readonly optionComparisons: Readonly<Record<string, readonly PairwiseComparison[]>>;
+}
+
+/** Per-criterion local priority result. */
+export interface AHPLocalPriority {
+  readonly criterionId: string;
+  readonly optionPriorities: readonly number[];
+  readonly consistencyRatio: number;
+  readonly isConsistent: boolean;
+}
+
+/** Full AHP analysis result. */
+export interface AHPFullResult {
+  /** Criterion weights (normalized, sum ≈ 1). */
+  readonly criterionWeights: readonly number[];
+  /** Criterion weights as 0–100 integers. */
+  readonly criterionWeights100: readonly number[];
+  /** Consistency ratio for criterion-level comparisons. */
+  readonly criterionCR: number;
+  /** Whether criterion-level comparisons are consistent. */
+  readonly criterionConsistent: boolean;
+  /** Local priorities per criterion (option priorities wrt each criterion). */
+  readonly localPriorities: readonly AHPLocalPriority[];
+  /** Global priority for each option (index matches optionIds). */
+  readonly globalPriorities: readonly number[];
+  /** Rankings sorted by global priority (descending). */
+  readonly rankings: readonly AHPRanking[];
+  /** True when ALL levels are consistent. */
+  readonly overallConsistent: boolean;
+  /** Warning message if the problem is very large. */
+  readonly sizeWarning: string | null;
+}
+
+/** A single option's rank in the AHP analysis. */
+export interface AHPRanking {
+  readonly optionId: string;
+  readonly globalPriority: number;
+  readonly rank: number;
+}
+
+/** Maximum comparisons before a size warning is issued. */
+const MAX_COMPARISONS_WARN = 100;
+
+/**
+ * Compute local priorities for options with respect to a single criterion.
+ *
+ * @param optionIds - ordered list of option ids
+ * @param comparisons - pairwise comparisons among options for this criterion
+ */
+export function ahpLocalPriorities(
+  optionIds: readonly string[],
+  comparisons: readonly PairwiseComparison[],
+): { priorities: number[]; cr: number; isConsistent: boolean } {
+  const matrix = buildPairwiseMatrix(optionIds, comparisons);
+  const weights = deriveWeights(matrix);
+  const cr = consistencyRatio(matrix, weights);
+  return { priorities: weights, cr, isConsistent: isConsistent(cr) };
+}
+
+/**
+ * Synthesize global priorities from criterion weights and local option
+ * priorities.
+ *
+ * globalPriority[i] = Σ_j ( criterionWeight[j] × localPriority[j][i] )
+ */
+export function ahpGlobalPriorities(
+  localPriorities: readonly (readonly number[])[],
+  weights: readonly number[],
+): number[] {
+  if (localPriorities.length === 0 || weights.length === 0) return [];
+  const numOptions = localPriorities[0].length;
+  const globals = new Array<number>(numOptions).fill(0);
+
+  for (let j = 0; j < weights.length; j++) {
+    const locals = localPriorities[j];
+    if (!locals) continue;
+    for (let i = 0; i < numOptions; i++) {
+      globals[i] += weights[j] * (locals[i] ?? 0);
+    }
+  }
+
+  return globals;
+}
+
+/**
+ * Run the full multi-level AHP analysis.
+ *
+ * 1. Level 1: derive criterion weights from criteria comparisons
+ * 2. Level 2: derive option priorities per criterion
+ * 3. Synthesis: compute global priorities and rankings
+ */
+export function ahpFullAnalysis(
+  criterionIds: readonly string[],
+  optionIds: readonly string[],
+  comparisons: AHPComparisons,
+): AHPFullResult {
+  // Level 1: criterion weights
+  const critResult = computeAHP(criterionIds, comparisons.criteriaComparisons);
+
+  // Size warning
+  const totalComparisons =
+    pairCount(criterionIds.length) +
+    criterionIds.length * pairCount(optionIds.length);
+  const sizeWarning =
+    totalComparisons > MAX_COMPARISONS_WARN
+      ? `Large problem: ${totalComparisons} total comparisons required. Consider reducing options or criteria.`
+      : null;
+
+  // Level 2: option priorities per criterion
+  const localPriorities: AHPLocalPriority[] = criterionIds.map((critId) => {
+    const critComps = comparisons.optionComparisons[critId] ?? [];
+    const local = ahpLocalPriorities(optionIds, critComps);
+    return {
+      criterionId: critId,
+      optionPriorities: local.priorities,
+      consistencyRatio: local.cr,
+      isConsistent: local.isConsistent,
+    };
+  });
+
+  // Synthesis
+  const globals = ahpGlobalPriorities(
+    localPriorities.map((lp) => lp.optionPriorities),
+    critResult.weights,
+  );
+
+  // Rankings
+  const ranked = optionIds
+    .map((id, i) => ({ optionId: id, globalPriority: globals[i] ?? 0 }))
+    .sort((a, b) => b.globalPriority - a.globalPriority)
+    .map((entry, idx) => ({ ...entry, rank: idx + 1 }));
+
+  const overallConsistent =
+    critResult.isConsistent &&
+    localPriorities.every((lp) => lp.isConsistent);
+
+  return {
+    criterionWeights: critResult.weights,
+    criterionWeights100: critResult.weights100,
+    criterionCR: critResult.consistencyRatio,
+    criterionConsistent: critResult.isConsistent,
+    localPriorities,
+    globalPriorities: globals,
+    rankings: ranked,
+    overallConsistent,
+    sizeWarning,
+  };
+}
