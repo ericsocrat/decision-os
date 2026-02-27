@@ -824,13 +824,14 @@ describe("RESTORE_ENRICHED_VALUE", () => {
       source: "api",
       tier: 1,
     });
-    const before = s.decision;
+    const beforeRestore = s.decision;
     s = dispatch(s, {
       type: "RESTORE_ENRICHED_VALUE",
       optionId: "o1",
       criterionId: "c1",
     });
     // Should not have changed (returns null from mutation → same state)
+    expect(s.decision).toBe(beforeRestore);
     expect(s.decision.scores.o1.c1).toBe(8);
   });
 

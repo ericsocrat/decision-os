@@ -63,6 +63,17 @@ describe("buildPairwiseMatrix", () => {
     expect(m[0][1]).toBe(1);
   });
 
+  it("ignores self-comparisons (same criterion on both sides)", () => {
+    const ids = ["a", "b"];
+    const comps: PairwiseComparison[] = [
+      { criterionA: "a", criterionB: "a", value: 5 },
+    ];
+    const m = buildPairwiseMatrix(ids, comps);
+    // Self-comparison should be ignored, diagonal stays 1
+    expect(m[0][0]).toBe(1);
+    expect(m[0][1]).toBe(1);
+  });
+
   it("handles single criterion", () => {
     const m = buildPairwiseMatrix(["only"], []);
     expect(m).toEqual([[1]]);
@@ -184,6 +195,16 @@ describe("consistencyRatio", () => {
     const w = deriveWeights(m);
     const cr = consistencyRatio(m, w);
     expect(cr).toBeLessThan(0.1);
+  });
+
+  it("uses fallback RI for matrices larger than the RI table", () => {
+    // Build an identity 16x16 matrix (n = 16 >= RANDOM_INDEX.length)
+    const ids = Array.from({ length: 16 }, (_, i) => `c${i}`);
+    const m = buildPairwiseMatrix(ids, []);
+    const w = deriveWeights(m);
+    // All equal weights → perfectly consistent → CR = 0
+    const cr = consistencyRatio(m, w);
+    expect(cr).toBe(0);
   });
 });
 
@@ -310,10 +331,23 @@ describe("saatyLabel", () => {
   });
 
   it("returns descriptive labels for scale values", () => {
+    expect(saatyLabel(2)).toBe("Slightly more");
     expect(saatyLabel(3)).toBe("Moderately more");
+    expect(saatyLabel(4)).toBe("Moderate-to-strong");
     expect(saatyLabel(5)).toBe("Strongly more");
+    expect(saatyLabel(6)).toBe("Strong-to-very-strong");
     expect(saatyLabel(7)).toBe("Very strongly more");
+    expect(saatyLabel(8)).toBe("Very-to-extremely strong");
     expect(saatyLabel(9)).toBe("Extremely more");
+  });
+
+  it("returns 'Equal' for values below 1", () => {
+    expect(saatyLabel(0)).toBe("Equal");
+    expect(saatyLabel(-3)).toBe("Moderately more");
+  });
+
+  it("returns 'Equal' for out-of-range values", () => {
+    expect(saatyLabel(15)).toBe("Equal");
   });
 });
 

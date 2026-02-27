@@ -7,7 +7,7 @@
 
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 import { Target, Pencil, FlaskConical, X } from "lucide-react";
 import type { OnboardingStep } from "@/hooks/useOnboarding";
 
@@ -88,9 +88,17 @@ export function CoachmarkOverlay({ step, onNext, onDismiss }: CoachmarkOverlayPr
     });
   }, [step]);
 
+  // Compute initial position synchronously before paint (legitimate pattern:
+  // DOM measurement → setState is exactly what useLayoutEffect is for).
+  useLayoutEffect(() => {
+    if (step === "idle") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- DOM measurement before paint
+    updatePosition();
+  }, [step, updatePosition]);
+
+  // Re-compute on resize/scroll
   useEffect(() => {
     if (step === "idle") return;
-    updatePosition();
     window.addEventListener("resize", updatePosition);
     window.addEventListener("scroll", updatePosition, true);
     return () => {

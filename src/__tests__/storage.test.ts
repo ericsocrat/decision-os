@@ -2,7 +2,7 @@
  * Unit tests for localStorage persistence layer.
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   getDecisions,
   getDecision,
@@ -195,5 +195,39 @@ describe("resetToDemo — edge-case branches", () => {
     });
     expect(() => resetToDemo()).not.toThrow();
     spy.mockRestore();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// SSR guard branches (globalThis.window === undefined)
+// ---------------------------------------------------------------------------
+
+describe("SSR guards — window is undefined", () => {
+  let origWindow: typeof globalThis.window;
+
+  beforeEach(() => {
+    origWindow = globalThis.window;
+    // @ts-expect-error — simulating SSR
+    delete globalThis.window;
+  });
+
+  afterEach(() => {
+    globalThis.window = origWindow;
+  });
+
+  it("getDecisions returns demo when window is undefined", () => {
+    expect(getDecisions()).toEqual([DEMO_DECISION]);
+  });
+
+  it("saveDecision no-ops when window is undefined", () => {
+    expect(() => saveDecision(makeDecision())).not.toThrow();
+  });
+
+  it("deleteDecision returns false when window is undefined", () => {
+    expect(deleteDecision("any-id")).toBe(false);
+  });
+
+  it("resetToDemo no-ops when window is undefined", () => {
+    expect(() => resetToDemo()).not.toThrow();
   });
 });

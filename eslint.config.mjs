@@ -14,7 +14,23 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Service worker — plain JS running in worker scope, not React/Node
     "public/sw.js",
+    // Generated coverage reports
+    "coverage/**",
   ]),
+  // Project-level rule hardening
+  {
+    rules: {
+      "no-console": ["warn", { allow: ["warn", "error", "info"] }],
+      "@typescript-eslint/no-explicit-any": "error",
+    },
+  },
+  // Allow console in test files (assertions, debugging)
+  {
+    files: ["src/__tests__/**", "e2e/**"],
+    rules: {
+      "no-console": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
