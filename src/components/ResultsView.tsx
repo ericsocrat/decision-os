@@ -34,6 +34,7 @@ import { ConfidenceStrategySelector } from "./ConfidenceStrategySelector";
 import { WhatIfPanel } from "./WhatIfPanel";
 import { FrameworkComparison } from "./FrameworkComparison";
 import { CompositeConfidenceIndicator } from "./CompositeConfidenceIndicator";
+import { OutcomeTracker } from "./OutcomeTracker";
 
 const ScoreChart = lazy(() => import("./ScoreChart").then((m) => ({ default: m.ScoreChart })));
 const ParetoChart = lazy(() => import("./ParetoChart").then((m) => ({ default: m.ParetoChart })));
@@ -636,6 +637,9 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
           onClose={() => setWhatIfOpen(false)}
         />
       )}
+
+      {/* Outcome Tracker */}
+      <OutcomeTracker decision={decision} results={results} />
     </div>
   );
 }
