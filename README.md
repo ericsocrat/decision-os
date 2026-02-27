@@ -47,24 +47,32 @@ Open [http://localhost:3000](http://localhost:3000) — a demo decision is prelo
 
 ## Features
 
-| Status | Feature                       | Description                                            |
-| ------ | ----------------------------- | ------------------------------------------------------ |
-| ✅     | **Decision Builder**          | Title, options, weighted criteria, scores matrix       |
-| ✅     | **Real-time Results**         | Ranked options with visual score bars and breakdowns   |
-| ✅     | **Top Drivers**               | See which criteria matter most                         |
-| ✅     | **Sensitivity Analysis**      | Test if weight changes flip the winner (±5%–50%)       |
-| ✅     | **JSON Export & URL Sharing** | Download data or copy a shareable link                 |
-| ✅     | **Multiple Decisions**        | Save and switch between decisions                      |
-| ✅     | **8 Decision Templates**      | Job Offer, Vendor, Apartment, Investment, and more     |
-| ✅     | **Undo/Redo**                 | 50-entry history with Ctrl+Z/Ctrl+Shift+Z              |
-| ✅     | **Dark Mode**                 | System-aware with FOUC prevention                      |
-| ✅     | **Charts**                    | Recharts-powered bar and breakdown charts              |
-| ✅     | **Accessible**                | Keyboard navigable, ARIA labels, screen reader support |
-| ✅     | **126 Tests**                 | Comprehensive unit + E2E + a11y test suite             |
-| 🚧     | **Drag-and-Drop**             | Reorder options and criteria                           |
-| 📋     | **TOPSIS Algorithm**          | Alternative ranking method                             |
-| 📋     | **Monte Carlo Simulation**    | Probabilistic sensitivity analysis                     |
-| 📋     | **Collaborative Decisions**   | Real-time multi-user via Supabase                      |
+| Status | Feature                       | Description                                              |
+| ------ | ----------------------------- | -------------------------------------------------------- |
+| ✅     | **Decision Builder**          | Title, options, weighted criteria, scores matrix         |
+| ✅     | **Real-time Results**         | Ranked options with visual score bars and breakdowns     |
+| ✅     | **Top Drivers**               | See which criteria matter most                           |
+| ✅     | **Sensitivity Analysis**      | Test if weight changes flip the winner (±5%–50%)         |
+| ✅     | **TOPSIS Algorithm**          | Alternative ranking via ideal/anti-ideal distance        |
+| ✅     | **Minimax Regret**            | Rank by worst-case regret across criteria                |
+| ✅     | **Monte Carlo Simulation**    | 10k-run probabilistic sensitivity analysis               |
+| ✅     | **Framework Comparison**      | Side-by-side WSM / TOPSIS / Regret with consensus engine |
+| ✅     | **Score Confidence**          | Per-cell high/medium/low confidence with scoring impact  |
+| ✅     | **Bias Detection**            | Detects central tendency, anchoring, and optimism bias   |
+| ✅     | **AHP Wizard**                | Pairwise comparison to derive criteria weights           |
+| ✅     | **Reasoning Notes**           | Per-score justification journal                          |
+| ✅     | **Drag-and-Drop**             | Reorder options and criteria with keyboard support       |
+| ✅     | **JSON/CSV Import**           | Import decisions with preview and validation             |
+| ✅     | **JSON Export & URL Sharing** | Download data or copy a shareable link                   |
+| ✅     | **Decision Comparison**       | Side-by-side comparison of multiple decisions            |
+| ✅     | **Multiple Decisions**        | Save and switch between decisions                        |
+| ✅     | **8 Decision Templates**      | Job Offer, Vendor, Apartment, Investment, and more       |
+| ✅     | **Undo/Redo**                 | 50-entry history with Ctrl+Z/Ctrl+Shift+Z                |
+| ✅     | **Dark Mode**                 | System-aware with FOUC prevention                        |
+| ✅     | **Charts**                    | Recharts-powered bar and breakdown charts                |
+| ✅     | **Cloud Sync**                | Bidirectional Supabase sync with auth                    |
+| ✅     | **Accessible**                | Keyboard navigable, ARIA labels, screen reader support   |
+| ✅     | **1,375 Tests**               | Comprehensive unit + E2E + a11y test suite               |
 
 ## Scoring Model
 
@@ -81,15 +89,29 @@ See [docs/SCORING_MODEL.md](docs/SCORING_MODEL.md) for the full mathematical spe
 ```
 Browser (Client)
 ├── UI Layer (React Components)
-│   ├── DecisionBuilder  — Option/criteria/score editing
+│   ├── DecisionBuilder  — Option/criteria/score editing + drag-and-drop
 │   ├── ResultsView      — Rankings and visualizations
-│   └── SensitivityView  — Weight-swing robustness testing
+│   ├── SensitivityView  — Weight-swing robustness testing
+│   ├── MonteCarloView   — Probabilistic simulation results
+│   ├── CompareView      — Side-by-side decision comparison
+│   └── FrameworkComparison — WSM/TOPSIS/Regret consensus
 ├── State Layer (React Context + DecisionProvider)
+│   ├── 4 focused contexts + 1 backward-compatible context
+│   ├── Undo/redo with coalescing middleware
 │   └── Auto-save to localStorage (300ms debounce)
-└── Logic Layer (Pure Functions)
-    ├── scoring.ts       — Deterministic WSM engine
-    ├── validation.ts    — Input validation
-    └── templates.ts     — 8 pre-built decision templates
+├── Logic Layer (Pure Functions)
+│   ├── scoring.ts       — Deterministic WSM engine
+│   ├── topsis.ts        — TOPSIS ideal-distance ranking
+│   ├── regret.ts        — Minimax Regret analysis
+│   ├── monte-carlo.ts   — 10k-run probabilistic simulation
+│   ├── consensus.ts     — Multi-framework agreement engine
+│   ├── bias-detection.ts — Cognitive bias detection
+│   ├── validation.ts    — Input validation
+│   └── templates.ts     — 8 pre-built decision templates
+└── Cloud Layer (Optional)
+    ├── supabase.ts      — Auth + real-time subscriptions
+    ├── cloud-storage.ts — CRUD operations
+    └── sync.ts          — Bidirectional sync engine
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full system design.
@@ -98,13 +120,14 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full system design.
 
 | Layer       | Technology                                                                                                     |
 | ----------- | -------------------------------------------------------------------------------------------------------------- |
-| Framework   | [Next.js 16](https://nextjs.org/) (App Router)                                                                 |
+| Framework   | [Next.js 16](https://nextjs.org/) (App Router, Turbopack)                                                      |
 | Language    | [TypeScript](https://www.typescriptlang.org/) (strict mode)                                                    |
 | Styling     | [Tailwind CSS 4](https://tailwindcss.com/)                                                                     |
 | Charts      | [Recharts](https://recharts.org/) (lazy-loaded)                                                                |
+| Drag & Drop | [@dnd-kit](https://dndkit.com/) (accessible, keyboard-navigable)                                               |
 | Testing     | [Vitest](https://vitest.dev/) + [Playwright](https://playwright.dev/) + [axe-core](https://www.deque.com/axe/) |
 | CI/CD       | [GitHub Actions](.github/workflows/ci.yml)                                                                     |
-| Persistence | localStorage (client-side, zero backend)                                                                       |
+| Persistence | localStorage (client-side) + optional [Supabase](https://supabase.com/) cloud sync                             |
 | Deployment  | [Vercel](https://vercel.com/)                                                                                  |
 
 ## Commands
