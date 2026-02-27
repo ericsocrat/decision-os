@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2025-07-16
+
 ### Added
 
 - **Auth + Cloud Sync**: Optional Supabase-powered authentication (GitHub + Google OAuth) and cloud database for cross-device access. Feature-flagged behind `NEXT_PUBLIC_SUPABASE_URL` env var — app remains fully functional in local-only mode without Supabase. Includes: `useAuth` hook with sign in/out, `useSync` hook with auto-sync on mount + window focus, `AuthButton` dropdown with OAuth providers, `SyncStatus` indicator, `MigrationBanner` for one-click localStorage→cloud upload. Sync engine uses last-write-wins conflict resolution by `updatedAt`. DecisionProvider auto-syncs to cloud on every save. Supabase schema with RLS (row-level security) ensures user-scoped decisions. 22 new tests across cloud-storage and sync modules. ADR-002 documents architecture. (#2)
