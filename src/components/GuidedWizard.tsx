@@ -58,8 +58,8 @@ export const GuidedWizard = memo(function GuidedWizard({ onSwitchToAdvanced }: G
   const canAdvance = useMemo(() => {
     switch (currentStep) {
       case 1:
-        // Step 1: always can advance (type selection is optional in placeholder)
-        return true;
+        // Step 1: require a non-empty title before advancing
+        return decision.title.trim().length > 0;
       case 2:
         // Step 2: need at least 1 option with a name
         return decision.options.some((o) => o.name.trim().length > 0);

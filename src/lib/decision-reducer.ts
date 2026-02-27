@@ -100,6 +100,7 @@ export type DecisionAction =
     }
   | { type: "REMOVE_CRITERION"; criterionId: string }
   | { type: "REORDER_CRITERIA"; fromIndex: number; toIndex: number }
+  | { type: "REPLACE_CRITERIA"; criteria: Criterion[] }
 
   // Scores
   | { type: "UPDATE_SCORE"; optionId: string; criterionId: string; value: number | null }
@@ -304,6 +305,18 @@ function applyDecisionMutation(decision: Decision, action: DecisionAction): Deci
       return stampNow({ ...decision, criteria: newCriteria });
     }
 
+    case "REPLACE_CRITERIA": {
+      // Replace all criteria at once (wizard type selection).
+      // Clears scores and reasoning since old criteria IDs no longer apply.
+      return stampNow({
+        ...decision,
+        criteria: action.criteria,
+        scores: {},
+        reasoning: {},
+        scoreMetadata: undefined,
+      });
+    }
+
     case "UPDATE_SCORE": {
       const newScores = { ...decision.scores };
       if (!newScores[action.optionId]) newScores[action.optionId] = {};
@@ -467,6 +480,7 @@ function classifyAction(
     case "ADD_CRITERION":
     case "REMOVE_CRITERION":
     case "REORDER_CRITERIA":
+    case "REPLACE_CRITERIA":
     case "UPDATE_SCORE":
     case "UPDATE_CONFIDENCE":
     case "SET_CONFIDENCE_STRATEGY":

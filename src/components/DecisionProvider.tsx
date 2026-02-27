@@ -122,6 +122,7 @@ export interface ActionsValue {
   updateCriterion: (criterionId: string, updates: Partial<Criterion>) => void;
   removeCriterion: (criterionId: string) => void;
   reorderCriteria: (fromIndex: number, toIndex: number) => void;
+  replaceCriteria: (criteria: Criterion[]) => void;
   updateScore: (optionId: string, criterionId: string, value: number | null) => void;
   updateConfidence: (optionId: string, criterionId: string, confidence: Confidence) => void;
   updateReasoning: (optionId: string, criterionId: string, text: string) => void;
@@ -164,6 +165,7 @@ export interface DecisionContextValue extends DecisionStateValue {
   updateCriterion: (criterionId: string, updates: Partial<Criterion>) => void;
   removeCriterion: (criterionId: string) => void;
   reorderCriteria: (fromIndex: number, toIndex: number) => void;
+  replaceCriteria: (criteria: Criterion[]) => void;
   updateScore: (optionId: string, criterionId: string, value: number | null) => void;
   updateConfidence: (optionId: string, criterionId: string, confidence: Confidence) => void;
   updateReasoning: (optionId: string, criterionId: string, text: string) => void;
@@ -351,6 +353,11 @@ export function DecisionProvider({ children }: Readonly<{ children: ReactNode }>
     [dispatch]
   );
 
+  const replaceCriteria = useCallback(
+    (criteria: Criterion[]) => dispatch({ type: "REPLACE_CRITERIA", criteria }),
+    [dispatch]
+  );
+
   const updateScore = useCallback(
     (optionId: string, criterionId: string, value: number | null) =>
       dispatch({ type: "UPDATE_SCORE", optionId, criterionId, value }),
@@ -504,6 +511,7 @@ export function DecisionProvider({ children }: Readonly<{ children: ReactNode }>
       updateCriterion,
       removeCriterion,
       reorderCriteria,
+      replaceCriteria,
       updateScore,
       updateConfidence,
       updateReasoning,
@@ -531,6 +539,7 @@ export function DecisionProvider({ children }: Readonly<{ children: ReactNode }>
       updateCriterion,
       removeCriterion,
       reorderCriteria,
+      replaceCriteria,
       updateScore,
       updateConfidence,
       updateReasoning,
