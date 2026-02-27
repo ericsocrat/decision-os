@@ -31,6 +31,10 @@ const securityHeaders = [
     value: "same-origin",
   },
   {
+    key: "Cross-Origin-Embedder-Policy",
+    value: "credentialless",
+  },
+  {
     key: "X-XSS-Protection",
     value: "0",
   },
