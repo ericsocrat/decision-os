@@ -37,17 +37,17 @@ describe("Header", () => {
 
   it("renders New button", () => {
     renderWithProviders(<Header />);
-    expect(screen.getByRole("button", { name: /create new decision/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /new/i })).toBeInTheDocument();
   });
 
   it("renders Templates button", () => {
     renderWithProviders(<Header />);
-    expect(screen.getByRole("button", { name: /start from template/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /templates/i })).toBeInTheDocument();
   });
 
   it("opens template picker on Templates click", async () => {
     const { user } = renderWithProviders(<Header />);
-    const btn = screen.getByRole("button", { name: /start from template/i });
+    const btn = screen.getByRole("button", { name: /templates/i });
     await user.click(btn);
     expect(screen.getByRole("dialog", { name: /choose a decision template/i })).toBeInTheDocument();
   });
@@ -61,6 +61,6 @@ describe("Header", () => {
 
   it("renders reset demo button", () => {
     renderWithProviders(<Header />);
-    expect(screen.getByRole("button", { name: /reset to demo data/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /reset demo/i })).toBeInTheDocument();
   });
 });

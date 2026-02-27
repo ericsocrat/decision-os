@@ -1,132 +1,203 @@
 /**
- * Internationalization (i18n) skeleton.
+ * Internationalization (i18n) System
  *
- * Provides a lightweight typed translation layer. Add new locales by
- * expanding the `messages` record. Components use the `useT()` hook
- * to get the current locale's translations.
+ * Provides a typed translation layer with interpolation, pluralization,
+ * browser language detection, and multi-locale support.
+ *
+ * Translation files live in `src/lib/i18n/*.json`.
  *
  * Usage:
  *   const t = useT();
  *   <h1>{t.app.title}</h1>
+ *
+ * Interpolation:
+ *   t("header.switchTheme", { mode: "dark" })  →  "Switch to dark mode"
+ *
+ * Pluralization:
+ *   t("quality.completion", { filled: 3, total: 5 })  →  "3/5 scores filled"
  */
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+  type ReactNode,
+} from "react";
+import en from "./i18n/en.json";
+import fr from "./i18n/fr.json";
+import es from "./i18n/es.json";
 
-// ── Translation messages ───────────────────────────────────────────
-
-const en = {
-  app: {
-    title: "Decision OS",
-    subtitle: "Structured decision-making",
-    loading: "Loading Decision OS...",
-    footer: "Open source structured decision-making tool.",
-  },
-  tabs: {
-    builder: "Builder",
-    results: "Results",
-    sensitivity: "Sensitivity",
-    compare: "Compare",
-    montecarlo: "Monte Carlo",
-  },
-  builder: {
-    titlePlaceholder: "Decision title",
-    descriptionPlaceholder: "Describe the decision you're making...",
-    addOption: "Add Option",
-    addCriterion: "Add Criterion",
-    options: "Options",
-    criteria: "Criteria",
-    scores: "Scores",
-    optionNamePlaceholder: "Option name",
-    criterionNamePlaceholder: "Criterion name",
-  },
-  results: {
-    rankings: "Rankings",
-    exportJson: "Export JSON",
-    exportPdf: "PDF",
-    share: "Share",
-    winner: "Winner",
-    topDrivers: "Top Drivers",
-    explain: "Explain This Result",
-    visualization: "Score Visualization",
-    linkCopied: "Link copied to clipboard!",
-    tooLarge: "Decision too large for URL sharing. Use JSON export instead.",
-    copyFail: "Failed to copy link.",
-    emptyState: "Add at least 2 options and 1 criterion to see results.",
-  },
-  sensitivity: {
-    title: "Sensitivity Analysis",
-    swing: "Weight swing",
-    robust: "Robust",
-    sensitive: "Sensitive",
-  },
-  header: {
-    newDecision: "New",
-    deleteDecision: "Delete current decision",
-    resetDemo: "Reset Demo",
-    selectDecision: "Select decision",
-    switchTheme: "Switch to {mode} mode",
-    importDecision: "Import",
-  },
-  shortcuts: {
-    title: "Keyboard Shortcuts",
-    close: "Close shortcuts",
-    builderTab: "Builder tab",
-    resultsTab: "Results tab",
-    sensitivityTab: "Sensitivity tab",
-    toggleDialog: "Toggle this dialog",
-    closeDialog: "Close dialog",
-  },
-  notFound: {
-    title: "Page Not Found",
-    back: "Go back home",
-  },
-} as const;
+// ── Types ──────────────────────────────────────────────────────────
 
 export type Messages = typeof en;
-export type Locale = "en";
+export type Locale = "en" | "fr" | "es";
 
-const messages: Record<Locale, Messages> = { en };
+/** Dot-notation key paths for type-safe lookups (top 2 levels). */
+export type TranslationKey = {
+  [NS in keyof Messages]: {
+    [K in keyof Messages[NS]]: `${NS & string}.${K & string}`;
+  }[keyof Messages[NS]];
+}[keyof Messages];
 
-// ── Context ────────────────────────────────────────────────────────
+/** Map of variable names → values for interpolation. */
+export type InterpolationValues = Record<string, string | number>;
+
+// ── Messages registry ──────────────────────────────────────────────
+
+const messages: Record<Locale, Messages> = { en, fr, es };
+
+// ── Interpolation engine ───────────────────────────────────────────
+
+/**
+ * Replace `{key}` placeholders with values from the params object.
+ *
+ * @example interpolate("Hello {name}!", { name: "World" }) → "Hello World!"
+ */
+export function interpolate(
+  template: string,
+  params: InterpolationValues,
+): string {
+  return template.replaceAll(/\{(\w+)\}/g, (match, key: string) => {
+    const val = params[key];
+    return val === undefined ? match : String(val);
+  });
+}
+
+// ── Locale detection ───────────────────────────────────────────────
+
+const STORAGE_KEY = "decision-os:locale";
+
+/**
+ * Detect the best locale from browser settings, localStorage, or fallback.
+ */
+export function detectLocale(): Locale {
+  // 1. Check localStorage
+  if (globalThis.window !== undefined) {
+    const stored = globalThis.localStorage.getItem(STORAGE_KEY);
+    if (stored && isLocale(stored)) return stored;
+
+    // 2. Check browser language
+    const browserLangs = globalThis.navigator.languages ?? [
+      globalThis.navigator.language,
+    ];
+    for (const lang of browserLangs) {
+      const code = lang.split("-")[0].toLowerCase();
+      if (isLocale(code)) return code;
+    }
+  }
+
+  // 3. Fallback
+  return "en";
+}
+
+function isLocale(code: string): code is Locale {
+  return code === "en" || code === "fr" || code === "es";
+}
+
+// ── Translation lookup ─────────────────────────────────────────────
+
+/**
+ * Look up a translation by dot-notation key, with optional interpolation.
+ * Falls back to English if the key is empty in the current locale.
+ */
+export function translate(
+  locale: Locale,
+  key: string,
+  params?: InterpolationValues,
+): string {
+  const parts = key.split(".");
+  if (parts.length !== 2) return key;
+
+  const [ns, k] = parts;
+  const msgs = messages[locale];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const nsObj = (msgs as any)?.[ns];
+  const value: string | undefined = nsObj?.[k];
+
+  // Fall back to English for empty or missing translations
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fallback: string | undefined = (messages.en as any)?.[ns]?.[k];
+  const resolved = value || fallback || key;
+
+  return params ? interpolate(resolved, params) : resolved;
+}
+
+// ── React Context ──────────────────────────────────────────────────
 
 interface I18nContextValue {
   locale: Locale;
   setLocale: (l: Locale) => void;
   t: Messages;
+  /** Translate a dot-notation key with optional interpolation. */
+  tf: (key: string, params?: InterpolationValues) => string;
 }
 
 const I18nContext = createContext<I18nContextValue>({
   locale: "en",
   setLocale: () => {},
   t: en,
+  tf: (key: string) => key,
 });
 
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+export function I18nProvider({ children }: Readonly<{ children: ReactNode }>) {
+  const [currentLocale, setCurrentLocale] = useState<Locale>(detectLocale);
 
   const setLocale = useCallback((l: Locale) => {
-    setLocaleState(l);
-    if (typeof document !== "undefined") {
+    setCurrentLocale(l);
+    if (globalThis.window !== undefined) {
+      globalThis.localStorage.setItem(STORAGE_KEY, l);
       document.documentElement.lang = l;
     }
   }, []);
 
+  const t = messages[currentLocale];
+
+  const tf = useCallback(
+    (key: string, params?: InterpolationValues) =>
+      translate(currentLocale, key, params),
+    [currentLocale],
+  );
+
+  const value = useMemo(
+    () => ({ locale: currentLocale, setLocale, t, tf }),
+    [currentLocale, setLocale, t, tf],
+  );
+
   return (
-    <I18nContext.Provider value={{ locale, setLocale, t: messages[locale] }}>
-      {children}
-    </I18nContext.Provider>
+    <I18nContext.Provider value={value}>{children}</I18nContext.Provider>
   );
 }
 
+/** Get the full messages object for the current locale (direct property access). */
 export function useT(): Messages {
   return useContext(I18nContext).t;
 }
 
+/**
+ * Get the translate function for interpolation-based lookups.
+ *
+ * @example const tf = useTf(); tf("header.switchTheme", { mode: "dark" })
+ */
+export function useTf() {
+  return useContext(I18nContext).tf;
+}
+
+/** Get and set the current locale. */
 export function useLocale() {
   const { locale, setLocale } = useContext(I18nContext);
   return { locale, setLocale };
 }
 
-export const SUPPORTED_LOCALES: { code: Locale; label: string }[] = [
-  { code: "en", label: "English" },
+// ── Supported locales ──────────────────────────────────────────────
+
+export const SUPPORTED_LOCALES: readonly {
+  readonly code: Locale;
+  readonly label: string;
+  readonly nativeLabel: string;
+}[] = [
+  { code: "en", label: "English", nativeLabel: "English" },
+  { code: "fr", label: "French", nativeLabel: "Français" },
+  { code: "es", label: "Spanish", nativeLabel: "Español" },
 ];

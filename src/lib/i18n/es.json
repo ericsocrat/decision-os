@@ -1,0 +1,202 @@
+{
+  "app": {
+    "title": "Decision OS",
+    "subtitle": "",
+    "loading": "",
+    "footer": ""
+  },
+  "tabs": {
+    "builder": "",
+    "results": "",
+    "sensitivity": "",
+    "compare": "",
+    "montecarlo": "",
+    "whatif": "",
+    "retrospective": ""
+  },
+  "builder": {
+    "titlePlaceholder": "",
+    "descriptionPlaceholder": "",
+    "addOption": "",
+    "addCriterion": "",
+    "options": "",
+    "criteria": "",
+    "scores": "",
+    "scoresRange": "",
+    "optionNamePlaceholder": "",
+    "criterionNamePlaceholder": "",
+    "removeOption": "",
+    "removeCriterion": "",
+    "criterionRemoved": "",
+    "optionRemoved": "",
+    "benefitType": "",
+    "costType": "",
+    "autoNormalize": "",
+    "addDescription": "",
+    "editDescription": "",
+    "descriptionPlaceholderCrit": "",
+    "optionCriterion": "",
+    "scoreLabel": "",
+    "scoreRange": "",
+    "ahpWizardButton": "",
+    "weightDistribution": ""
+  },
+  "results": {
+    "rankings": "",
+    "exportJson": "",
+    "exportPdf": "",
+    "share": "",
+    "winner": "",
+    "topDrivers": "",
+    "explain": "",
+    "visualization": "",
+    "linkCopied": "",
+    "tooLarge": "",
+    "copyFail": "",
+    "emptyState": "",
+    "rank": "",
+    "score": "",
+    "weightedScore": "",
+    "normalizedWeight": ""
+  },
+  "sensitivity": {
+    "title": "",
+    "swing": "",
+    "robust": "",
+    "sensitive": "",
+    "noData": ""
+  },
+  "header": {
+    "newDecision": "",
+    "deleteDecision": "",
+    "resetDemo": "",
+    "selectDecision": "",
+    "switchTheme": "",
+    "importDecision": "",
+    "templates": "",
+    "language": "",
+    "lightMode": "",
+    "darkMode": "",
+    "signIn": "",
+    "signOut": "",
+    "syncNow": "",
+    "syncing": "",
+    "confirmDelete": "",
+    "confirmReset": ""
+  },
+  "compare": {
+    "title": "",
+    "selectFirst": "",
+    "selectSecond": "",
+    "similarity": "",
+    "differences": ""
+  },
+  "montecarlo": {
+    "title": "",
+    "iterations": "",
+    "run": "",
+    "winProbability": "",
+    "confidenceInterval": ""
+  },
+  "confidence": {
+    "high": "",
+    "medium": "",
+    "low": "",
+    "changeLabel": ""
+  },
+  "enrichment": {
+    "title": "",
+    "accept": "",
+    "dismiss": "",
+    "applied": "",
+    "partialFailure": "",
+    "noSuggestions": ""
+  },
+  "provenance": {
+    "enriched": "",
+    "overridden": "",
+    "restore": "",
+    "manual": ""
+  },
+  "dataConfidence": {
+    "high": "",
+    "medium": "",
+    "low": ""
+  },
+  "ahp": {
+    "wizardTitle": "",
+    "comparisonOf": "",
+    "howImportant": "",
+    "vs": "",
+    "moreImportant": "",
+    "lessImportant": "",
+    "equal": "",
+    "derivedWeights": "",
+    "applyWeights": "",
+    "applied": "",
+    "consistent": "",
+    "inconsistent": "",
+    "closeWizard": "",
+    "nextComparison": "",
+    "prevComparison": "",
+    "needCriteria": ""
+  },
+  "shortcuts": {
+    "title": "",
+    "close": "",
+    "builderTab": "",
+    "resultsTab": "",
+    "sensitivityTab": "",
+    "toggleDialog": "",
+    "closeDialog": ""
+  },
+  "notFound": {
+    "title": "",
+    "back": ""
+  },
+  "common": {
+    "undo": "",
+    "redo": "",
+    "close": "",
+    "cancel": "",
+    "confirm": "",
+    "save": "",
+    "delete": "",
+    "edit": "",
+    "back": "",
+    "next": "",
+    "loading": "",
+    "error": "",
+    "retry": "",
+    "noData": ""
+  },
+  "validation": {
+    "optionNameRequired": "",
+    "criterionNameRequired": "",
+    "duplicateOptionName": "",
+    "duplicateCriterionName": "",
+    "weightOutOfRange": "",
+    "scoreOutOfRange": ""
+  },
+  "whatif": {
+    "title": "",
+    "applyChanges": "",
+    "resetChanges": "",
+    "sandbox": ""
+  },
+  "pareto": {
+    "title": "",
+    "optimal": "",
+    "dominated": ""
+  },
+  "bias": {
+    "title": "",
+    "anchoringDetected": "",
+    "clusteringDetected": ""
+  },
+  "quality": {
+    "completion": "",
+    "allFilled": "",
+    "fillPrompt": ""
+  }
+}

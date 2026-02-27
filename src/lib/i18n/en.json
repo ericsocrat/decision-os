@@ -1,0 +1,202 @@
+{
+  "app": {
+    "title": "Decision OS",
+    "subtitle": "Structured decision-making",
+    "loading": "Loading Decision OS…",
+    "footer": "Open source structured decision-making tool."
+  },
+  "tabs": {
+    "builder": "Builder",
+    "results": "Results",
+    "sensitivity": "Sensitivity",
+    "compare": "Compare",
+    "montecarlo": "Monte Carlo",
+    "whatif": "What If",
+    "retrospective": "Retrospective"
+  },
+  "builder": {
+    "titlePlaceholder": "Decision title",
+    "descriptionPlaceholder": "Describe the decision you're making…",
+    "addOption": "Add Option",
+    "addCriterion": "Add Criterion",
+    "options": "Options",
+    "criteria": "Criteria & Weights",
+    "scores": "Scores Matrix",
+    "scoresRange": "0–10 per cell",
+    "optionNamePlaceholder": "Option name",
+    "criterionNamePlaceholder": "Criterion name",
+    "removeOption": "Remove option {name}",
+    "removeCriterion": "Remove criterion {name}",
+    "criterionRemoved": "Criterion \"{name}\" removed",
+    "optionRemoved": "Option \"{name}\" removed",
+    "benefitType": "Benefit ↑",
+    "costType": "Cost ↓",
+    "autoNormalize": "Auto-normalize weights to 100%",
+    "addDescription": "Add description",
+    "editDescription": "Edit description",
+    "descriptionPlaceholderCrit": "Describe what this criterion measures…",
+    "optionCriterion": "Option / Criterion",
+    "scoreLabel": "Score for {option} on {criterion}",
+    "scoreRange": "Enter a value between 0 and 10",
+    "ahpWizardButton": "Derive weights with AHP wizard",
+    "weightDistribution": "Weight Distribution"
+  },
+  "results": {
+    "rankings": "Rankings",
+    "exportJson": "Export JSON",
+    "exportPdf": "PDF",
+    "share": "Share",
+    "winner": "Winner",
+    "topDrivers": "Top Drivers",
+    "explain": "Explain This Result",
+    "visualization": "Score Visualization",
+    "linkCopied": "Link copied to clipboard!",
+    "tooLarge": "Decision too large for URL sharing. Use JSON export instead.",
+    "copyFail": "Failed to copy link.",
+    "emptyState": "Add at least 2 options and 1 criterion to see results.",
+    "rank": "#{rank}",
+    "score": "Score: {score}",
+    "weightedScore": "Weighted Score",
+    "normalizedWeight": "Normalized Weight"
+  },
+  "sensitivity": {
+    "title": "Sensitivity Analysis",
+    "swing": "Weight swing",
+    "robust": "Robust",
+    "sensitive": "Sensitive",
+    "noData": "Need at least 2 criteria for sensitivity analysis."
+  },
+  "header": {
+    "newDecision": "New",
+    "deleteDecision": "Delete current decision",
+    "resetDemo": "Reset Demo",
+    "selectDecision": "Select decision",
+    "switchTheme": "Switch to {mode} mode",
+    "importDecision": "Import",
+    "templates": "Templates",
+    "language": "Language",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "syncNow": "Sync Now",
+    "syncing": "Syncing…",
+    "confirmDelete": "Delete \"{title}\"? This cannot be undone.",
+    "confirmReset": "Reset all decisions to demo data? Your changes will be lost."
+  },
+  "compare": {
+    "title": "Compare Decisions",
+    "selectFirst": "Select first decision",
+    "selectSecond": "Select second decision",
+    "similarity": "Similarity",
+    "differences": "Key Differences"
+  },
+  "montecarlo": {
+    "title": "Monte Carlo Simulation",
+    "iterations": "Iterations",
+    "run": "Run Simulation",
+    "winProbability": "Win Probability",
+    "confidenceInterval": "Confidence Interval"
+  },
+  "confidence": {
+    "high": "High confidence",
+    "medium": "Medium confidence",
+    "low": "Low confidence",
+    "changeLabel": "{current} — click to change to {next}"
+  },
+  "enrichment": {
+    "title": "Enrichment Suggestions",
+    "accept": "Enrich",
+    "dismiss": "Dismiss",
+    "applied": "Applied",
+    "partialFailure": "Partial failure",
+    "noSuggestions": "No enrichment suggestions available"
+  },
+  "provenance": {
+    "enriched": "Enriched from {source}",
+    "overridden": "Manually overridden",
+    "restore": "Restore enriched value",
+    "manual": "Manual entry"
+  },
+  "dataConfidence": {
+    "high": "High — live data",
+    "medium": "Medium — bundled data",
+    "low": "Low — estimated data"
+  },
+  "ahp": {
+    "wizardTitle": "AHP Weight Wizard",
+    "comparisonOf": "Comparison {current} of {total}",
+    "howImportant": "How much more important is…",
+    "vs": "vs",
+    "moreImportant": "{name} more →",
+    "lessImportant": "← {name} more",
+    "equal": "Equal",
+    "derivedWeights": "Derived Weights",
+    "applyWeights": "Apply Weights",
+    "applied": "Applied",
+    "consistent": "Consistent",
+    "inconsistent": "Inconsistent — revise judgments",
+    "closeWizard": "Close AHP wizard",
+    "nextComparison": "Next comparison",
+    "prevComparison": "Previous comparison",
+    "needCriteria": "AHP requires at least 2 criteria. Add more criteria first."
+  },
+  "shortcuts": {
+    "title": "Keyboard Shortcuts",
+    "close": "Close shortcuts",
+    "builderTab": "Builder tab",
+    "resultsTab": "Results tab",
+    "sensitivityTab": "Sensitivity tab",
+    "toggleDialog": "Toggle this dialog",
+    "closeDialog": "Close dialog"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "back": "Go back home"
+  },
+  "common": {
+    "undo": "Undo",
+    "redo": "Redo",
+    "close": "Close",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "loading": "Loading…",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "noData": "No data available"
+  },
+  "validation": {
+    "optionNameRequired": "Option name is required",
+    "criterionNameRequired": "Criterion name is required",
+    "duplicateOptionName": "Duplicate option name",
+    "duplicateCriterionName": "Duplicate criterion name",
+    "weightOutOfRange": "Weight must be between 0 and 100",
+    "scoreOutOfRange": "Score must be between 0 and 10"
+  },
+  "whatif": {
+    "title": "What-If Analysis",
+    "applyChanges": "Apply Changes",
+    "resetChanges": "Reset",
+    "sandbox": "Sandbox Mode"
+  },
+  "pareto": {
+    "title": "Pareto Analysis",
+    "optimal": "Pareto Optimal",
+    "dominated": "Dominated"
+  },
+  "bias": {
+    "title": "Bias Warnings",
+    "anchoringDetected": "Anchoring bias detected",
+    "clusteringDetected": "Clustering bias detected"
+  },
+  "quality": {
+    "completion": "{filled}/{total} scores filled",
+    "allFilled": "All scores filled — results are fully informed",
+    "fillPrompt": "Fill all scores for the most accurate results"
+  }
+}

@@ -8,6 +8,7 @@ import type { ReactElement } from "react";
 import { AnnouncerProvider } from "@/components/Announcer";
 import { DecisionProvider } from "@/components/DecisionProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { I18nProvider } from "@/lib/i18n";
 
 /**
  * Render with all providers (DecisionProvider, ThemeProvider, AnnouncerProvider).
@@ -18,11 +19,13 @@ export function renderWithProviders(ui: ReactElement, options?: Omit<RenderOptio
 
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
-      <AnnouncerProvider>
-        <DecisionProvider>
-          <ThemeProvider>{children}</ThemeProvider>
-        </DecisionProvider>
-      </AnnouncerProvider>
+      <I18nProvider>
+        <AnnouncerProvider>
+          <DecisionProvider>
+            <ThemeProvider>{children}</ThemeProvider>
+          </DecisionProvider>
+        </AnnouncerProvider>
+      </I18nProvider>
     );
   }
 

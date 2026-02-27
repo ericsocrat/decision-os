@@ -14,6 +14,7 @@
 import { memo, useMemo, useState } from "react";
 import { useDecision } from "./DecisionProvider";
 import { useTheme } from "./ThemeProvider";
+import { useT, useTf } from "@/lib/i18n";
 import {
   Plus,
   RotateCcw,
@@ -32,6 +33,7 @@ import { ImportModal } from "./ImportModal";
 import { AuthButton } from "./AuthButton";
 import { SyncStatus } from "./SyncStatus";
 import { MobileOverflowMenu, type OverflowMenuItem } from "./MobileOverflowMenu";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import type { DecisionTemplate } from "@/lib/templates";
 import { saveDecision } from "@/lib/storage";
 import { useAuth } from "@/hooks/useAuth";
@@ -42,6 +44,8 @@ export const Header = memo(function Header() {
   const { decision, decisions, loadDecision, createNewDecision, removeDecision, resetDemo } =
     useDecision();
   const { theme, toggleTheme } = useTheme();
+  const t = useT();
+  const tf = useTf();
   const auth = useAuth();
   const sync = useSync(!!auth.user);
   const [showTemplates, setShowTemplates] = useState(false);
@@ -62,19 +66,19 @@ export const Header = memo(function Header() {
       {
         key: "templates",
         icon: <LayoutTemplate className="h-4 w-4" />,
-        label: "Templates",
+        label: t.header.templates,
         onClick: () => setShowTemplates(true),
       },
       {
         key: "import",
         icon: <Upload className="h-4 w-4" />,
-        label: "Import",
+        label: t.header.importDecision,
         onClick: () => setShowImport(true),
       },
       {
         key: "delete",
         icon: <Trash2 className="h-4 w-4" />,
-        label: "Delete Decision",
+        label: t.header.deleteDecision,
         hidden: decisions.length <= 1,
         onClick: () => {
           if (window.confirm(`Delete "${decision.title}"? This cannot be undone.`)) {
@@ -85,7 +89,7 @@ export const Header = memo(function Header() {
       {
         key: "reset",
         icon: <RotateCcw className="h-4 w-4" />,
-        label: "Reset Demo",
+        label: t.header.resetDemo,
         onClick: () => {
           if (
             window.confirm(
@@ -103,7 +107,7 @@ export const Header = memo(function Header() {
       items.push({
         key: "sync",
         icon: <Cloud className="h-4 w-4" />,
-        label: sync.isSyncing ? "Syncing…" : "Sync Now",
+        label: sync.isSyncing ? t.header.syncing : t.header.syncNow,
         separator: true,
         onClick: () => {
           sync.triggerSync();
@@ -117,7 +121,7 @@ export const Header = memo(function Header() {
         items.push({
           key: "signout",
           icon: <LogOut className="h-4 w-4" />,
-          label: "Sign Out",
+          label: t.header.signOut,
           onClick: () => {
             auth.signOut();
           },
@@ -126,7 +130,7 @@ export const Header = memo(function Header() {
         items.push({
           key: "signin",
           icon: <LogIn className="h-4 w-4" />,
-          label: "Sign In",
+          label: t.header.signIn,
           separator: true,
           onClick: () => {
             auth.signIn("github");
@@ -139,7 +143,7 @@ export const Header = memo(function Header() {
     items.push({
       key: "theme",
       icon: theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />,
-      label: theme === "dark" ? "Light Mode" : "Dark Mode",
+      label: theme === "dark" ? t.header.lightMode : t.header.darkMode,
       separator: true,
       onClick: toggleTheme,
     });
@@ -155,6 +159,7 @@ export const Header = memo(function Header() {
     sync,
     theme,
     toggleTheme,
+    t,
   ]);
 
   return (
@@ -176,9 +181,9 @@ export const Header = memo(function Header() {
             />
             <div>
               <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Decision OS
+                {t.app.title}
               </h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Structured decision-making</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t.app.subtitle}</p>
             </div>
           </div>
 
@@ -201,7 +206,7 @@ export const Header = memo(function Header() {
               value={decision.id}
               onChange={(e) => loadDecision(e.target.value)}
               className="min-w-[150px] max-w-[200px] flex-shrink truncate rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:min-w-0 sm:max-w-none"
-              aria-label="Select decision"
+              aria-label={t.header.selectDecision}
             >
               {decisions.map((d) => (
                 <option key={d.id} value={d.id}>
@@ -214,29 +219,29 @@ export const Header = memo(function Header() {
             <button
               onClick={createNewDecision}
               className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-              aria-label="Create new decision"
+              aria-label={tf("header.newDecision")}
             >
               <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">New</span>
+              <span className="hidden sm:inline">{t.header.newDecision}</span>
             </button>
 
             {/* ── Desktop-only inline buttons (≥ 640px) ── */}
             <button
               onClick={() => setShowTemplates(true)}
               className="hidden sm:inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-              aria-label="Start from template"
+              aria-label={t.header.templates}
             >
               <LayoutTemplate className="h-4 w-4" />
-              <span>Templates</span>
+              <span>{t.header.templates}</span>
             </button>
 
             <button
               onClick={() => setShowImport(true)}
               className="hidden sm:inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-              aria-label="Import decision from file"
+              aria-label={t.header.importDecision}
             >
               <Upload className="h-4 w-4" />
-              <span>Import</span>
+              <span>{t.header.importDecision}</span>
             </button>
 
             {decisions.length > 1 && (
@@ -247,7 +252,7 @@ export const Header = memo(function Header() {
                   }
                 }}
                 className="hidden sm:inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                aria-label="Delete current decision"
+                aria-label={t.header.deleteDecision}
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -257,18 +262,18 @@ export const Header = memo(function Header() {
               onClick={() => {
                 if (
                   window.confirm(
-                    "Reset all decisions to demo data? This will remove all custom decisions."
+                    t.header.confirmReset
                   )
                 ) {
                   resetDemo();
                 }
               }}
               className="hidden sm:inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-              aria-label="Reset to demo data"
-              title="Reset to demo"
+              aria-label={t.header.resetDemo}
+              title={t.header.resetDemo}
             >
               <RotateCcw className="h-4 w-4" />
-              <span>Reset Demo</span>
+              <span>{t.header.resetDemo}</span>
             </button>
 
             {/* Cloud sync status — desktop only */}
@@ -281,12 +286,17 @@ export const Header = memo(function Header() {
               <AuthButton auth={auth} />
             </div>
 
+            {/* Language switcher — desktop only */}
+            <div className="hidden sm:block">
+              <LanguageSwitcher />
+            </div>
+
             {/* Theme toggle — desktop only */}
             <button
               onClick={toggleTheme}
               className="hidden sm:inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-              title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+              aria-label={tf("header.switchTheme", { mode: theme === "dark" ? "light" : "dark" })}
+              title={tf("header.switchTheme", { mode: theme === "dark" ? "light" : "dark" })}
             >
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>

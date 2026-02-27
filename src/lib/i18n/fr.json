@@ -1,0 +1,202 @@
+{
+  "app": {
+    "title": "Decision OS",
+    "subtitle": "Prise de décision structurée",
+    "loading": "Chargement de Decision OS…",
+    "footer": "Outil open source de prise de décision structurée."
+  },
+  "tabs": {
+    "builder": "Constructeur",
+    "results": "Résultats",
+    "sensitivity": "Sensibilité",
+    "compare": "Comparer",
+    "montecarlo": "Monte Carlo",
+    "whatif": "Et si",
+    "retrospective": "Rétrospective"
+  },
+  "builder": {
+    "titlePlaceholder": "Titre de la décision",
+    "descriptionPlaceholder": "Décrivez la décision que vous prenez…",
+    "addOption": "Ajouter une option",
+    "addCriterion": "Ajouter un critère",
+    "options": "Options",
+    "criteria": "Critères et poids",
+    "scores": "Matrice des scores",
+    "scoresRange": "0–10 par cellule",
+    "optionNamePlaceholder": "Nom de l'option",
+    "criterionNamePlaceholder": "Nom du critère",
+    "removeOption": "Supprimer l'option {name}",
+    "removeCriterion": "Supprimer le critère {name}",
+    "criterionRemoved": "Critère \"{name}\" supprimé",
+    "optionRemoved": "Option \"{name}\" supprimée",
+    "benefitType": "Bénéfice ↑",
+    "costType": "Coût ↓",
+    "autoNormalize": "Normaliser automatiquement les poids à 100%",
+    "addDescription": "Ajouter une description",
+    "editDescription": "Modifier la description",
+    "descriptionPlaceholderCrit": "Décrivez ce que mesure ce critère…",
+    "optionCriterion": "Option / Critère",
+    "scoreLabel": "Score de {option} sur {criterion}",
+    "scoreRange": "Entrez une valeur entre 0 et 10",
+    "ahpWizardButton": "Dériver les poids avec l'assistant AHP",
+    "weightDistribution": "Répartition des poids"
+  },
+  "results": {
+    "rankings": "Classements",
+    "exportJson": "Exporter JSON",
+    "exportPdf": "PDF",
+    "share": "Partager",
+    "winner": "Gagnant",
+    "topDrivers": "Facteurs clés",
+    "explain": "Expliquer ce résultat",
+    "visualization": "Visualisation des scores",
+    "linkCopied": "Lien copié dans le presse-papiers !",
+    "tooLarge": "Décision trop grande pour le partage par URL. Utilisez l'export JSON.",
+    "copyFail": "Échec de la copie du lien.",
+    "emptyState": "Ajoutez au moins 2 options et 1 critère pour voir les résultats.",
+    "rank": "#{rank}",
+    "score": "Score : {score}",
+    "weightedScore": "Score pondéré",
+    "normalizedWeight": "Poids normalisé"
+  },
+  "sensitivity": {
+    "title": "Analyse de sensibilité",
+    "swing": "Variation du poids",
+    "robust": "Robuste",
+    "sensitive": "Sensible",
+    "noData": "Il faut au moins 2 critères pour l'analyse de sensibilité."
+  },
+  "header": {
+    "newDecision": "Nouveau",
+    "deleteDecision": "Supprimer la décision actuelle",
+    "resetDemo": "Réinitialiser démo",
+    "selectDecision": "Sélectionner une décision",
+    "switchTheme": "Passer en mode {mode}",
+    "importDecision": "Importer",
+    "templates": "Modèles",
+    "language": "Langue",
+    "lightMode": "Mode clair",
+    "darkMode": "Mode sombre",
+    "signIn": "Se connecter",
+    "signOut": "Se déconnecter",
+    "syncNow": "Synchroniser",
+    "syncing": "Synchronisation…",
+    "confirmDelete": "Supprimer \"{title}\" ? Cette action est irréversible.",
+    "confirmReset": "Réinitialiser toutes les décisions avec les données de démonstration ? Vos modifications seront perdues."
+  },
+  "compare": {
+    "title": "Comparer les décisions",
+    "selectFirst": "Sélectionner la première décision",
+    "selectSecond": "Sélectionner la deuxième décision",
+    "similarity": "Similarité",
+    "differences": "Différences clés"
+  },
+  "montecarlo": {
+    "title": "Simulation Monte Carlo",
+    "iterations": "Itérations",
+    "run": "Lancer la simulation",
+    "winProbability": "Probabilité de victoire",
+    "confidenceInterval": "Intervalle de confiance"
+  },
+  "confidence": {
+    "high": "Confiance élevée",
+    "medium": "Confiance moyenne",
+    "low": "Confiance faible",
+    "changeLabel": "{current} — cliquer pour passer à {next}"
+  },
+  "enrichment": {
+    "title": "Suggestions d'enrichissement",
+    "accept": "Enrichir",
+    "dismiss": "Ignorer",
+    "applied": "Appliqué",
+    "partialFailure": "Échec partiel",
+    "noSuggestions": "Aucune suggestion d'enrichissement disponible"
+  },
+  "provenance": {
+    "enriched": "Enrichi depuis {source}",
+    "overridden": "Remplacé manuellement",
+    "restore": "Restaurer la valeur enrichie",
+    "manual": "Saisie manuelle"
+  },
+  "dataConfidence": {
+    "high": "Élevée — données en direct",
+    "medium": "Moyenne — données intégrées",
+    "low": "Faible — données estimées"
+  },
+  "ahp": {
+    "wizardTitle": "Assistant de pondération AHP",
+    "comparisonOf": "Comparaison {current} de {total}",
+    "howImportant": "Quelle est l'importance relative de…",
+    "vs": "vs",
+    "moreImportant": "{name} plus →",
+    "lessImportant": "← {name} plus",
+    "equal": "Égal",
+    "derivedWeights": "Poids dérivés",
+    "applyWeights": "Appliquer les poids",
+    "applied": "Appliqué",
+    "consistent": "Cohérent",
+    "inconsistent": "Incohérent — révisez vos jugements",
+    "closeWizard": "Fermer l'assistant AHP",
+    "nextComparison": "Comparaison suivante",
+    "prevComparison": "Comparaison précédente",
+    "needCriteria": "L'AHP nécessite au moins 2 critères. Ajoutez d'abord d'autres critères."
+  },
+  "shortcuts": {
+    "title": "Raccourcis clavier",
+    "close": "Fermer les raccourcis",
+    "builderTab": "Onglet constructeur",
+    "resultsTab": "Onglet résultats",
+    "sensitivityTab": "Onglet sensibilité",
+    "toggleDialog": "Basculer cette boîte de dialogue",
+    "closeDialog": "Fermer la boîte de dialogue"
+  },
+  "notFound": {
+    "title": "Page non trouvée",
+    "back": "Retour à l'accueil"
+  },
+  "common": {
+    "undo": "Annuler",
+    "redo": "Rétablir",
+    "close": "Fermer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "back": "Retour",
+    "next": "Suivant",
+    "loading": "Chargement…",
+    "error": "Une erreur s'est produite",
+    "retry": "Réessayer",
+    "noData": "Aucune donnée disponible"
+  },
+  "validation": {
+    "optionNameRequired": "Le nom de l'option est requis",
+    "criterionNameRequired": "Le nom du critère est requis",
+    "duplicateOptionName": "Nom d'option en double",
+    "duplicateCriterionName": "Nom de critère en double",
+    "weightOutOfRange": "Le poids doit être entre 0 et 100",
+    "scoreOutOfRange": "Le score doit être entre 0 et 10"
+  },
+  "whatif": {
+    "title": "Analyse « Et si »",
+    "applyChanges": "Appliquer les modifications",
+    "resetChanges": "Réinitialiser",
+    "sandbox": "Mode bac à sable"
+  },
+  "pareto": {
+    "title": "Analyse de Pareto",
+    "optimal": "Optimal de Pareto",
+    "dominated": "Dominé"
+  },
+  "bias": {
+    "title": "Alertes de biais",
+    "anchoringDetected": "Biais d'ancrage détecté",
+    "clusteringDetected": "Biais de regroupement détecté"
+  },
+  "quality": {
+    "completion": "{filled}/{total} scores remplis",
+    "allFilled": "Tous les scores sont remplis — les résultats sont complets",
+    "fillPrompt": "Remplissez tous les scores pour des résultats plus précis"
+  }
+}
