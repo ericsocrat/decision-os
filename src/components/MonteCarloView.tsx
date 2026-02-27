@@ -8,6 +8,7 @@
 
 "use client";
 
+import { HelpTooltip } from "./HelpTooltip";
 import { useState, useMemo } from "react";
 import { useDecisionData, useResultsContext } from "./DecisionProvider";
 import {
@@ -144,6 +145,7 @@ export function MonteCarloView() {
         >
           <Dices className="h-5 w-5 text-indigo-600" />
           Monte Carlo Simulation
+          <HelpTooltip topic="monte-carlo" />
         </h2>
 
         <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 space-y-4">

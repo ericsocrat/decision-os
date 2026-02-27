@@ -39,6 +39,7 @@ import { ScoreProvenanceIndicator } from "./ScoreProvenanceIndicator";
 import { ConfidenceIndicator } from "./ConfidenceIndicator";
 import { getMetadata, canRestoreEnriched } from "@/lib/provenance";
 import { AHPWizard } from "./AHPWizard";
+import { HelpTooltip } from "./HelpTooltip";
 import {
   DndContext,
   closestCenter,
@@ -484,20 +485,7 @@ export const DecisionBuilder = memo(function DecisionBuilder({
             <span id="weight-range-desc" className="sr-only">
               Enter a value between 0 and 100
             </span>
-            <div className="group relative">
-              <Info className="h-4 w-4 text-gray-400 dark:text-gray-500 cursor-help" />
-              <div className="absolute left-0 top-6 z-10 hidden group-hover:block w-64 rounded-md bg-gray-900 px-3 py-2 text-xs text-white shadow-lg">
-                <p className="font-medium mb-1">Benefit vs Cost:</p>
-                <p>
-                  <strong>Benefit:</strong> Higher score = better (e.g., quality, speed)
-                </p>
-                <p>
-                  <strong>Cost:</strong> Lower score = better (e.g., price, risk). Scores are
-                  inverted internally.
-                </p>
-                <p className="mt-1">Weights are normalized to sum to 100%.</p>
-              </div>
-            </div>
+            <HelpTooltip topic="weight-normalization" />
           </div>
           <button
             onClick={addCriterion}
@@ -673,6 +661,7 @@ export const DecisionBuilder = memo(function DecisionBuilder({
               >
                 <Scale className="h-4 w-4" />
                 Derive weights with AHP wizard
+                <HelpTooltip topic="ahp" />
               </button>
             )}
           </div>

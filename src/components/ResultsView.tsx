@@ -40,6 +40,7 @@ import { CompositeConfidenceIndicator } from "./CompositeConfidenceIndicator";
 import { OutcomeTracker } from "./OutcomeTracker";
 import { RetrospectiveView } from "./RetrospectiveView";
 import { PatternInsights } from "./PatternInsights";
+import { HelpTooltip } from "./HelpTooltip";
 
 const ScoreChart = lazy(() => import("./ScoreChart").then((m) => ({ default: m.ScoreChart })));
 const ParetoChart = lazy(() => import("./ParetoChart").then((m) => ({ default: m.ParetoChart })));
@@ -196,10 +197,16 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
   return (
     <div className="space-y-6">
       {/* Decision quality dashboard */}
-      <QualityBar decision={decision} />
+      <div className="flex items-center gap-2">
+        <QualityBar decision={decision} />
+        <HelpTooltip topic="quality-bar" />
+      </div>
 
       {/* Composite confidence indicator */}
-      <CompositeConfidenceIndicator decision={decision} />
+      <div className="flex items-center gap-2">
+        <CompositeConfidenceIndicator decision={decision} />
+        <HelpTooltip topic="composite-confidence" />
+      </div>
 
       {/* Confidence adjustment strategy */}
       <ConfidenceStrategySelector
@@ -269,11 +276,11 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
               <legend className="sr-only">Scoring method</legend>
               {(
                 [
-                  { value: "wsm", label: "WSM" },
-                  { value: "topsis", label: "TOPSIS" },
-                  { value: "minimax-regret", label: "Regret" },
-                  { value: "consensus", label: "Consensus" },
-                  { value: "compare", label: "Compare" },
+                  { value: "wsm", label: "WSM", topic: "wsm" as const },
+                  { value: "topsis", label: "TOPSIS", topic: "topsis" as const },
+                  { value: "minimax-regret", label: "Regret", topic: "minimax-regret" as const },
+                  { value: "consensus", label: "Consensus", topic: "consensus" as const },
+                  { value: "compare", label: "Compare", topic: undefined },
                 ] as const
               ).map((method) => (
                 <label
@@ -293,6 +300,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
                     className="sr-only"
                   />
                   {method.label}
+                  {method.topic && <HelpTooltip topic={method.topic} />}
                 </label>
               ))}
             </fieldset>
@@ -334,6 +342,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
             >
               <FlaskConical className="h-4 w-4" />
               <span className="hidden sm:inline">What-If</span>
+              <HelpTooltip topic="what-if" />
             </button>
           </div>
         </div>
@@ -404,7 +413,8 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
       {decision.criteria.length >= 2 && decision.options.length >= 2 && (
         <CollapsibleSection
           sectionId="pareto"
-          title="Trade-Off Explorer"
+          title={<>Trade-Off Explorer <HelpTooltip topic="pareto" /></>}
+          ariaLabel="Trade-Off Explorer"
           icon={<Crosshair className="h-4 w-4 text-blue-600 dark:text-blue-400" />}
         >
           <Suspense
@@ -546,6 +556,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
           </p>
           {biasDetection.warnings.length > 0 && (
             <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-1 mb-1"><span className="text-sm font-medium">Bias Warnings</span><HelpTooltip topic="bias-detection" /></div>
               <BiasWarnings
                 warnings={biasDetection.warnings}
                 onDismiss={biasDetection.dismiss}

@@ -41,7 +41,9 @@ export interface CollapsibleSectionProps {
   /** Unique key for localStorage persistence */
   readonly sectionId: string;
   /** Section heading text */
-  readonly title: string;
+  readonly title: React.ReactNode;
+  /** Accessible label (falls back to title if title is a string) */
+  readonly ariaLabel?: string;
   /** Optional icon to render before the title */
   readonly icon?: React.ReactNode;
   /** Whether the section starts expanded (default: false) */
@@ -59,6 +61,7 @@ export interface CollapsibleSectionProps {
 export const CollapsibleSection = memo(function CollapsibleSection({
   sectionId,
   title,
+  ariaLabel,
   icon,
   defaultExpanded = false,
   badge,
@@ -118,7 +121,7 @@ export const CollapsibleSection = memo(function CollapsibleSection({
       <div
         id={regionId}
         role="region"
-        aria-label={title}
+        aria-label={ariaLabel ?? (typeof title === "string" ? title : undefined)}
         className={`grid transition-[grid-template-rows] duration-300 ease-out print:!grid-rows-[1fr] ${
           isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
         }`}

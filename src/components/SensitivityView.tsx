@@ -9,6 +9,7 @@
 
 import { useResultsContext, useActions } from "./DecisionProvider";
 import { Activity, Shield, AlertTriangle } from "lucide-react";
+import { HelpTooltip } from "./HelpTooltip";
 
 export function SensitivityView() {
   const { sensitivity, swingPercent, results } = useResultsContext();
@@ -36,6 +37,7 @@ export function SensitivityView() {
         >
           <Activity className="h-5 w-5 text-purple-600" />
           Sensitivity Analysis
+          <HelpTooltip topic="sensitivity" />
         </h2>
 
         <div className="flex items-center gap-3 mb-4">
