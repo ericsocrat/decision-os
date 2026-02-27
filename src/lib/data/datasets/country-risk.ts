@@ -9,6 +9,8 @@
  * @module data/datasets/country-risk
  */
 
+import type { DatasetMetadata } from "./metadata";
+
 export interface CountryRiskData {
   /** ISO 3166-1 alpha-2 country code */
   country: string;
@@ -166,3 +168,16 @@ export const COUNTRY_RISK_DATA: readonly CountryRiskData[] = [
 /** WGI scale bounds used for normalisation */
 export const WGI_MIN = -2.5;
 export const WGI_MAX = 2.5;
+
+// ---------------------------------------------------------------------------
+// Metadata
+// ---------------------------------------------------------------------------
+
+export const METADATA: DatasetMetadata = {
+  name: "Country Risk (WGI)",
+  source: "World Bank Worldwide Governance Indicators",
+  updated: "2025-Q1",
+  version: 1,
+  recordCount: COUNTRY_RISK_DATA.length,
+  coverage: "120 countries — worldwide governance indicators",
+};

@@ -1,5 +1,5 @@
 /**
- * Bundled quality-of-life dataset — ~100 cities worldwide.
+ * Bundled quality-of-life dataset — 100+ cities worldwide.
  *
  * All indices are on a 0–100 scale (higher = better), except
  * pollutionIndex which is raw (higher = more pollution — the
@@ -9,6 +9,8 @@
  *
  * @module data/datasets/quality-of-life
  */
+
+import type { DatasetMetadata } from "./metadata";
 
 export interface QualityOfLifeData {
   city: string;
@@ -106,7 +108,7 @@ export const COUNTRY_REGION: Readonly<Record<string, string>> = {
 };
 
 // ---------------------------------------------------------------------------
-// Dataset — ~100 cities
+// Dataset — 100+ cities
 // ---------------------------------------------------------------------------
 
 export const QUALITY_OF_LIFE_DATA: readonly QualityOfLifeData[] = [
@@ -220,4 +222,33 @@ export const QUALITY_OF_LIFE_DATA: readonly QualityOfLifeData[] = [
   { city: "Canberra", country: "AU", safetyIndex: 68, healthcareIndex: 80, climateComfort: 60, pollutionIndex: 15, infrastructureQuality: 75, greenSpaceAccess: 85 },
   { city: "Luxembourg", country: "LU", safetyIndex: 75, healthcareIndex: 80, climateComfort: 48, pollutionIndex: 20, infrastructureQuality: 82, greenSpaceAccess: 75 },
   { city: "Lausanne", country: "CH", safetyIndex: 80, healthcareIndex: 85, climateComfort: 55, pollutionIndex: 15, infrastructureQuality: 88, greenSpaceAccess: 78 },
+
+  // Additional cities for 100+ coverage
+  { city: "Washington DC", country: "US", safetyIndex: 50, healthcareIndex: 76, climateComfort: 55, pollutionIndex: 35, infrastructureQuality: 75, greenSpaceAccess: 68 },
+  { city: "Denver", country: "US", safetyIndex: 52, healthcareIndex: 75, climateComfort: 60, pollutionIndex: 28, infrastructureQuality: 70, greenSpaceAccess: 72 },
+  { city: "Perth", country: "AU", safetyIndex: 64, healthcareIndex: 78, climateComfort: 78, pollutionIndex: 15, infrastructureQuality: 75, greenSpaceAccess: 80 },
+  { city: "Shenzhen", country: "CN", safetyIndex: 72, healthcareIndex: 58, climateComfort: 52, pollutionIndex: 55, infrastructureQuality: 80, greenSpaceAccess: 40 },
+  { city: "Guangzhou", country: "CN", safetyIndex: 68, healthcareIndex: 55, climateComfort: 48, pollutionIndex: 60, infrastructureQuality: 75, greenSpaceAccess: 35 },
+  { city: "Hanoi", country: "VN", safetyIndex: 55, healthcareIndex: 45, climateComfort: 42, pollutionIndex: 68, infrastructureQuality: 42, greenSpaceAccess: 25 },
+  { city: "Kyiv", country: "UA", safetyIndex: 42, healthcareIndex: 48, climateComfort: 48, pollutionIndex: 42, infrastructureQuality: 52, greenSpaceAccess: 55 },
+  { city: "Porto", country: "PT", safetyIndex: 75, healthcareIndex: 72, climateComfort: 72, pollutionIndex: 25, infrastructureQuality: 62, greenSpaceAccess: 55 },
+  { city: "Medellín", country: "CO", safetyIndex: 38, healthcareIndex: 58, climateComfort: 78, pollutionIndex: 42, infrastructureQuality: 48, greenSpaceAccess: 45 },
+  { city: "Kuwait City", country: "KW", safetyIndex: 72, healthcareIndex: 58, climateComfort: 18, pollutionIndex: 55, infrastructureQuality: 72, greenSpaceAccess: 15 },
+  { city: "Casablanca", country: "MA", safetyIndex: 48, healthcareIndex: 42, climateComfort: 72, pollutionIndex: 52, infrastructureQuality: 42, greenSpaceAccess: 28 },
+  { city: "Tunis", country: "TN", safetyIndex: 48, healthcareIndex: 42, climateComfort: 68, pollutionIndex: 48, infrastructureQuality: 38, greenSpaceAccess: 22 },
+  { city: "Muscat", country: "OM", safetyIndex: 80, healthcareIndex: 62, climateComfort: 22, pollutionIndex: 42, infrastructureQuality: 72, greenSpaceAccess: 18 },
+  { city: "Panama City", country: "PA", safetyIndex: 42, healthcareIndex: 52, climateComfort: 45, pollutionIndex: 42, infrastructureQuality: 48, greenSpaceAccess: 35 },
 ];
+
+// ---------------------------------------------------------------------------
+// Metadata
+// ---------------------------------------------------------------------------
+
+export const METADATA: DatasetMetadata = {
+  name: "Quality of Life",
+  source: "Numbeo / WHO / Climate Data",
+  updated: "2025-Q1",
+  version: 1,
+  recordCount: QUALITY_OF_LIFE_DATA.length,
+  coverage: "100+ cities across all continents",
+};

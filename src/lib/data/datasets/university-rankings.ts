@@ -7,6 +7,8 @@
  * @module data/datasets/university-rankings
  */
 
+import type { DatasetMetadata } from "./metadata";
+
 export interface UniversityData {
   name: string;
   city: string;
@@ -160,3 +162,16 @@ export function getUniversitiesInCountry(
   const cc = country.toUpperCase();
   return UNIVERSITY_DATA.filter((u) => u.country.toUpperCase() === cc);
 }
+
+// ---------------------------------------------------------------------------
+// Metadata
+// ---------------------------------------------------------------------------
+
+export const METADATA: DatasetMetadata = {
+  name: "University Rankings",
+  source: "QS / THE / ARWU (aggregated)",
+  updated: "2025-Q1",
+  version: 1,
+  recordCount: UNIVERSITY_DATA.length,
+  coverage: "76 universities across 35+ countries",
+};

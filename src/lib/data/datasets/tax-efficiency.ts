@@ -8,6 +8,8 @@
  * @module data/datasets/tax-efficiency
  */
 
+import type { DatasetMetadata } from "./metadata";
+
 export interface CountryTaxData {
   country: string; // ISO 3166-1 alpha-2
   /** Effective income tax rate for median income (%) */
@@ -171,3 +173,16 @@ export const TAX_RANGES = {
   socialSecurityRate: computeRange((c) => c.socialSecurityRate),
   taxFreedomIndex: computeRange((c) => c.taxFreedomIndex),
 } as const;
+
+// ---------------------------------------------------------------------------
+// Metadata
+// ---------------------------------------------------------------------------
+
+export const METADATA: DatasetMetadata = {
+  name: "Tax Efficiency",
+  source: "OECD / World Bank",
+  updated: "2025-Q1",
+  version: 1,
+  recordCount: TAX_DATA.length,
+  coverage: "68 countries — OECD members, G20, major economies",
+};
