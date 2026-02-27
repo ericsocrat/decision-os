@@ -16,6 +16,7 @@ import {
   Redo2,
   ChevronDown,
   ChevronUp,
+  Scale,
 } from "lucide-react";
 import { showToast } from "./Toast";
 import { formatRelativeTime } from "@/lib/utils";
@@ -37,6 +38,7 @@ import { MobileScoreCards } from "./MobileScoreCards";
 import { ScoreProvenanceIndicator } from "./ScoreProvenanceIndicator";
 import { ConfidenceIndicator } from "./ConfidenceIndicator";
 import { getMetadata, canRestoreEnriched } from "@/lib/provenance";
+import { AHPWizard } from "./AHPWizard";
 
 interface DecisionBuilderProps {
   validation: ValidationResult;
@@ -87,6 +89,8 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
       currentScore: readScore(decision.scores, focusedCell.optionId, focusedCell.criterionId),
     };
   }, [focusedCell, decision.options, decision.scores]);
+
+  const [showAHP, setShowAHP] = useState(false);
 
   /** Track which option/criterion descriptions are expanded */
   const [expandedDescs, setExpandedDescs] = useState<Set<string>>(() => {
@@ -571,6 +575,24 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
           />
           Auto-normalize weights to 100%
         </label>
+
+        {/* AHP Wizard */}
+        {decision.criteria.length >= 2 && (
+          <div className="mt-3">
+            {showAHP ? (
+              <AHPWizard onClose={() => setShowAHP(false)} />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowAHP(true)}
+                className="inline-flex items-center gap-2 rounded-md border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950 px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
+              >
+                <Scale className="h-4 w-4" />
+                Derive weights with AHP wizard
+              </button>
+            )}
+          </div>
+        )}
       </section>
 
       {/* Scores Matrix */}
