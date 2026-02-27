@@ -1,0 +1,534 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`WizardStepResults > matches snapshot 1`] = `
+<div
+  class="space-y-6"
+  data-testid="wizard-step-4"
+>
+  <div
+    data-testid="winner-card"
+  >
+    <p
+      class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1.5"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-trophy h-4 w-4 text-yellow-500"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"
+        />
+        <path
+          d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"
+        />
+        <path
+          d="M18 9h1.5a1 1 0 0 0 0-5H18"
+        />
+        <path
+          d="M4 22h16"
+        />
+        <path
+          d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"
+        />
+        <path
+          d="M6 9H4.5a1 1 0 0 1 0-5H6"
+        />
+      </svg>
+      Your top choice
+    </p>
+    <div
+      class="rounded-lg border-2 border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20 p-5"
+    >
+      <div
+        class="flex items-baseline justify-between mb-3"
+      >
+        <div
+          class="flex items-baseline gap-2"
+        >
+          <span
+            class="text-xs font-bold text-blue-600 dark:text-blue-400"
+          >
+            #1
+          </span>
+          <h3
+            class="text-lg font-bold text-gray-900 dark:text-gray-100"
+          >
+            Raleigh, NC
+          </h3>
+        </div>
+        <span
+          class="text-lg font-bold text-blue-600 dark:text-blue-400"
+        >
+          6.60
+          /10
+        </span>
+      </div>
+      <div
+        class="h-2.5 w-full rounded-full bg-gray-200 dark:bg-gray-700 mb-4"
+      >
+        <div
+          class="h-full rounded-full transition-all duration-500 bg-lime-500"
+          data-testid="winner-score-bar"
+          style="width: 65.99999999999999%;"
+        />
+      </div>
+      <p
+        class="text-sm text-gray-600 dark:text-gray-300 italic"
+        data-testid="winner-explanation"
+      >
+        “
+        Raleigh, NC edges out Austin, TX by just 0.20 points. Key strengths: average Job Opportunities (6/10) and below average Cost of Living (4/10).
+        ”
+      </p>
+    </div>
+  </div>
+  <div
+    data-testid="runner-ups"
+  >
+    <h4
+      class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2"
+    >
+      Runner-ups
+    </h4>
+    <div
+      class="rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700"
+    >
+      <div
+        class="flex items-center gap-3 px-4 py-3"
+        data-testid="runner-up-2"
+      >
+        <span
+          class="text-xs font-bold text-gray-400 dark:text-gray-500 w-5"
+        >
+          #
+          2
+        </span>
+        <span
+          class="flex-1 text-sm font-medium text-gray-800 dark:text-gray-200"
+        >
+          Austin, TX
+        </span>
+        <span
+          class="text-sm font-medium text-gray-600 dark:text-gray-400 w-16 text-right"
+        >
+          6.40
+          /10
+        </span>
+        <div
+          class="w-24 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700"
+        >
+          <div
+            class="h-full rounded-full bg-yellow-500"
+            style="width: 64%;"
+          />
+        </div>
+      </div>
+      <div
+        class="flex items-center gap-3 px-4 py-3"
+        data-testid="runner-up-3"
+      >
+        <span
+          class="text-xs font-bold text-gray-400 dark:text-gray-500 w-5"
+        >
+          #
+          3
+        </span>
+        <span
+          class="flex-1 text-sm font-medium text-gray-800 dark:text-gray-200"
+        >
+          Denver, CO
+        </span>
+        <span
+          class="text-sm font-medium text-gray-600 dark:text-gray-400 w-16 text-right"
+        >
+          6.20
+          /10
+        </span>
+        <div
+          class="w-24 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700"
+        >
+          <div
+            class="h-full rounded-full bg-yellow-500"
+            style="width: 62%;"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    data-testid="confidence-checklist"
+  >
+    <h4
+      class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1.5"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-shield h-4 w-4"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
+        />
+      </svg>
+      Decision Confidence
+    </h4>
+    <div
+      class="rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-3"
+    >
+      <div
+        class="flex items-start gap-2.5"
+        data-testid="confidence-robustness"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-triangle-alert h-4 w-4 text-amber-500 mt-0.5 shrink-0"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+          />
+          <path
+            d="M12 9v4"
+          />
+          <path
+            d="M12 17h.01"
+          />
+        </svg>
+        <div>
+          <p
+            class="text-sm font-medium text-gray-800 dark:text-gray-200"
+          >
+            Robustness
+            :
+             
+            <span
+              class="text-amber-600 dark:text-amber-400"
+            >
+              Moderate
+            </span>
+          </p>
+          <p
+            class="text-xs text-gray-500 dark:text-gray-400 mt-0.5"
+          >
+            1 weight swing(s) would change the winner. Consider reviewing those criteria.
+          </p>
+        </div>
+      </div>
+      <div
+        class="flex items-start gap-2.5"
+        data-testid="confidence-agreement"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-circle-x h-4 w-4 text-red-500 mt-0.5 shrink-0"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            cx="12"
+            cy="12"
+            r="10"
+          />
+          <path
+            d="m15 9-6 6"
+          />
+          <path
+            d="m9 9 6 6"
+          />
+        </svg>
+        <div>
+          <p
+            class="text-sm font-medium text-gray-800 dark:text-gray-200"
+          >
+            Agreement
+            :
+             
+            <span
+              class="text-red-600 dark:text-red-400"
+            >
+              Sensitive
+            </span>
+          </p>
+          <p
+            class="text-xs text-gray-500 dark:text-gray-400 mt-0.5"
+          >
+            Methods disagree on the winner. Explore Compare Methods for details.
+          </p>
+        </div>
+      </div>
+      <div
+        class="flex items-start gap-2.5"
+        data-testid="confidence-margin"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-circle-x h-4 w-4 text-red-500 mt-0.5 shrink-0"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            cx="12"
+            cy="12"
+            r="10"
+          />
+          <path
+            d="m15 9-6 6"
+          />
+          <path
+            d="m9 9 6 6"
+          />
+        </svg>
+        <div>
+          <p
+            class="text-sm font-medium text-gray-800 dark:text-gray-200"
+          >
+            Margin
+            :
+             
+            <span
+              class="text-red-600 dark:text-red-400"
+            >
+              Sensitive
+            </span>
+          </p>
+          <p
+            class="text-xs text-gray-500 dark:text-gray-400 mt-0.5"
+          >
+            Only 0.20 points apart — essentially a tie. Consider scoring more carefully.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    data-testid="explore-further"
+  >
+    <h4
+      class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2"
+    >
+      Explore Further
+    </h4>
+    <div
+      class="grid grid-cols-2 gap-3"
+    >
+      <button
+        class="flex flex-col items-start gap-1 rounded-lg border border-gray-200 dark:border-gray-700 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-blue-500"
+        data-testid="explore-what-if-analysis"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-flask-conical h-5 w-5 text-blue-500"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"
+          />
+          <path
+            d="M6.453 15h11.094"
+          />
+          <path
+            d="M8.5 2h7"
+          />
+        </svg>
+        <span
+          class="text-sm font-medium text-gray-800 dark:text-gray-200"
+        >
+          What-If Analysis
+        </span>
+        <span
+          class="text-xs text-gray-500 dark:text-gray-400"
+        >
+          Test how changing a score would affect the outcome
+        </span>
+      </button>
+      <button
+        class="flex flex-col items-start gap-1 rounded-lg border border-gray-200 dark:border-gray-700 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-blue-500"
+        data-testid="explore-compare-methods"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-scale h-5 w-5 text-blue-500"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 3v18"
+          />
+          <path
+            d="m19 8 3 8a5 5 0 0 1-6 0zV7"
+          />
+          <path
+            d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"
+          />
+          <path
+            d="m5 8 3 8a5 5 0 0 1-6 0zV7"
+          />
+          <path
+            d="M7 21h10"
+          />
+        </svg>
+        <span
+          class="text-sm font-medium text-gray-800 dark:text-gray-200"
+        >
+          Compare Methods
+        </span>
+        <span
+          class="text-xs text-gray-500 dark:text-gray-400"
+        >
+          See how WSM, TOPSIS, and Regret compare
+        </span>
+      </button>
+      <button
+        class="flex flex-col items-start gap-1 rounded-lg border border-gray-200 dark:border-gray-700 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-blue-500"
+        data-testid="explore-sensitivity"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-trending-up h-5 w-5 text-blue-500"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M16 7h6v6"
+          />
+          <path
+            d="m22 7-8.5 8.5-5-5L2 17"
+          />
+        </svg>
+        <span
+          class="text-sm font-medium text-gray-800 dark:text-gray-200"
+        >
+          Sensitivity
+        </span>
+        <span
+          class="text-xs text-gray-500 dark:text-gray-400"
+        >
+          Find which criteria could flip your decision
+        </span>
+      </button>
+      <button
+        class="flex flex-col items-start gap-1 rounded-lg border border-gray-200 dark:border-gray-700 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-blue-500"
+        data-testid="explore-monte-carlo"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-dices h-5 w-5 text-blue-500"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            height="12"
+            rx="2"
+            ry="2"
+            width="12"
+            x="2"
+            y="10"
+          />
+          <path
+            d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"
+          />
+          <path
+            d="M6 18h.01"
+          />
+          <path
+            d="M10 14h.01"
+          />
+          <path
+            d="M15 6h.01"
+          />
+          <path
+            d="M18 9h.01"
+          />
+        </svg>
+        <span
+          class="text-sm font-medium text-gray-800 dark:text-gray-200"
+        >
+          Monte Carlo
+        </span>
+        <span
+          class="text-xs text-gray-500 dark:text-gray-400"
+        >
+          Run 10,000 simulations with random score variations
+        </span>
+      </button>
+    </div>
+    <p
+      class="text-xs text-gray-400 dark:text-gray-500 mt-2 text-center"
+    >
+      These tools are available in Advanced mode for deeper analysis.
+    </p>
+  </div>
+</div>
+`;

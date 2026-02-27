@@ -101,11 +101,11 @@ export const GuidedWizard = memo(function GuidedWizard({ onSwitchToAdvanced }: G
       case 3:
         return <WizardStepCriteria />;
       case 4:
-        return <WizardStepResults />;
+        return <WizardStepResults onSwitchToAdvanced={onSwitchToAdvanced} />;
       default:
         return null;
     }
-  }, [currentStep]);
+  }, [currentStep, onSwitchToAdvanced]);
 
   return (
     <div
