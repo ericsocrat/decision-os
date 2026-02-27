@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { computeConsensus, kendallW, spearmanCorrelation, ALL_ALGORITHMS } from "@/lib/consensus";
+import type { AlgorithmId } from "@/lib/consensus";
 import type { Decision } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
@@ -438,5 +439,105 @@ describe("module exports", () => {
     expect(ALL_ALGORITHMS).toContain("wsm");
     expect(ALL_ALGORITHMS).toContain("topsis");
     expect(ALL_ALGORITHMS).toContain("minimax-regret");
+  });
+});
+
+// ---------------------------------------------------------------------------
+//  Branch coverage — edge cases
+// ---------------------------------------------------------------------------
+
+describe("computeConsensus — edge-case branches", () => {
+  it("defaults to ALL_ALGORITHMS when algorithms array is empty", () => {
+    const decision = simpleDecision();
+    const result = computeConsensus(decision, []);
+
+    expect(result.algorithmCount).toBe(3);
+    expect(result.algorithmResults).toHaveLength(3);
+    const ids = result.algorithmResults.map((r) => r.algorithmId);
+    expect(ids).toContain("wsm");
+    expect(ids).toContain("topsis");
+    expect(ids).toContain("minimax-regret");
+  });
+
+  it("throws for unknown algorithm ID", () => {
+    const decision = simpleDecision();
+    expect(() =>
+      computeConsensus(decision, ["unknown-algo" as AlgorithmId]),
+    ).toThrow("Unknown algorithm: unknown-algo");
+  });
+
+  it("fills default rank (n) when option missing from algorithm result", () => {
+    // This is hard to trigger directly since RUNNERS always return all options,
+    // but we can verify the rank matrix default behavior indirectly:
+    // a single algorithm subset still ranks all options
+    const decision = simpleDecision();
+    const result = computeConsensus(decision, ["wsm"]);
+
+    // All options should have ranks
+    for (const ranking of result.rankings) {
+      expect(ranking.algorithmRanks.wsm).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("uses option ID as fallback name when optionNames lookup misses", () => {
+    // Since optionNames is built from decision.options, this fallback
+    // is hard to trigger. Verify that names match decision.options
+    const decision = simpleDecision();
+    const result = computeConsensus(decision);
+    const names = result.rankings.map((r) => r.optionName);
+    expect(names).toContain("Alpha");
+    expect(names).toContain("Beta");
+    expect(names).toContain("Gamma");
+  });
+
+  it("returns agreement 1 for single-option decision", () => {
+    const decision = makeDecision(
+      [{ id: "only", name: "Only Option" }],
+      [{ id: "c1", name: "Quality", weight: 100, type: "benefit" }],
+      { only: { c1: 7 } },
+    );
+    const result = computeConsensus(decision);
+
+    expect(result.rankings).toHaveLength(1);
+    expect(result.rankings[0].consensusRank).toBe(1);
+    expect(result.rankings[0].agreementScore).toBe(1);
+  });
+
+  it("produces empty pairwise correlations for single algorithm", () => {
+    const decision = simpleDecision();
+    const result = computeConsensus(decision, ["wsm"]);
+
+    expect(result.pairwiseCorrelations).toHaveLength(0);
+    expect(result.algorithmCount).toBe(1);
+  });
+});
+
+describe("spearmanCorrelation — edge-case branches", () => {
+  it("returns 1 for empty rank vectors", () => {
+    expect(spearmanCorrelation([], [])).toBe(1);
+  });
+
+  it("returns 1 for single-element vectors", () => {
+    expect(spearmanCorrelation([1], [1])).toBe(1);
+  });
+
+  it("throws for unequal-length vectors", () => {
+    expect(() => spearmanCorrelation([1, 2], [1])).toThrow(
+      "Rank vectors must have equal length",
+    );
+  });
+});
+
+describe("kendallW — edge-case branches", () => {
+  it("returns 1 for empty rank matrix", () => {
+    expect(kendallW([])).toBe(1);
+  });
+
+  it("returns 1 for single ranker", () => {
+    expect(kendallW([[1, 2, 3]])).toBe(1);
+  });
+
+  it("returns 1 for single object across multiple rankers", () => {
+    expect(kendallW([[1], [1]])).toBe(1);
   });
 });

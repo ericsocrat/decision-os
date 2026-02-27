@@ -40,7 +40,8 @@ vi.mock("@/lib/supabase", () => ({
 }));
 
 // Import AFTER mocking
-const { fullSync, hasMigrated } = await import("@/lib/sync");
+const { fullSync, hasMigrated, syncSaveDecision, syncDeleteDecision } =
+  await import("@/lib/sync");
 
 // ─── Helpers ───────────────────────────────────────────────────────
 
@@ -163,7 +164,137 @@ describe("fullSync", () => {
     expect(result.status).toBe("error");
     expect(result.error).toBe("Network error");
   });
+
+  it("returns error status when initial migration fails", async () => {
+    const local = [makeDecision("d1", "2025-06-01T00:00:00Z")];
+    mockLocalGet.mockReturnValue(local);
+    mockCloudGet.mockResolvedValue([]);
+    mockCloudSaveAll.mockResolvedValue(false);
+
+    const result = await fullSync();
+
+    expect(result.status).toBe("error");
+    expect(result.error).toBe("Initial migration failed");
+    expect(result.uploaded).toBe(0);
+  });
+
+  it("skips migration when cloud is empty but already migrated", async () => {
+    localStorage.setItem(MIGRATION_KEY, "true");
+    const local = [makeDecision("d1", "2025-06-01T00:00:00Z")];
+    mockLocalGet.mockReturnValue(local);
+    mockCloudGet.mockResolvedValue([]);
+    mockCloudSave.mockResolvedValue(true);
+
+    const result = await fullSync();
+
+    expect(result.status).toBe("done");
+    // Should upload via per-decision path, not migration
+    expect(mockCloudSaveAll).not.toHaveBeenCalled();
+    expect(result.uploaded).toBe(1);
+  });
+
+  it("handles non-Error exception with fallback message", async () => {
+    mockLocalGet.mockReturnValue([]);
+    mockCloudGet.mockRejectedValue("string-error");
+
+    const result = await fullSync();
+
+    expect(result.status).toBe("error");
+    expect(result.error).toBe("Unknown sync error");
+  });
+
+  it("does not increment uploaded when cloudSaveDecision returns false", async () => {
+    localStorage.setItem(MIGRATION_KEY, "true");
+    const local = [makeDecision("d1", "2025-06-01T00:00:00Z")];
+    mockLocalGet.mockReturnValue(local);
+    mockCloudGet.mockResolvedValue([]);
+    mockCloudSave.mockResolvedValue(false);
+
+    const result = await fullSync();
+
+    expect(result.status).toBe("done");
+    expect(result.uploaded).toBe(0);
+  });
+
+  it("sets migration flag on first successful sync even without migration", async () => {
+    // Already migrated = false, cloud has data → goes to merge path
+    const shared = makeDecision("d1", "2025-06-01T00:00:00Z");
+    mockLocalGet.mockReturnValue([shared]);
+    mockCloudGet.mockResolvedValue([shared]);
+
+    const result = await fullSync();
+
+    expect(result.status).toBe("done");
+    expect(localStorage.getItem(MIGRATION_KEY)).toBe("true");
+  });
 });
+
+// ─── syncSaveDecision ──────────────────────────────────────────────
+
+describe("syncSaveDecision", () => {
+  it("saves to local storage and cloud", async () => {
+    const decision = makeDecision("d1", "2025-06-01T00:00:00Z");
+    mockCloudSave.mockResolvedValue(true);
+
+    await syncSaveDecision(decision);
+
+    expect(mockLocalSave).toHaveBeenCalledWith(decision);
+    expect(mockCloudSave).toHaveBeenCalledWith(decision);
+  });
+
+  it("saves locally even when cloud save fails", async () => {
+    const decision = makeDecision("d1", "2025-06-01T00:00:00Z");
+    mockCloudSave.mockRejectedValue(new Error("Offline"));
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    await syncSaveDecision(decision);
+
+    expect(mockLocalSave).toHaveBeenCalledWith(decision);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("cloud save failed"),
+    );
+    warnSpy.mockRestore();
+  });
+});
+
+// ─── syncDeleteDecision ────────────────────────────────────────────
+
+describe("syncDeleteDecision", () => {
+  it("deletes from both local and cloud", async () => {
+    const localDeleteFn = vi.fn(() => true);
+    mockCloudDelete.mockResolvedValue(true);
+
+    const result = await syncDeleteDecision("d1", localDeleteFn);
+
+    expect(result).toBe(true);
+    expect(localDeleteFn).toHaveBeenCalledWith("d1");
+  });
+
+  it("returns false when local delete fails", async () => {
+    const localDeleteFn = vi.fn(() => false);
+    mockCloudDelete.mockResolvedValue(true);
+
+    const result = await syncDeleteDecision("d1", localDeleteFn);
+
+    expect(result).toBe(false);
+  });
+
+  it("returns local result even when cloud delete fails", async () => {
+    const localDeleteFn = vi.fn(() => true);
+    mockCloudDelete.mockRejectedValue(new Error("Cloud error"));
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const result = await syncDeleteDecision("d1", localDeleteFn);
+
+    expect(result).toBe(true);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("cloud delete failed"),
+    );
+    warnSpy.mockRestore();
+  });
+});
+
+// ─── hasMigrated ───────────────────────────────────────────────────
 
 describe("hasMigrated", () => {
   it("returns false when migration key is not set", () => {

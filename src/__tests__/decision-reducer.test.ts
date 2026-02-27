@@ -696,3 +696,465 @@ describe("updatedAt", () => {
     expect(next.decision.updatedAt).not.toBe(before);
   });
 });
+
+// ---------------------------------------------------------------------------
+// SET_ENRICHED_SCORE
+// ---------------------------------------------------------------------------
+
+describe("SET_ENRICHED_SCORE", () => {
+  it("sets score and enriched metadata", () => {
+    const state = init();
+    const next = dispatch(state, {
+      type: "SET_ENRICHED_SCORE",
+      optionId: "o1",
+      criterionId: "c1",
+      value: 8,
+      source: "market-data",
+      tier: 1,
+    });
+    expect(next.decision.scores.o1.c1).toBe(8);
+    expect(next.decision.scoreMetadata?.o1?.c1).toBeDefined();
+    expect(next.decision.scoreMetadata?.o1?.c1?.provenance).toBe("enriched");
+    expect(next.decision.scoreMetadata?.o1?.c1?.enrichedValue).toBe(8);
+    expect(next.decision.scoreMetadata?.o1?.c1?.enrichedSource).toBe("market-data");
+    expect(next.decision.scoreMetadata?.o1?.c1?.enrichedTier).toBe(1);
+  });
+
+  it("clamps value to 0-10", () => {
+    const state = init();
+    const next = dispatch(state, {
+      type: "SET_ENRICHED_SCORE",
+      optionId: "o1",
+      criterionId: "c1",
+      value: 15,
+      source: "test",
+      tier: 2,
+    });
+    expect(next.decision.scores.o1.c1).toBe(10);
+  });
+
+  it("preserves existing confidence on the cell", () => {
+    const state = init();
+    // First set confidence
+    let s = dispatch(state, {
+      type: "UPDATE_SCORE",
+      optionId: "o1",
+      criterionId: "c1",
+      value: 5,
+    });
+    s = dispatch(s, {
+      type: "UPDATE_CONFIDENCE",
+      optionId: "o1",
+      criterionId: "c1",
+      confidence: "low",
+    });
+    // Now set enriched score — should preserve low confidence
+    s = dispatch(s, {
+      type: "SET_ENRICHED_SCORE",
+      optionId: "o1",
+      criterionId: "c1",
+      value: 9,
+      source: "api",
+      tier: 1,
+    });
+    const cell = s.decision.scores.o1.c1 as { value: number; confidence: string };
+    expect(cell.value).toBe(9);
+    expect(cell.confidence).toBe("low");
+  });
+
+  it("creates score row if option row doesn't exist", () => {
+    const decision = makeDecision({ scores: {} });
+    const state = init(decision);
+    const next = dispatch(state, {
+      type: "SET_ENRICHED_SCORE",
+      optionId: "o1",
+      criterionId: "c1",
+      value: 6,
+      source: "test",
+      tier: 3,
+    });
+    expect(next.decision.scores.o1.c1).toBe(6);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// RESTORE_ENRICHED_VALUE
+// ---------------------------------------------------------------------------
+
+describe("RESTORE_ENRICHED_VALUE", () => {
+  it("restores enriched value from overridden metadata", () => {
+    const state = init();
+    // Set enriched score
+    let s = dispatch(state, {
+      type: "SET_ENRICHED_SCORE",
+      optionId: "o1",
+      criterionId: "c1",
+      value: 8,
+      source: "api",
+      tier: 1,
+    });
+    // Override with manual edit
+    s = dispatch(s, {
+      type: "UPDATE_SCORE",
+      optionId: "o1",
+      criterionId: "c1",
+      value: 3,
+    });
+    expect(s.decision.scores.o1.c1).toBe(3);
+    expect(s.decision.scoreMetadata?.o1?.c1?.provenance).toBe("overridden");
+
+    // Restore enriched value
+    s = dispatch(s, {
+      type: "RESTORE_ENRICHED_VALUE",
+      optionId: "o1",
+      criterionId: "c1",
+    });
+    expect(s.decision.scores.o1.c1).toBe(8);
+    expect(s.decision.scoreMetadata?.o1?.c1?.provenance).toBe("enriched");
+  });
+
+  it("is no-op when provenance is not overridden", () => {
+    const state = init();
+    // Set enriched score (still enriched, not overridden)
+    let s = dispatch(state, {
+      type: "SET_ENRICHED_SCORE",
+      optionId: "o1",
+      criterionId: "c1",
+      value: 8,
+      source: "api",
+      tier: 1,
+    });
+    const before = s.decision;
+    s = dispatch(s, {
+      type: "RESTORE_ENRICHED_VALUE",
+      optionId: "o1",
+      criterionId: "c1",
+    });
+    // Should not have changed (returns null from mutation → same state)
+    expect(s.decision.scores.o1.c1).toBe(8);
+  });
+
+  it("is no-op when no metadata exists", () => {
+    const state = init();
+    const next = dispatch(state, {
+      type: "RESTORE_ENRICHED_VALUE",
+      optionId: "o1",
+      criterionId: "c1",
+    });
+    expect(next.decision.scores.o1.c1).toBe(7); // unchanged
+  });
+
+  it("preserves existing confidence on cell during restore", () => {
+    const state = init();
+    let s = dispatch(state, {
+      type: "SET_ENRICHED_SCORE",
+      optionId: "o1",
+      criterionId: "c1",
+      value: 8,
+      source: "api",
+      tier: 1,
+    });
+    s = dispatch(s, {
+      type: "UPDATE_CONFIDENCE",
+      optionId: "o1",
+      criterionId: "c1",
+      confidence: "medium",
+    });
+    s = dispatch(s, {
+      type: "UPDATE_SCORE",
+      optionId: "o1",
+      criterionId: "c1",
+      value: 2,
+    });
+    s = dispatch(s, {
+      type: "RESTORE_ENRICHED_VALUE",
+      optionId: "o1",
+      criterionId: "c1",
+    });
+    const cell = s.decision.scores.o1.c1 as { value: number; confidence: string };
+    expect(cell.value).toBe(8);
+    expect(cell.confidence).toBe("medium");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// UPDATE_REASONING
+// ---------------------------------------------------------------------------
+
+describe("UPDATE_REASONING", () => {
+  it("sets reasoning text for option+criterion", () => {
+    const state = init();
+    const next = dispatch(state, {
+      type: "UPDATE_REASONING",
+      optionId: "o1",
+      criterionId: "c1",
+      text: "This option is fast",
+      timestamp: Date.now(),
+    });
+    expect(next.decision.reasoning?.o1?.c1).toBe("This option is fast");
+  });
+
+  it("creates reasoning map for new option", () => {
+    const state = init();
+    const next = dispatch(state, {
+      type: "UPDATE_REASONING",
+      optionId: "o2",
+      criterionId: "c2",
+      text: "Expensive",
+      timestamp: Date.now(),
+    });
+    expect(next.decision.reasoning?.o2?.c2).toBe("Expensive");
+  });
+
+  it("overwrites existing reasoning", () => {
+    const decision = makeDecision({
+      reasoning: { o1: { c1: "old text" } },
+    });
+    const state = init(decision);
+    const next = dispatch(state, {
+      type: "UPDATE_REASONING",
+      optionId: "o1",
+      criterionId: "c1",
+      text: "new text",
+      timestamp: Date.now(),
+    });
+    expect(next.decision.reasoning?.o1?.c1).toBe("new text");
+  });
+
+  it("handles decision with no existing reasoning", () => {
+    const decision = makeDecision();
+    delete (decision as unknown as Record<string, unknown>).reasoning;
+    const state = init(decision);
+    const next = dispatch(state, {
+      type: "UPDATE_REASONING",
+      optionId: "o1",
+      criterionId: "c1",
+      text: "first note",
+      timestamp: Date.now(),
+    });
+    expect(next.decision.reasoning?.o1?.c1).toBe("first note");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// REMOVE_OPTION — extended
+// ---------------------------------------------------------------------------
+
+describe("REMOVE_OPTION — extended cleanup", () => {
+  it("removes reasoning for the option", () => {
+    const decision = makeDecision({
+      reasoning: { o1: { c1: "note 1" }, o2: { c2: "note 2" } },
+    });
+    const state = init(decision);
+    const next = dispatch(state, { type: "REMOVE_OPTION", optionId: "o1" });
+    expect(next.decision.reasoning?.o1).toBeUndefined();
+    expect(next.decision.reasoning?.o2).toBeDefined();
+  });
+
+  it("removes scoreMetadata for the option", () => {
+    const state = init();
+    let s = dispatch(state, {
+      type: "SET_ENRICHED_SCORE",
+      optionId: "o1",
+      criterionId: "c1",
+      value: 8,
+      source: "api",
+      tier: 1,
+    });
+    s = dispatch(s, { type: "REMOVE_OPTION", optionId: "o1" });
+    expect(s.decision.scoreMetadata?.o1).toBeUndefined();
+  });
+
+  it("handles undefined reasoning gracefully", () => {
+    const decision = makeDecision();
+    delete (decision as unknown as Record<string, unknown>).reasoning;
+    const state = init(decision);
+    const next = dispatch(state, { type: "REMOVE_OPTION", optionId: "o1" });
+    expect(next.decision.options).toHaveLength(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// REMOVE_CRITERION — extended
+// ---------------------------------------------------------------------------
+
+describe("REMOVE_CRITERION — extended cleanup", () => {
+  it("removes reasoning for the criterion across all options", () => {
+    const decision = makeDecision({
+      reasoning: {
+        o1: { c1: "note 1", c2: "note 2" },
+        o2: { c1: "note 3", c2: "note 4" },
+      },
+    });
+    const state = init(decision);
+    const next = dispatch(state, { type: "REMOVE_CRITERION", criterionId: "c1" });
+    expect(next.decision.reasoning?.o1?.c1).toBeUndefined();
+    expect(next.decision.reasoning?.o1?.c2).toBe("note 2");
+    expect(next.decision.reasoning?.o2?.c1).toBeUndefined();
+    expect(next.decision.reasoning?.o2?.c2).toBe("note 4");
+  });
+
+  it("removes scoreMetadata for the criterion", () => {
+    const state = init();
+    let s = dispatch(state, {
+      type: "SET_ENRICHED_SCORE",
+      optionId: "o1",
+      criterionId: "c1",
+      value: 8,
+      source: "api",
+      tier: 1,
+    });
+    s = dispatch(s, { type: "REMOVE_CRITERION", criterionId: "c1" });
+    expect(s.decision.scoreMetadata?.o1?.c1).toBeUndefined();
+  });
+
+  it("handles undefined reasoning gracefully", () => {
+    const decision = makeDecision();
+    delete (decision as unknown as Record<string, unknown>).reasoning;
+    const state = init(decision);
+    const next = dispatch(state, { type: "REMOVE_CRITERION", criterionId: "c1" });
+    expect(next.decision.criteria).toHaveLength(1);
+    expect(next.decision.criteria[0].id).toBe("c2");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// UPDATE_SCORE — provenance override
+// ---------------------------------------------------------------------------
+
+describe("UPDATE_SCORE — provenance tracking", () => {
+  it("marks enriched metadata as overridden on manual edit", () => {
+    const state = init();
+    let s = dispatch(state, {
+      type: "SET_ENRICHED_SCORE",
+      optionId: "o1",
+      criterionId: "c1",
+      value: 8,
+      source: "api",
+      tier: 1,
+    });
+    expect(s.decision.scoreMetadata?.o1?.c1?.provenance).toBe("enriched");
+
+    s = dispatch(s, {
+      type: "UPDATE_SCORE",
+      optionId: "o1",
+      criterionId: "c1",
+      value: 3,
+    });
+    expect(s.decision.scoreMetadata?.o1?.c1?.provenance).toBe("overridden");
+    expect(s.decision.scoreMetadata?.o1?.c1?.enrichedValue).toBe(8);
+  });
+
+  it("does not modify metadata when no enriched provenance exists", () => {
+    const state = init();
+    const next = dispatch(state, {
+      type: "UPDATE_SCORE",
+      optionId: "o1",
+      criterionId: "c1",
+      value: 5,
+    });
+    // No metadata should be created
+    expect(next.decision.scoreMetadata?.o1?.c1).toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Coalescing — additional branches
+// ---------------------------------------------------------------------------
+
+describe("Undo coalescing — additional branches", () => {
+  it("criterion name-only edits coalesce", () => {
+    const state = init();
+    const now = Date.now();
+    let s = dispatch(state, {
+      type: "UPDATE_CRITERION",
+      criterionId: "c1",
+      updates: { name: "Speed" },
+      timestamp: now,
+    });
+    s = dispatch(s, {
+      type: "UPDATE_CRITERION",
+      criterionId: "c1",
+      updates: { name: "Speed v2" },
+      timestamp: now + 100,
+    });
+    expect(s.past).toHaveLength(1); // coalesced
+  });
+
+  it("criterion non-name update is structural (no coalesce)", () => {
+    const state = init();
+    const now = Date.now();
+    let s = dispatch(state, {
+      type: "UPDATE_CRITERION",
+      criterionId: "c1",
+      updates: { name: "Speed" },
+      timestamp: now,
+    });
+    s = dispatch(s, {
+      type: "UPDATE_CRITERION",
+      criterionId: "c1",
+      updates: { weight: 80 },
+      timestamp: now + 100,
+    });
+    expect(s.past).toHaveLength(2); // not coalesced — structural
+  });
+
+  it("UPDATE_OPTION with non-name updates is structural", () => {
+    const state = init();
+    const now = Date.now();
+    let s = dispatch(state, {
+      type: "UPDATE_OPTION",
+      optionId: "o1",
+      updates: { name: "Alpha" },
+      timestamp: now,
+    });
+    s = dispatch(s, {
+      type: "UPDATE_OPTION",
+      optionId: "o1",
+      updates: { description: "desc" },
+      timestamp: now + 100,
+    });
+    expect(s.past).toHaveLength(2); // structural, not coalesced
+  });
+
+  it("rapid reasoning edits to the same cell coalesce", () => {
+    const state = init();
+    const now = Date.now();
+    let s = dispatch(state, {
+      type: "UPDATE_REASONING",
+      optionId: "o1",
+      criterionId: "c1",
+      text: "first",
+      timestamp: now,
+    });
+    s = dispatch(s, {
+      type: "UPDATE_REASONING",
+      optionId: "o1",
+      criterionId: "c1",
+      text: "first draft",
+      timestamp: now + 100,
+    });
+    expect(s.past).toHaveLength(1); // coalesced
+    expect(s.decision.reasoning?.o1?.c1).toBe("first draft");
+  });
+
+  it("reasoning edits to different cells don't coalesce", () => {
+    const state = init();
+    const now = Date.now();
+    let s = dispatch(state, {
+      type: "UPDATE_REASONING",
+      optionId: "o1",
+      criterionId: "c1",
+      text: "note 1",
+      timestamp: now,
+    });
+    s = dispatch(s, {
+      type: "UPDATE_REASONING",
+      optionId: "o1",
+      criterionId: "c2",
+      text: "note 2",
+      timestamp: now + 100,
+    });
+    expect(s.past).toHaveLength(2); // different cells
+  });
+});

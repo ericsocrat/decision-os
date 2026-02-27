@@ -255,3 +255,254 @@ describe("PatternInsights component", () => {
     expect(screen.getByText(String(patterns.length))).toBeInTheDocument();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Edge-case branch coverage
+// ---------------------------------------------------------------------------
+
+describe("detectPatterns — edge cases", () => {
+  it("returns empty array for exactly MIN_DECISIONS - 1 decisions", () => {
+    const decisions = [makeDecision({ id: "d1" }), makeDecision({ id: "d2" })];
+    expect(detectPatterns(decisions)).toEqual([]);
+  });
+
+  it("handles decisions with completely empty score matrices", () => {
+    const decisions = [
+      makeDecision({ id: "d1", scores: {} }),
+      makeDecision({ id: "d2", scores: {} }),
+      makeDecision({ id: "d3", scores: {} }),
+    ];
+    // Should not throw; central tendency skipped (no scores)
+    const patterns = detectPatterns(decisions);
+    expect(patterns).toBeInstanceOf(Array);
+    expect(patterns.find((p) => p.title === "Central Tendency Bias")).toBeUndefined();
+  });
+
+  it("does not detect anchoring when fewer than MIN_DECISIONS options have 2+ options", () => {
+    // Give 2 of 3 decisions only 1 option → eligible < 3
+    const decisions = [
+      makeDecision({ id: "d1", options: [{ id: "o1", name: "Solo" }] }),
+      makeDecision({ id: "d2", options: [{ id: "o1", name: "Solo" }] }),
+      makeDecision({ id: "d3" }), // has 2 options
+    ];
+    const patterns = detectPatterns(decisions);
+    expect(patterns.find((p) => p.title === "First-Option Anchoring")).toBeUndefined();
+  });
+
+  it("does not detect anchoring when ratio is below threshold", () => {
+    // First option NOT highest in 2 of 3 decisions (ratio < 0.7)
+    const lowFirstScores = {
+      o1: { c1: { value: 2, confidence: "high" as const }, c2: { value: 2, confidence: "high" as const } },
+      o2: { c1: { value: 9, confidence: "high" as const }, c2: { value: 9, confidence: "high" as const } },
+    };
+    const highFirstScores = {
+      o1: { c1: { value: 9, confidence: "high" as const }, c2: { value: 9, confidence: "high" as const } },
+      o2: { c1: { value: 2, confidence: "high" as const }, c2: { value: 2, confidence: "high" as const } },
+    };
+    const decisions = [
+      makeDecision({ id: "d1", scores: lowFirstScores }),
+      makeDecision({ id: "d2", scores: lowFirstScores }),
+      makeDecision({ id: "d3", scores: highFirstScores }),
+    ];
+    const patterns = detectPatterns(decisions);
+    expect(patterns.find((p) => p.title === "First-Option Anchoring")).toBeUndefined();
+  });
+
+  it("skips weight preference for decisions with fewer than 2 criteria", () => {
+    const decisions = [
+      makeDecision({
+        id: "d1",
+        criteria: [{ id: "c1", name: "Solo", weight: 100, type: "benefit" }],
+      }),
+      makeDecision({
+        id: "d2",
+        criteria: [{ id: "c1", name: "Solo", weight: 100, type: "benefit" }],
+      }),
+      makeDecision({
+        id: "d3",
+        criteria: [{ id: "c1", name: "Solo", weight: 100, type: "benefit" }],
+      }),
+    ];
+    const patterns = detectPatterns(decisions);
+    expect(patterns.find((p) => p.type === "weight-preference")).toBeUndefined();
+  });
+
+  it("does not detect weight preference when leaders below threshold", () => {
+    // Each decision has a DIFFERENT criterion as heaviest
+    const decisions = [
+      makeDecision({
+        id: "d1",
+        criteria: [
+          { id: "c1", name: "Alpha", weight: 100, type: "benefit" },
+          { id: "c2", name: "Beta", weight: 50, type: "benefit" },
+        ],
+      }),
+      makeDecision({
+        id: "d2",
+        criteria: [
+          { id: "c1", name: "Gamma", weight: 100, type: "benefit" },
+          { id: "c2", name: "Delta", weight: 50, type: "benefit" },
+        ],
+      }),
+      makeDecision({
+        id: "d3",
+        criteria: [
+          { id: "c1", name: "Epsilon", weight: 100, type: "benefit" },
+          { id: "c2", name: "Zeta", weight: 50, type: "benefit" },
+        ],
+      }),
+    ];
+    const patterns = detectPatterns(decisions);
+    expect(patterns.find((p) => p.type === "weight-preference")).toBeUndefined();
+  });
+
+  it("detects pessimism bias when actual > predicted", () => {
+    const decisions = [
+      makeDecision({ id: "d1" }),
+      makeDecision({ id: "d2" }),
+      makeDecision({ id: "d3" }),
+    ];
+    const outcomes: DecisionOutcome[] = [
+      makeOutcome({ decisionId: "d1", predictedScore: 3, outcomeRating: 8 }),
+      makeOutcome({ decisionId: "d2", predictedScore: 4, outcomeRating: 9 }),
+    ];
+    const patterns = detectPatterns(decisions, outcomes);
+    const pessimism = patterns.find((p) => p.title === "Pessimism Bias");
+    expect(pessimism).toBeDefined();
+    expect(pessimism?.description).toContain("under-predicting");
+  });
+
+  it("does not detect delta bias when average delta is within tolerance", () => {
+    const decisions = [
+      makeDecision({ id: "d1" }),
+      makeDecision({ id: "d2" }),
+      makeDecision({ id: "d3" }),
+    ];
+    const outcomes: DecisionOutcome[] = [
+      makeOutcome({ decisionId: "d1", predictedScore: 5, outcomeRating: 5 }),
+      makeOutcome({ decisionId: "d2", predictedScore: 6, outcomeRating: 6 }),
+    ];
+    const patterns = detectPatterns(decisions, outcomes);
+    expect(patterns.find((p) => p.title === "Optimism Bias")).toBeUndefined();
+    expect(patterns.find((p) => p.title === "Pessimism Bias")).toBeUndefined();
+  });
+
+  it("returns empty prediction patterns when fewer than 2 comparisons", () => {
+    const decisions = [
+      makeDecision({ id: "d1" }),
+      makeDecision({ id: "d2" }),
+      makeDecision({ id: "d3" }),
+    ];
+    const outcomes: DecisionOutcome[] = [
+      makeOutcome({ decisionId: "d1", predictedScore: 8, outcomeRating: 4 }),
+    ];
+    const patterns = detectPatterns(decisions, outcomes);
+    expect(patterns.find((p) => p.type === "prediction-accuracy")).toBeUndefined();
+  });
+
+  it("skips comparisons when outcome lacks predictedScore or outcomeRating", () => {
+    const decisions = [
+      makeDecision({ id: "d1" }),
+      makeDecision({ id: "d2" }),
+      makeDecision({ id: "d3" }),
+    ];
+    const outcomes: DecisionOutcome[] = [
+      makeOutcome({ decisionId: "d1" }), // no predictedScore or outcomeRating
+      makeOutcome({ decisionId: "d2", predictedScore: 5 }), // no outcomeRating
+    ];
+    const patterns = detectPatterns(decisions, outcomes);
+    expect(patterns.find((p) => p.type === "prediction-accuracy")).toBeUndefined();
+  });
+
+  it("does not detect criterion reuse when no criterion meets threshold", () => {
+    const decisions = [
+      makeDecision({
+        id: "d1",
+        criteria: [
+          { id: "c1", name: "Alpha", weight: 50, type: "benefit" },
+          { id: "c2", name: "Beta", weight: 50, type: "benefit" },
+        ],
+      }),
+      makeDecision({
+        id: "d2",
+        criteria: [
+          { id: "c1", name: "Gamma", weight: 50, type: "benefit" },
+          { id: "c2", name: "Delta", weight: 50, type: "benefit" },
+        ],
+      }),
+      makeDecision({
+        id: "d3",
+        criteria: [
+          { id: "c1", name: "Epsilon", weight: 50, type: "benefit" },
+          { id: "c2", name: "Zeta", weight: 50, type: "benefit" },
+        ],
+      }),
+    ];
+    const patterns = detectPatterns(decisions);
+    expect(patterns.find((p) => p.type === "criterion-reuse")).toBeUndefined();
+  });
+
+  it("handles isFirstOptionHighest with null optionAverage for first option", () => {
+    // First option has no scored cells → firstAvg === null → isFirstOptionHighest false
+    const decisions = [
+      makeDecision({
+        id: "d1",
+        scores: {
+          // o1 has no scores, o2 has scores
+          o2: { c1: { value: 8, confidence: "high" as const }, c2: { value: 8, confidence: "high" as const } },
+        },
+      }),
+      makeDecision({
+        id: "d2",
+        scores: {
+          o2: { c1: { value: 8, confidence: "high" as const }, c2: { value: 8, confidence: "high" as const } },
+        },
+      }),
+      makeDecision({
+        id: "d3",
+        scores: {
+          o2: { c1: { value: 8, confidence: "high" as const }, c2: { value: 8, confidence: "high" as const } },
+        },
+      }),
+    ];
+    const patterns = detectPatterns(decisions);
+    expect(patterns.find((p) => p.title === "First-Option Anchoring")).toBeUndefined();
+  });
+
+  it("detects consistent direction — conservative predictions", () => {
+    const decisions = [
+      makeDecision({ id: "d1" }),
+      makeDecision({ id: "d2" }),
+      makeDecision({ id: "d3" }),
+    ];
+    // Actual consistently exceeds predicted by > 1
+    const outcomes: DecisionOutcome[] = [
+      makeOutcome({ decisionId: "d1", predictedScore: 3, outcomeRating: 7 }),
+      makeOutcome({ decisionId: "d2", predictedScore: 2, outcomeRating: 8 }),
+      makeOutcome({ decisionId: "d3", predictedScore: 4, outcomeRating: 9 }),
+    ];
+    const patterns = detectPatterns(decisions, outcomes);
+    const conservative = patterns.find(
+      (p) => p.title === "Consistently Conservative Predictions",
+    );
+    expect(conservative).toBeDefined();
+  });
+
+  it("does not detect consistent direction when dominant < 2", () => {
+    const decisions = [
+      makeDecision({ id: "d1" }),
+      makeDecision({ id: "d2" }),
+      makeDecision({ id: "d3" }),
+    ];
+    // Only 1 over-prediction, 1 under-prediction — dominant < 2
+    const outcomes: DecisionOutcome[] = [
+      makeOutcome({ decisionId: "d1", predictedScore: 8, outcomeRating: 5 }),
+      makeOutcome({ decisionId: "d2", predictedScore: 5, outcomeRating: 8 }),
+    ];
+    const patterns = detectPatterns(decisions, outcomes);
+    const consistently = patterns.filter((p) =>
+      p.title.startsWith("Consistently"),
+    );
+    expect(consistently).toHaveLength(0);
+  });
+});

@@ -2,7 +2,7 @@
  * Unit tests for localStorage persistence layer.
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   getDecisions,
   getDecision,
@@ -127,5 +127,73 @@ describe("resetToDemo", () => {
     const decs = getDecisions();
     expect(decs).toHaveLength(1);
     expect(decs[0].id).toBe(DEMO_DECISION.id);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Branch coverage — edge cases
+// ---------------------------------------------------------------------------
+
+describe("getDecisions — edge-case branches", () => {
+  it("resets to demo when stored data is valid JSON but not a Decision array", () => {
+    // Valid JSON object, but not an array of decisions
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ foo: "bar" }));
+    const decs = getDecisions();
+    expect(decs).toHaveLength(1);
+    expect(decs[0].id).toBe(DEMO_DECISION.id);
+  });
+
+  it("resets to demo when stored data is a JSON array of non-Decision objects", () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([{ notA: "decision" }]));
+    const decs = getDecisions();
+    expect(decs).toHaveLength(1);
+    expect(decs[0].id).toBe(DEMO_DECISION.id);
+  });
+
+  it("returns demo when localStorage.getItem throws", () => {
+    const spy = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("SecurityError");
+    });
+    const decs = getDecisions();
+    expect(decs).toHaveLength(1);
+    expect(decs[0].id).toBe(DEMO_DECISION.id);
+    spy.mockRestore();
+  });
+});
+
+describe("saveDecision — edge-case branches", () => {
+  it("silently fails when localStorage.setItem throws", () => {
+    const spy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("QuotaExceededError");
+    });
+    // Should not throw
+    expect(() => saveDecision(makeDecision({ id: "quota-test" }))).not.toThrow();
+    spy.mockRestore();
+  });
+});
+
+describe("deleteDecision — edge-case branches", () => {
+  it("returns false when localStorage throws", () => {
+    // Seed some data first, then break localStorage
+    const a = makeDecision({ id: "del-a" });
+    const b = makeDecision({ id: "del-b" });
+    saveDecision(a);
+    saveDecision(b);
+    const spy = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("SecurityError");
+    });
+    const result = deleteDecision("del-a");
+    expect(result).toBe(false);
+    spy.mockRestore();
+  });
+});
+
+describe("resetToDemo — edge-case branches", () => {
+  it("silently fails when localStorage.setItem throws", () => {
+    const spy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("QuotaExceededError");
+    });
+    expect(() => resetToDemo()).not.toThrow();
+    spy.mockRestore();
   });
 });
