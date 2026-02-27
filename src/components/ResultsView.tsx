@@ -34,6 +34,7 @@ import { QualityBar } from "./QualityBar";
 import { ConfidenceStrategySelector } from "./ConfidenceStrategySelector";
 import { WhatIfPanel } from "./WhatIfPanel";
 import { CsvExportMenu } from "./CsvExportMenu";
+import { CollapsibleSection, AdvancedSectionsGroup } from "./CollapsibleSection";
 import { FrameworkComparison } from "./FrameworkComparison";
 import { CompositeConfidenceIndicator } from "./CompositeConfidenceIndicator";
 import { OutcomeTracker } from "./OutcomeTracker";
@@ -63,6 +64,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
   const [shareStatus, setShareStatus] = useState<string>("");
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [whatIfOpen, setWhatIfOpen] = useState(false);
+  const [allAdvancedExpanded, setAllAdvancedExpanded] = useState(false);
   const [scoringMethod, setScoringMethod] = useState<
     "wsm" | "topsis" | "minimax-regret" | "consensus" | "compare"
   >("wsm");
@@ -398,28 +400,23 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
         </div>
       </section>
 
-      {/* Trade-Off Explorer (Pareto Frontier) */}
+      {/* Trade-Off Explorer (Pareto Frontier) — collapsible */}
       {decision.criteria.length >= 2 && decision.options.length >= 2 && (
-        <section aria-labelledby="pareto-heading" className="print:hidden">
-          <h2
-            id="pareto-heading"
-            className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3"
+        <CollapsibleSection
+          sectionId="pareto"
+          title="Trade-Off Explorer"
+          icon={<Crosshair className="h-4 w-4 text-blue-600 dark:text-blue-400" />}
+        >
+          <Suspense
+            fallback={
+              <div className="h-50 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
+                Loading chart…
+              </div>
+            }
           >
-            <Crosshair className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            Trade-Off Explorer
-          </h2>
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-            <Suspense
-              fallback={
-                <div className="h-50 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
-                  Loading chart…
-                </div>
-              }
-            >
-              <ParetoChart decision={decision} results={results} />
-            </Suspense>
-          </div>
-        </section>
+            <ParetoChart decision={decision} results={results} />
+          </Suspense>
+        </CollapsibleSection>
       )}
 
       {/* Top Drivers */}
@@ -584,14 +581,35 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
         />
       )}
 
-      {/* Outcome Tracker */}
-      <OutcomeTracker decision={decision} results={results} />
+      {/* ── Advanced Analysis Group ── */}
+      <AdvancedSectionsGroup
+        sectionIds={["outcome", "retrospective", "patterns"]}
+        onExpandAll={setAllAdvancedExpanded}
+      >
+        <CollapsibleSection
+          sectionId="outcome"
+          title="Outcome Tracker"
+          expanded={allAdvancedExpanded || undefined}
+        >
+          <OutcomeTracker decision={decision} results={results} />
+        </CollapsibleSection>
 
-      {/* Retrospective Timeline */}
-      <RetrospectiveView decision={decision} />
+        <CollapsibleSection
+          sectionId="retrospective"
+          title="Retrospective Timeline"
+          expanded={allAdvancedExpanded || undefined}
+        >
+          <RetrospectiveView decision={decision} />
+        </CollapsibleSection>
 
-      {/* Cross-Decision Pattern Insights */}
-      <PatternInsights decision={decision} />
+        <CollapsibleSection
+          sectionId="patterns"
+          title="Cross-Decision Patterns"
+          expanded={allAdvancedExpanded || undefined}
+        >
+          <PatternInsights decision={decision} />
+        </CollapsibleSection>
+      </AdvancedSectionsGroup>
     </div>
   );
 }
