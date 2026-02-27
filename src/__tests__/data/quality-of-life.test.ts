@@ -189,6 +189,22 @@ describe("QualityOfLifeProvider", () => {
     expect(result).toBeNull();
   });
 
+  // ── Defensive guards (field === undefined) ──────────────────────
+
+  it("returns null when metric has no field mapping (bypasses supports)", async () => {
+    const result = await provider.fetch(
+      query({ metric: "nonexistent-metric" }),
+    );
+    expect(result).toBeNull();
+  });
+
+  it("returns null for unknown metric with estimation-eligible country", async () => {
+    const result = await provider.fetch(
+      query({ country: "PK", city: "Karachi", metric: "fake-metric" }),
+    );
+    expect(result).toBeNull();
+  });
+
   // ── Caching ─────────────────────────────────────────────────────
 
   it("caches results for identical queries", async () => {

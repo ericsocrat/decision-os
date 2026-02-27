@@ -133,6 +133,21 @@ describe("TaxEfficiencyProvider", () => {
     expect(result).toBeNull();
   });
 
+  // ── Defensive guards (field === undefined) ──────────────────────
+
+  it("returns null when metric has no field mapping (bypasses supports)", async () => {
+    const result = await provider.fetch(query({ metric: "fake-metric" }));
+    expect(result).toBeNull();
+  });
+
+  it("returns null for unknown metric with estimation-eligible country", async () => {
+    // MM is in income-group map → estimate() would fire, but metric is invalid
+    const result = await provider.fetch(
+      query({ country: "MM", metric: "nonsense" }),
+    );
+    expect(result).toBeNull();
+  });
+
   // ── Dataset sanity ──────────────────────────────────────────────
 
   it("bundled dataset covers >= 60 countries", () => {

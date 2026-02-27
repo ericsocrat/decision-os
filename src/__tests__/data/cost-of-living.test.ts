@@ -133,6 +133,25 @@ describe("CostOfLivingProvider", () => {
     expect(result).toBeNull();
   });
 
+  // ── Defensive guards (field === undefined) ──────────────────────
+
+  it("returns null when metric has no field mapping (bypasses supports)", async () => {
+    // Calling fetch() directly with an unsupported metric exercises the
+    // field === undefined guards in both lookupBundled and estimate
+    const result = await provider.fetch(
+      query({ metric: "nonexistent-metric" }),
+    );
+    expect(result).toBeNull();
+  });
+
+  it("returns null for unknown metric with estimation-eligible country", async () => {
+    // Country in income-group map but metric is invalid
+    const result = await provider.fetch(
+      query({ country: "ET", city: "Addis Ababa", metric: "fake-metric" }),
+    );
+    expect(result).toBeNull();
+  });
+
   // ── Caching ─────────────────────────────────────────────────────
 
   it("caches results across identical queries", async () => {

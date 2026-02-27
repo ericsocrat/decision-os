@@ -83,6 +83,11 @@ function chainMock(finalResult: { data: unknown; error: unknown }) {
   chain.maybeSingle = vi.fn().mockResolvedValue(finalResult);
   chain.upsert = vi.fn().mockResolvedValue(finalResult);
   chain.delete = vi.fn().mockReturnValue(chain);
+  // Make chain thenable so `await chain` resolves to finalResult
+  // (needed for delete chains that end with .eq())
+  chain.then = vi.fn().mockImplementation(
+    (resolve: (v: unknown) => unknown) => Promise.resolve(finalResult).then(resolve),
+  );
   mockFrom.mockImplementation(handler);
   return chain;
 }
@@ -192,6 +197,14 @@ describe("cloudDeleteDecision", () => {
     const ok = await cloudDeleteDecision("del-me");
     expect(ok).toBe(false);
   });
+
+  it("returns false on Supabase error", async () => {
+    mockAuthed();
+    chainMock({ data: null, error: { message: "not found" } });
+
+    const ok = await cloudDeleteDecision("del-me");
+    expect(ok).toBe(false);
+  });
 });
 
 describe("cloudSaveAllDecisions", () => {
@@ -207,6 +220,21 @@ describe("cloudSaveAllDecisions", () => {
   it("returns false for empty array", async () => {
     mockAuthed();
     const ok = await cloudSaveAllDecisions([]);
+    expect(ok).toBe(false);
+  });
+
+  it("returns false when not authenticated", async () => {
+    mockUnauthed();
+    const ok = await cloudSaveAllDecisions([makeDecision()]);
+    expect(ok).toBe(false);
+  });
+
+  it("returns false on Supabase error", async () => {
+    const decisions = [makeDecision({ id: "c" })];
+    mockAuthed();
+    chainMock({ data: null, error: { message: "db constraint" } });
+
+    const ok = await cloudSaveAllDecisions(decisions);
     expect(ok).toBe(false);
   });
 });

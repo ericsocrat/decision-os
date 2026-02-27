@@ -256,6 +256,22 @@ describe("computeCompositeConfidence", () => {
     expect(result.breakdown.composite).toBeGreaterThanOrEqual(0);
     expect(result.breakdown.composite).toBeLessThanOrEqual(1);
   });
+
+  it("produces low level with weak signals", () => {
+    const d = lowConfidenceDecision();
+    // Force very low algorithm agreement and structural quality
+    const weakConsensus = { overallAgreement: 0, rankings: {}, pairwise: [] };
+    const weakQuality = { overallScore: 0, indicators: [], suggestions: [] };
+    const result = computeCompositeConfidence(
+      d,
+      weakConsensus as ReturnType<typeof computeConsensus>,
+      weakQuality as ReturnType<typeof assessDecisionQuality>,
+      0,
+    );
+    expect(result.level).toBe("low");
+    expect(result.label).toContain("Low confidence");
+    expect(result.suggestion).toContain("To improve confidence");
+  });
 });
 
 // ---------------------------------------------------------------------------

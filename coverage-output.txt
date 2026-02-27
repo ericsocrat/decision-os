@@ -1,0 +1,356 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mC:/Users/ericsocrat/Desktop/DecisionOS[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [32mΓ£ô[39m src/__tests__/components/MonteCarloView.test.tsx [2m([22m[2m12 tests[22m[2m)[22m[33m 851[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/FrameworkComparison.test.tsx [2m([22m[2m17 tests[22m[2m)[22m[33m 1274[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m toggles algorithm info cards [33m 380[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m does not allow disabling all algorithms [33m 318[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/MobileScoreCards.test.tsx [2m([22m[2m15 tests[22m[2m)[22m[33m 1689[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders a range input with correct attributes [33m 342[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/CompareView.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[33m 1714[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/ReasoningNotes.test.tsx [2m([22m[2m13 tests[22m[2m)[22m[33m 2445[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m opens popover on click [33m 671[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m calls onChange when typing reasoning [33m 1132[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/ImportModal.test.tsx [2m([22m[2m21 tests[22m[2m)[22m[33m 3560[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders with dialog role and proper accessibility attributes [33m 646[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m closes when close button is clicked [33m 309[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m confirms CSV import and calls onClose [33m 593[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m allows editing the decision title in CSV preview [33m 736[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/SensitivityView.test.tsx [2m([22m[2m12 tests[22m[2m)[22m[33m 3602[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders the Sensitivity Analysis heading [33m 412[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders a robust or sensitive summary badge [33m 475[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders the sensitivity analysis details table [33m 519[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders sensitivity points with criterion names from the demo decision [33m 525[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays weight change arrows (original ΓåÆ adjusted) [33m 955[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/ResultsView.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 2378[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders rankings section [33m 415[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders export JSON button [33m 784[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders share link button [33m 540[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/hooks/useBiasDetection.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/security.test.ts [2m([22m[2m34 tests[22m[2m)[22m[33m 970[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/RetrospectiveView.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 1076[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m filters timeline items by event type [33m 313[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/csp-headers.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 793[2mms[22m[39m
+stderr | src/__tests__/components/CriterionTooltip.test.tsx > CriterionTooltip > hides tooltip on blur
+An update to CriterionTooltip inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32mΓ£ô[39m src/__tests__/components/CriterionTooltip.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 942[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m hides tooltip on blur [33m 333[2mms[22m[39m
+stderr | src/__tests__/components/Header.test.tsx > Header > renders app title and subtitle
+Received `true` for a non-boolean attribute `priority`.
+
+If you want to write it to the DOM, pass a string instead: priority="true" or priority={value.toString()}.
+
+ [32mΓ£ô[39m src/__tests__/components/WeightSlider.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[33m 634[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/Header.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 862[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/AHPWizard.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[33m 809[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m navigates between comparisons with next/back buttons [33m 355[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/EnrichmentSuggest.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 633[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m dismisses a suggestion and updates count [33m 320[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/CompositeConfidence.test.tsx [2m([22m[2m27 tests[22m[2m)[22m[33m 524[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m toggles breakdown details [33m 441[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/mobile-overflow-menu.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 501[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/mc-worker.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 244[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/patterns.test.tsx [2m([22m[2m28 tests[22m[2m)[22m[33m 323[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/WhatIfPanel.test.tsx [2m([22m[2m16 tests[22m[2m)[22m[33m 1111[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders the modal with dialog role [33m 709[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/Toast.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 355[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/TabErrorBoundary.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 356[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/DecisionBuilder.test.tsx [2m([22m[2m16 tests[22m[2m)[22m[33m 19521[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders Decision Details heading [33m 370[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders title input with initial demo value [33m 1598[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders Options section with Add Option button [33m 4001[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders Criteria section with Add Criterion button [33m 2885[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders Scores Matrix section [33m 465[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders Undo and Redo buttons [33m 2062[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m Undo button is disabled when no history [33m 2051[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m adds an option when Add Option is clicked [33m 3290[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m shows validation error on title when present [33m 316[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders description toggle buttons for options [33m 489[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m expands description textarea when toggle clicked [33m 539[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m shows criterion description tooltip in score matrix header [33m 605[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/OutcomeTracker.test.tsx [2m([22m[2m26 tests[22m[2m)[22m[32m 201[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/ErrorBoundary.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 298[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/monte-carlo.test.ts [2m([22m[2m38 tests[22m[2m)[22m[33m 450[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/ConfidenceStrategySelector.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 605[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m marks the current strategy as selected [33m 443[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/onboarding.test.tsx [2m([22m[2m19 tests[22m[2m)[22m[33m 556[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/share-route.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 382[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/ScoreProvenanceIndicator.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 813[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m calls onRestore when restore button is clicked [33m 366[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/ShareView.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 337[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/LanguageSwitcher.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 331[2mms[22m[39m
+stderr | src/__tests__/hooks/useAuth.test.ts > useAuth > sets loading=true initially when cloud is enabled
+An update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/__tests__/hooks/useAuth.test.ts > useAuth > sets error when signIn fails
+[DecisionOS:auth] OAuth error
+
+stderr | src/__tests__/hooks/useAuth.test.ts > useAuth > sets error when signOut fails
+[DecisionOS:auth] Sign out failed
+
+ [32mΓ£ô[39m src/__tests__/hooks/useAuth.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 111[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/service-worker.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 463[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/WeightDistributionBar.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[32m 259[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/DecisionQuality.test.tsx [2m([22m[2m20 tests[22m[2m)[22m[33m 524[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m expands to show indicators when clicked [33m 425[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/BiasWarnings.test.tsx [2m([22m[2m13 tests[22m[2m)[22m[33m 523[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/ScoringPrompt.test.tsx [2m([22m[2m12 tests[22m[2m)[22m[32m 245[2mms[22m[39m
+stderr | src/__tests__/a11y.test.tsx > ScoreChart accessibility > renders chart container with role=img and aria-label
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/__tests__/a11y.test.tsx > ScoreChart accessibility > includes aria-label with top choice information
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/__tests__/a11y.test.tsx > ScoreChart accessibility > provides a screen-reader-only data table
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/__tests__/a11y.test.tsx > ScoreChart accessibility > data table has proper column headers with scope
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/__tests__/a11y.test.tsx > ScoreChart accessibility > data table has proper row headers with scope
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/__tests__/a11y.test.tsx > ScoreChart accessibility > stacked chart has aria-hidden
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+ [32mΓ£ô[39m src/__tests__/a11y.test.tsx [2m([22m[2m21 tests[22m[2m)[22m[32m 292[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/data/engine.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 82[2mms[22m[39m
+stderr | src/__tests__/components/DecisionProvider.test.tsx > DecisionProvider > title edits after 500ms pause create a new undo group
+An update to AnnouncerProvider inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32mΓ£ô[39m src/__tests__/components/DecisionProvider.test.tsx [2m([22m[2m24 tests[22m[2m)[22m[32m 178[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/HybridResults.test.tsx [2m([22m[2m15 tests[22m[2m)[22m[32m 82[2mms[22m[39m
+[90mstdout[2m | src/__tests__/performance.test.ts[2m > [22m[2mPerformance benchmarks[2m > [22m[2m10├ù10 decision matrix[2m > [22m[2mcomputeResults completes in < 100ms
+[22m[39m  computeResults(10├ù10): 0.71ms
+
+[90mstdout[2m | src/__tests__/performance.test.ts[2m > [22m[2mPerformance benchmarks[2m > [22m[2m10├ù10 decision matrix[2m > [22m[2msensitivityAnalysis completes in < 100ms
+[22m[39m  sensitivityAnalysis(10├ù10): 2.02ms
+
+[90mstdout[2m | src/__tests__/performance.test.ts[2m > [22m[2mPerformance benchmarks[2m > [22m[2m10├ù10 decision matrix[2m > [22m[2mTOPSIS + Regret complete in < 100ms combined
+[22m[39m  TOPSIS+Regret(10├ù10): 1.04ms
+
+[90mstdout[2m | src/__tests__/performance.test.ts[2m > [22m[2mPerformance benchmarks[2m > [22m[2m20├ù20 decision matrix[2m > [22m[2mcomputeResults completes in < 500ms
+[22m[39m  computeResults(20├ù20): 0.21ms
+
+[90mstdout[2m | src/__tests__/performance.test.ts[2m > [22m[2mPerformance benchmarks[2m > [22m[2m20├ù20 decision matrix[2m > [22m[2mall scoring algorithms complete in < 500ms combined
+[22m[39m  all algorithms(20├ù20): 8.76ms
+
+[90mstdout[2m | src/__tests__/performance.test.ts[2m > [22m[2mPerformance benchmarks[2m > [22m[2mlarge decision creation[2m > [22m[2mcreates a 10├ù10 decision in < 50ms
+[22m[39m  createLargeDecision(10├ù10): 0.11ms
+
+[90mstdout[2m | src/__tests__/performance.test.ts[2m > [22m[2mPerformance benchmarks[2m > [22m[2mlarge decision creation[2m > [22m[2mcreates a 20├ù20 decision in < 100ms
+[22m[39m  createLargeDecision(20├ù20): 0.18ms
+
+ [32mΓ£ô[39m src/__tests__/performance.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/outcome-tracking.test.ts [2m([22m[2m52 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/score-confidence.test.ts [2m([22m[2m49 tests[22m[2m)[22m[32m 57[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/ConfidenceIndicator.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[32m 60[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/data/country-risk.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/hooks/useSync.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/hooks/useValidation.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/data/university-rankings.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/data/tax-efficiency.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/KeyboardShortcutsModal.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 395[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/Announcer.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 764[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders polite and assertive live regions [33m 479[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/ConfidenceDot.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 505[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/ScoreSlider.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 531[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/ThemeProvider.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/journal.test.ts [2m([22m[2m31 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/data/bundled-datasets.test.ts [2m([22m[2m35 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/data/quality-of-life.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/import.test.ts [2m([22m[2m30 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/share.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/error-reporter.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/decision-reducer.test.ts [2m([22m[2m82 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/consensus.test.ts [2m([22m[2m45 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/provenance.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/comparison.test.ts [2m([22m[2m33 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/i18n.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/scoring.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/rate-limiter.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/ahp.test.ts [2m([22m[2m47 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/sync.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+stderr | src/__tests__/storage.test.ts > getDecisions > resets to demo on corrupt localStorage data
+[DecisionOS] localStorage data invalid ΓÇö resetting to demo
+
+stderr | src/__tests__/storage.test.ts > getDecisions > resets to demo when stored data is empty array
+[DecisionOS] localStorage data invalid ΓÇö resetting to demo
+
+stderr | src/__tests__/storage.test.ts > getDecisions ΓÇö edge-case branches > resets to demo when stored data is valid JSON but not a Decision array
+[DecisionOS] localStorage data invalid ΓÇö resetting to demo
+
+stderr | src/__tests__/storage.test.ts > getDecisions ΓÇö edge-case branches > resets to demo when stored data is a JSON array of non-Decision objects
+[DecisionOS] localStorage data invalid ΓÇö resetting to demo
+
+ [32mΓ£ô[39m src/__tests__/storage.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/bias-detection.test.ts [2m([22m[2m25 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+stderr | src/__tests__/cloud-storage.test.ts > cloudGetDecisions > returns empty array on Supabase error
+[DecisionOS:cloud] fetch decisions failed: Error: db error
+    at C:/Users/ericsocrat/Desktop/DecisionOS/src/lib/cloud-storage.ts:45:24
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at cloudGetDecisions (C:/Users/ericsocrat/Desktop/DecisionOS/src/lib/cloud-storage.ts:38:12)
+    at C:/Users/ericsocrat/Desktop/DecisionOS/src/__tests__/cloud-storage.test.ts:117:20
+    at file:///C:/Users/ericsocrat/Desktop/DecisionOS/node_modules/@vitest/runner/dist/index.js:915:20
+
+stderr | src/__tests__/cloud-storage.test.ts > cloudSaveDecision > returns false on Supabase error
+[DecisionOS:cloud] save decision failed: Error: constraint violation
+    at C:/Users/ericsocrat/Desktop/DecisionOS/src/lib/cloud-storage.ts:106:24
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at cloudSaveDecision (C:/Users/ericsocrat/Desktop/DecisionOS/src/lib/cloud-storage.ts:95:12)
+    at C:/Users/ericsocrat/Desktop/DecisionOS/src/__tests__/cloud-storage.test.ts:176:16
+    at file:///C:/Users/ericsocrat/Desktop/DecisionOS/node_modules/@vitest/runner/dist/index.js:915:20
+
+ [32mΓ£ô[39m src/__tests__/cloud-storage.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/data/estimation.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/topsis.test.ts [2m([22m[2m32 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/regret.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/sentry-integration.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/templates.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/confidence-scoring.test.ts [2m([22m[2m25 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/pareto.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/supabase.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/validation.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/data/provider.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/data/cost-of-living.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/completeness.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/CompletionRing.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[32m 184[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/utils.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32mΓ£ô[39m src/__tests__/components/DecisionSkeleton.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m91 passed[39m[22m[90m (91)[39m
+[2m      Tests [22m [1m[32m1569 passed[39m[22m[90m (1569)[39m
+[2m   Start at [22m 15:13:55
+[2m   Duration [22m 45.42s[2m (transform 5.85s, setup 11.72s, import 24.33s, tests 57.10s, environment 97.73s)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   96.69 |    90.93 |   99.18 |   98.51 |                   
+ lib               |    96.8 |    91.81 |   98.96 |   98.37 |                   
+  ahp.ts           |   98.66 |    91.07 |     100 |     100 | ...94,391-393,444 
+  ...-detection.ts |   96.35 |    91.17 |     100 |     100 | ...72-175,225,236 
+  cloud-storage.ts |   84.28 |    82.92 |     100 |   89.65 | ...35-136,166-167 
+  comparison.ts    |   97.93 |     92.1 |     100 |     100 | 159,211-217       
+  completeness.ts  |     100 |      100 |     100 |     100 |                   
+  ...confidence.ts |   93.47 |    85.18 |     100 |   97.56 | 196               
+  consensus.ts     |   99.09 |    85.29 |     100 |     100 | ...35,303,345,355 
+  ...on-quality.ts |    97.1 |     87.5 |     100 |   96.82 | 196,257           
+  ...on-reducer.ts |   96.77 |    94.83 |     100 |    97.9 | 413,477,627       
+  demo-data.ts     |     100 |      100 |     100 |     100 |                   
+  ...r-reporter.ts |   86.66 |    86.36 |     100 |      96 | 116               
+  i18n.tsx         |   95.65 |    83.33 |   85.71 |   95.34 | 92,140            
+  import.ts        |   97.79 |    91.01 |     100 |   97.63 | 163,176,336       
+  journal.ts       |   88.31 |    90.62 |     100 |   90.76 | 92,138-143        
+  monte-carlo.ts   |   98.64 |    89.06 |     100 |     100 | ...44,310-317,365 
+  ...e-tracking.ts |   97.75 |    96.29 |     100 |     100 | 73,84             
+  pareto.ts        |     100 |    95.45 |     100 |     100 | 105               
+  patterns.ts      |   97.27 |    93.97 |     100 |     100 | 64,96,195,240,295 
+  provenance.ts    |   95.34 |    82.35 |     100 |   97.22 | 146               
+  rate-limiter.ts  |     100 |      100 |     100 |     100 |                   
+  regret.ts        |     100 |      100 |     100 |     100 |                   
+  sanitize.ts      |     100 |      100 |     100 |     100 |                   
+  scoring.ts       |     100 |    96.55 |     100 |     100 | 340-357           
+  share.ts         |    97.1 |    90.69 |     100 |    98.3 | 76                
+  storage.ts       |   97.77 |      100 |     100 |   97.29 | 94                
+  ...base-types.ts |       0 |        0 |       0 |       0 |                   
+  supabase.ts      |     100 |      100 |     100 |     100 |                   
+  sync.ts          |   96.92 |    90.62 |     100 |     100 | 31-37,102         
+  templates.ts     |     100 |      100 |     100 |     100 |                   
+  topsis.ts        |     100 |      100 |     100 |     100 |                   
+  types.ts         |       0 |        0 |       0 |       0 |                   
+  utils.ts         |   95.83 |    85.71 |     100 |   94.73 | 13                
+  validation.ts    |   93.22 |    96.82 |   84.61 |   96.36 | 94,122            
+ lib/data          |      96 |    85.13 |     100 |   98.47 |                   
+  engine.ts        |   97.18 |       80 |     100 |   98.36 | 213               
+  estimation.ts    |   91.11 |    85.18 |     100 |   97.36 | 200               
+  provider.ts      |     100 |      100 |     100 |     100 |                   
+  registry.ts      |     100 |      100 |     100 |     100 |                   
+ lib/data/datasets |     100 |      100 |     100 |     100 |                   
+  ...-of-living.ts |     100 |      100 |     100 |     100 |                   
+  country-risk.ts  |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  loader.ts        |     100 |      100 |     100 |     100 |                   
+  metadata.ts      |       0 |        0 |       0 |       0 |                   
+  ...ty-of-life.ts |     100 |      100 |     100 |     100 |                   
+  ...efficiency.ts |     100 |      100 |     100 |     100 |                   
+  ...y-rankings.ts |     100 |      100 |     100 |     100 |                   
+ ...data/providers |    94.5 |    83.33 |     100 |    99.4 |                   
+  ...-of-living.ts |   92.85 |    79.16 |     100 |     100 | 83-91,118-130     
+  country-risk.ts  |   96.15 |     87.5 |     100 |     100 | 72                
+  ...ty-of-life.ts |   93.18 |    82.14 |     100 |     100 | ...20,130-147,159 
+  ...efficiency.ts |   94.44 |    81.25 |     100 |     100 | 101-127,141       
+  ...y-rankings.ts |   96.15 |    88.46 |     100 |   97.82 | 184               
+-------------------|---------|----------|---------|---------|-------------------

@@ -203,6 +203,28 @@ describe("EnrichmentEngine", () => {
     expect(result?.confidence).toBe(0.95);
   });
 
+  it("enrich() keeps current when later provider returns worse tier", async () => {
+    const tier1 = makePoint({ tier: 1, confidence: 0.7 });
+    const tier2 = makePoint({ tier: 2, confidence: 0.9 });
+    // Register better provider first — engine should keep it when worse comes later
+    reg.register(new StubProvider("live", ["test"], tier1));
+    reg.register(new StubProvider("bundled", ["test"], tier2));
+    const result = await engine.enrich(baseQuery);
+    expect(result?.tier).toBe(1);
+    expect(result?.confidence).toBe(0.7);
+  });
+
+  it("enrich() keeps current on same tier with equal confidence", async () => {
+    const first = makePoint({ tier: 2, confidence: 0.8, source: "first" });
+    const second = makePoint({ tier: 2, confidence: 0.8, source: "second" });
+    reg.register(new StubProvider("a", ["test"], first));
+    reg.register(new StubProvider("b", ["test"], second));
+    const result = await engine.enrich(baseQuery);
+    // first provider registered first — becomes current, second has equal confidence
+    // pickBetter keeps current on equal confidence
+    expect(result?.source).toBe("first");
+  });
+
   it("enrich() gracefully handles provider errors", async () => {
     reg.register(new FailingProvider());
     const result = await engine.enrich(baseQuery);

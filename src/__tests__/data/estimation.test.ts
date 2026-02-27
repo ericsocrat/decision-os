@@ -46,6 +46,13 @@ describe("Tier 3 Estimation Engine", () => {
       expect(result?.value).toBe(35); // UMC university median
     });
 
+    it("returns estimate for climate category", () => {
+      const result = estimateFromIncomeGroup("US", "climate");
+      expect(result).not.toBeNull();
+      expect(result?.strategy).toBe("income-group");
+      expect(result?.confidence).toBe(0.3);
+    });
+
     it("returns null for unknown country", () => {
       const result = estimateFromIncomeGroup("XX", "safety");
       expect(result).toBeNull();

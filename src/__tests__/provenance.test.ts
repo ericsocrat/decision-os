@@ -179,6 +179,12 @@ describe("Provenance — matrix helpers", () => {
     const result = removeCriterionMetadata(matrix, "c1");
     expect(result).toBeUndefined();
   });
+
+  it("removeCriterionMetadata returns original matrix when criterion not present", () => {
+    const matrix = { o1: { c1: createManualMetadata() } };
+    const result = removeCriterionMetadata(matrix, "c99");
+    expect(result).toBe(matrix); // identity — no change needed
+  });
 });
 
 describe("Provenance — provenanceLabel", () => {
