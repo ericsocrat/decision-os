@@ -81,7 +81,7 @@ export const Header = memo(function Header() {
         label: t.header.deleteDecision,
         hidden: decisions.length <= 1,
         onClick: () => {
-          if (window.confirm(`Delete "${decision.title}"? This cannot be undone.`)) {
+          if (globalThis.confirm(`Delete "${decision.title}"? This cannot be undone.`)) {
             removeDecision(decision.id);
           }
         },
@@ -92,7 +92,7 @@ export const Header = memo(function Header() {
         label: t.header.resetDemo,
         onClick: () => {
           if (
-            window.confirm(
+            globalThis.confirm(
               "Reset all decisions to demo data? This will remove all custom decisions."
             )
           ) {
@@ -205,7 +205,7 @@ export const Header = memo(function Header() {
             <select
               value={decision.id}
               onChange={(e) => loadDecision(e.target.value)}
-              className="min-w-[150px] max-w-[200px] flex-shrink truncate rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:min-w-0 sm:max-w-none"
+              className="min-w-37.5 max-w-50 shrink truncate rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:min-w-0 sm:max-w-none"
               aria-label={t.header.selectDecision}
             >
               {decisions.map((d) => (
@@ -247,7 +247,7 @@ export const Header = memo(function Header() {
             {decisions.length > 1 && (
               <button
                 onClick={() => {
-                  if (window.confirm(`Delete "${decision.title}"? This cannot be undone.`)) {
+                  if (globalThis.confirm(`Delete "${decision.title}"? This cannot be undone.`)) {
                     removeDecision(decision.id);
                   }
                 }}
@@ -261,7 +261,7 @@ export const Header = memo(function Header() {
             <button
               onClick={() => {
                 if (
-                  window.confirm(
+                  globalThis.confirm(
                     t.header.confirmReset
                   )
                 ) {

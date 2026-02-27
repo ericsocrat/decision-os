@@ -112,31 +112,26 @@ export function getDivergenceColor(delta: number): "green" | "yellow" | "red" {
  * Both decisions are scored independently using computeResults().
  * Options and criteria are matched by name (case-insensitive, trimmed).
  */
-export function compareDecisions(decA: Decision, decB: Decision): ComparisonResult {
-  // Compute results for both decisions
-  const resultsA = computeResults(decA);
-  const resultsB = computeResults(decB);
-
-  // Build name → result maps for options
-  const optMapA = new Map(resultsA.optionResults.map((r) => [normalizeName(r.optionName), r]));
-  const optMapB = new Map(resultsB.optionResults.map((r) => [normalizeName(r.optionName), r]));
-
-  // Shared options (matched by normalized name)
-  const sharedOptions: SharedOption[] = [];
+/** Match options between two result sets by normalized name. */
+function matchOptions(
+  optMapA: Map<string, { optionName: string; rank: number; totalScore: number }>,
+  optMapB: Map<string, { optionName: string; rank: number; totalScore: number }>
+): { shared: SharedOption[]; onlyInA: string[]; onlyInB: string[] } {
+  const shared: SharedOption[] = [];
   const onlyInA: string[] = [];
   const onlyInB: string[] = [];
 
   for (const [key, rA] of optMapA) {
     const rB = optMapB.get(key);
     if (rB) {
-      sharedOptions.push({
-        optionName: rA.optionName, // preserve original casing from A
+      shared.push({
+        optionName: rA.optionName,
         rankA: rA.rank,
         rankB: rB.rank,
         scoreA: rA.totalScore,
         scoreB: rB.totalScore,
         rankDelta: rB.rank - rA.rank,
-        scoreDelta: parseFloat((rB.totalScore - rA.totalScore).toFixed(2)),
+        scoreDelta: Number.parseFloat((rB.totalScore - rA.totalScore).toFixed(2)),
       });
     } else {
       onlyInA.push(rA.optionName);
@@ -149,60 +144,66 @@ export function compareDecisions(decA: Decision, decB: Decision): ComparisonResu
     }
   }
 
-  // Sort shared options by rank A for consistent display
-  sharedOptions.sort((a, b) => a.rankA - b.rankA);
+  shared.sort((a, b) => a.rankA - b.rankA);
+  return { shared, onlyInA, onlyInB };
+}
 
-  // Build criteria maps — normalize weights for comparison
-  const totalWeightA = decA.criteria.reduce((s, c) => s + Math.max(0, c.weight), 0);
-  const totalWeightB = decB.criteria.reduce((s, c) => s + Math.max(0, c.weight), 0);
-
-  const critMapA = new Map(
-    decA.criteria.map((c) => [
+/** Build normalized-weight criteria map. */
+function buildCriteriaMap(
+  criteria: Decision["criteria"]
+): Map<string, { name: string; normalizedWeight: number; criterion: Decision["criteria"][0] }> {
+  const total = criteria.reduce((s, c) => s + Math.max(0, c.weight), 0);
+  return new Map(
+    criteria.map((c) => [
       normalizeName(c.name),
-      {
-        name: c.name,
-        normalizedWeight: totalWeightA > 0 ? c.weight / totalWeightA : 0,
-        criterion: c,
-      },
+      { name: c.name, normalizedWeight: total > 0 ? c.weight / total : 0, criterion: c },
     ])
   );
-  const critMapB = new Map(
-    decB.criteria.map((c) => [
-      normalizeName(c.name),
-      {
-        name: c.name,
-        normalizedWeight: totalWeightB > 0 ? c.weight / totalWeightB : 0,
-        criterion: c,
-      },
-    ])
-  );
+}
 
-  const sharedCriteria: SharedCriterion[] = [];
-  const onlyCriteriaInA: string[] = [];
-  const onlyCriteriaInB: string[] = [];
+/** Match criteria between two decisions. */
+function matchCriteria(
+  critMapA: ReturnType<typeof buildCriteriaMap>,
+  critMapB: ReturnType<typeof buildCriteriaMap>
+): { shared: SharedCriterion[]; onlyInA: string[]; onlyInB: string[] } {
+  const shared: SharedCriterion[] = [];
+  const onlyInA: string[] = [];
+  const onlyInB: string[] = [];
 
   for (const [key, cA] of critMapA) {
     const cB = critMapB.get(key);
     if (cB) {
-      sharedCriteria.push({
+      shared.push({
         criterionName: cA.name,
-        weightA: parseFloat((cA.normalizedWeight * 100).toFixed(1)),
-        weightB: parseFloat((cB.normalizedWeight * 100).toFixed(1)),
-        weightDelta: parseFloat(((cB.normalizedWeight - cA.normalizedWeight) * 100).toFixed(1)),
+        weightA: Number.parseFloat((cA.normalizedWeight * 100).toFixed(1)),
+        weightB: Number.parseFloat((cB.normalizedWeight * 100).toFixed(1)),
+        weightDelta: Number.parseFloat(
+          ((cB.normalizedWeight - cA.normalizedWeight) * 100).toFixed(1)
+        ),
       });
     } else {
-      onlyCriteriaInA.push(cA.name);
+      onlyInA.push(cA.name);
     }
   }
 
   for (const [key, cB] of critMapB) {
     if (!critMapA.has(key)) {
-      onlyCriteriaInB.push(cB.name);
+      onlyInB.push(cB.name);
     }
   }
 
-  // Score divergence matrix (only for shared options × shared criteria)
-  const scoreMatrix: ScoreMatrixEntry[] = [];
+  return { shared, onlyInA, onlyInB };
+}
+
+/** Build score divergence matrix for shared options × shared criteria. */
+function buildScoreDivergenceMatrix(
+  sharedOptions: SharedOption[],
+  sharedCriteria: SharedCriterion[],
+  decA: Decision,
+  decB: Decision
+): ScoreMatrixEntry[] {
+  const matrix: ScoreMatrixEntry[] = [];
+
   for (const opt of sharedOptions) {
     const optKey = normalizeName(opt.optionName);
     const optionA = decA.options.find((o) => normalizeName(o.name) === optKey);
@@ -217,8 +218,7 @@ export function compareDecisions(decA: Decision, decB: Decision): ComparisonResu
 
       const sA = readScoreOrZero(decA.scores, optionA.id, criterionA.id);
       const sB = readScoreOrZero(decB.scores, optionB.id, criterionB.id);
-
-      scoreMatrix.push({
+      matrix.push({
         optionName: opt.optionName,
         criterionName: crit.criterionName,
         scoreA: sA,
@@ -228,41 +228,64 @@ export function compareDecisions(decA: Decision, decB: Decision): ComparisonResu
     }
   }
 
-  // Agreement score based on shared options' rank correlation
-  const agreementScore =
-    sharedOptions.length > 1
-      ? spearmanRankCorrelation(
-          sharedOptions.map((o) => o.rankA),
-          sharedOptions.map((o) => o.rankB)
-        )
-      : sharedOptions.length === 1
-        ? 1
-        : 0;
+  return matrix;
+}
 
-  const agreementLabel = getAgreementLabel(agreementScore);
+export function compareDecisions(decA: Decision, decB: Decision): ComparisonResult {
+  // Compute results for both decisions
+  const resultsA = computeResults(decA);
+  const resultsB = computeResults(decB);
 
-  // Summary text
-  const rankedDifferently = sharedOptions.filter((o) => o.rankDelta !== 0).length;
+  // Match options by normalized name
+  const optMapA = new Map(resultsA.optionResults.map((r) => [normalizeName(r.optionName), r]));
+  const optMapB = new Map(resultsB.optionResults.map((r) => [normalizeName(r.optionName), r]));
+  const options = matchOptions(optMapA, optMapB);
+
+  // Match criteria by normalized name
+  const critMapA = buildCriteriaMap(decA.criteria);
+  const critMapB = buildCriteriaMap(decB.criteria);
+  const criteria = matchCriteria(critMapA, critMapB);
+
+  // Score divergence matrix
+  const scoreMatrix = buildScoreDivergenceMatrix(options.shared, criteria.shared, decA, decB);
+
+  // Agreement score
+  let agreementScore: number;
+  if (options.shared.length > 1) {
+    agreementScore = spearmanRankCorrelation(
+      options.shared.map((o) => o.rankA),
+      options.shared.map((o) => o.rankB)
+    );
+  } else {
+    agreementScore = options.shared.length === 1 ? 1 : 0;
+  }
+
+  // Summary
+  const rankedDifferently = options.shared.filter((o) => o.rankDelta !== 0).length;
   const maxRankChange =
-    sharedOptions.length > 0 ? Math.max(...sharedOptions.map((o) => Math.abs(o.rankDelta))) : 0;
+    options.shared.length > 0
+      ? Math.max(...options.shared.map((o) => Math.abs(o.rankDelta)))
+      : 0;
 
-  const summary =
-    sharedOptions.length === 0
-      ? "No shared options found between the two decisions."
-      : rankedDifferently === 0
-        ? `All ${sharedOptions.length} shared options are ranked identically.`
-        : `${rankedDifferently} of ${sharedOptions.length} options are ranked differently. Maximum rank change: ±${maxRankChange}.`;
+  let summary: string;
+  if (options.shared.length === 0) {
+    summary = "No shared options found between the two decisions.";
+  } else if (rankedDifferently === 0) {
+    summary = `All ${options.shared.length} shared options are ranked identically.`;
+  } else {
+    summary = `${rankedDifferently} of ${options.shared.length} options are ranked differently. Maximum rank change: ±${maxRankChange}.`;
+  }
 
   return {
-    sharedOptions,
-    onlyInA,
-    onlyInB,
-    sharedCriteria,
-    onlyCriteriaInA,
-    onlyCriteriaInB,
+    sharedOptions: options.shared,
+    onlyInA: options.onlyInA,
+    onlyInB: options.onlyInB,
+    sharedCriteria: criteria.shared,
+    onlyCriteriaInA: criteria.onlyInA,
+    onlyCriteriaInB: criteria.onlyInB,
     scoreMatrix,
     agreementScore,
-    agreementLabel,
+    agreementLabel: getAgreementLabel(agreementScore),
     summary,
   };
 }

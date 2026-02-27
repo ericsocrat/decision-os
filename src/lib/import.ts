@@ -8,8 +8,7 @@
  * @see https://github.com/ericsocrat/decision-os/issues/11
  */
 
-import type { Criterion, Decision, Option, ScoreMatrix } from "./types";
-import type { ScoreValue } from "./types";
+import type { Criterion, Decision, Option, ScoreMatrix, ScoreValue } from "./types";
 import { isDecision } from "./validation";
 import { generateId } from "./utils";
 import { sanitizeText, sanitizeMultilineText } from "./sanitize";
@@ -62,65 +61,78 @@ export const SUPPORTED_EXTENSIONS = [".json", ".csv"];
  *
  * No external dependencies (~40 lines).
  */
-export function parseCsv(text: string): string[][] {
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let field = "";
-  let inQuotes = false;
-  let i = 0;
+/** Mutable state for the CSV parser. */
+interface CsvParserState {
+  rows: string[][];
+  row: string[];
+  field: string;
+  inQuotes: boolean;
+  i: number;
+}
 
-  while (i < text.length) {
-    const ch = text[i];
-
-    if (inQuotes) {
-      if (ch === '"') {
-        if (i + 1 < text.length && text[i + 1] === '"') {
-          // Escaped quote
-          field += '"';
-          i += 2;
-        } else {
-          // End of quoted field
-          inQuotes = false;
-          i++;
-        }
-      } else {
-        field += ch;
-        i++;
-      }
+/** Handle a character inside a quoted field. */
+function handleQuotedChar(state: CsvParserState, text: string): void {
+  const ch = text[state.i];
+  if (ch === '"') {
+    if (state.i + 1 < text.length && text[state.i + 1] === '"') {
+      state.field += '"';
+      state.i += 2;
     } else {
-      if (ch === '"') {
-        inQuotes = true;
-        i++;
-      } else if (ch === ",") {
-        row.push(field.trim());
-        field = "";
-        i++;
-      } else if (ch === "\r") {
-        // CRLF or standalone CR
-        row.push(field.trim());
-        field = "";
-        if (row.some((cell) => cell !== "")) rows.push(row);
-        row = [];
-        i++;
-        if (i < text.length && text[i] === "\n") i++;
-      } else if (ch === "\n") {
-        row.push(field.trim());
-        field = "";
-        if (row.some((cell) => cell !== "")) rows.push(row);
-        row = [];
-        i++;
-      } else {
-        field += ch;
-        i++;
-      }
+      state.inQuotes = false;
+      state.i++;
+    }
+  } else {
+    state.field += ch;
+    state.i++;
+  }
+}
+
+/** Finish the current row and push it if non-empty. */
+function finishCsvRow(state: CsvParserState): void {
+  state.row.push(state.field.trim());
+  state.field = "";
+  if (state.row.some((cell) => cell !== "")) state.rows.push(state.row);
+  state.row = [];
+}
+
+/** Handle a character outside a quoted field. */
+function handleUnquotedChar(state: CsvParserState, text: string): void {
+  const ch = text[state.i];
+  if (ch === '"') {
+    state.inQuotes = true;
+    state.i++;
+  } else if (ch === ",") {
+    state.row.push(state.field.trim());
+    state.field = "";
+    state.i++;
+  } else if (ch === "\r") {
+    finishCsvRow(state);
+    state.i++;
+    if (state.i < text.length && text[state.i] === "\n") state.i++;
+  } else if (ch === "\n") {
+    finishCsvRow(state);
+    state.i++;
+  } else {
+    state.field += ch;
+    state.i++;
+  }
+}
+
+export function parseCsv(text: string): string[][] {
+  const state: CsvParserState = { rows: [], row: [], field: "", inQuotes: false, i: 0 };
+
+  while (state.i < text.length) {
+    if (state.inQuotes) {
+      handleQuotedChar(state, text);
+    } else {
+      handleUnquotedChar(state, text);
     }
   }
 
   // Last field/row
-  row.push(field.trim());
-  if (row.some((cell) => cell !== "")) rows.push(row);
+  finishCsvRow(state);
 
-  return rows;
+  return state.rows;
 }
 
 // ─── JSON Import ───────────────────────────────────────────────────
@@ -134,8 +146,55 @@ export function parseCsv(text: string): string[][] {
  *
  * Always generates new id and createdAt to avoid overwriting existing decisions.
  */
-export function importFromJson(content: string): ImportResult {
+/** Collect field-level validation errors for a non-Decision object. */
+function collectDecisionFieldErrors(d: Record<string, unknown>): ImportError[] {
   const errors: ImportError[] = [];
+
+  if (typeof d.title !== "string" || !d.title) {
+    errors.push({ type: "schema", message: 'Missing or invalid "title" field.', field: "title" });
+  }
+  if (!Array.isArray(d.options)) {
+    errors.push({
+      type: "schema",
+      message: 'Missing or invalid "options" array.',
+      field: "options",
+    });
+  } else if (d.options.length < 1) {
+    errors.push({
+      type: "validation",
+      message: "At least 1 option is required.",
+      field: "options",
+    });
+  }
+  if (!Array.isArray(d.criteria)) {
+    errors.push({
+      type: "schema",
+      message: 'Missing or invalid "criteria" array.',
+      field: "criteria",
+    });
+  } else if (d.criteria.length < 1) {
+    errors.push({
+      type: "validation",
+      message: "At least 1 criterion is required.",
+      field: "criteria",
+    });
+  }
+  if (typeof d.scores !== "object" || d.scores === null) {
+    errors.push({
+      type: "schema",
+      message: 'Missing or invalid "scores" object.',
+      field: "scores",
+    });
+  }
+
+  if (errors.length === 0) {
+    errors.push({ type: "schema", message: "JSON does not match the Decision schema." });
+  }
+
+  return errors;
+}
+
+export function importFromJson(content: string): ImportResult {
   const warnings: ImportWarning[] = [];
 
   // Parse JSON
@@ -169,69 +228,25 @@ export function importFromJson(content: string): ImportResult {
 
   // Validate as Decision
   if (!isDecision(candidate)) {
-    // Try to give specific field-level errors
-    const d = candidate as Record<string, unknown>;
-
-    if (typeof d.title !== "string" || !d.title) {
-      errors.push({ type: "schema", message: 'Missing or invalid "title" field.', field: "title" });
-    }
-    if (!Array.isArray(d.options)) {
-      errors.push({
-        type: "schema",
-        message: 'Missing or invalid "options" array.',
-        field: "options",
-      });
-    } else if (d.options.length < 1) {
-      errors.push({
-        type: "validation",
-        message: "At least 1 option is required.",
-        field: "options",
-      });
-    }
-    if (!Array.isArray(d.criteria)) {
-      errors.push({
-        type: "schema",
-        message: 'Missing or invalid "criteria" array.',
-        field: "criteria",
-      });
-    } else if (d.criteria.length < 1) {
-      errors.push({
-        type: "validation",
-        message: "At least 1 criterion is required.",
-        field: "criteria",
-      });
-    }
-    if (typeof d.scores !== "object" || d.scores === null) {
-      errors.push({
-        type: "schema",
-        message: 'Missing or invalid "scores" object.',
-        field: "scores",
-      });
-    }
-
-    if (errors.length === 0) {
-      errors.push({ type: "schema", message: "JSON does not match the Decision schema." });
-    }
-
+    const errors = collectDecisionFieldErrors(candidate as Record<string, unknown>);
     return { success: false, errors, warnings };
   }
 
   // Generate fresh ID and timestamps, sanitize text fields
-  const validated = candidate as Decision;
   const now = new Date().toISOString();
   const decision: Decision = {
-    ...validated,
+    ...candidate,
     id: generateId(),
-    title: sanitizeText(validated.title, 100),
-    description: validated.description
-      ? sanitizeMultilineText(validated.description, 500)
+    title: sanitizeText(candidate.title, 100),
+    description: candidate.description
+      ? sanitizeMultilineText(candidate.description, 500)
       : undefined,
-    options: validated.options.map((o) => ({
+    options: candidate.options.map((o) => ({
       ...o,
       id: o.id,
       name: sanitizeText(o.name, 80),
     })),
-    criteria: validated.criteria.map((c) => ({
+    criteria: candidate.criteria.map((c) => ({
       ...c,
       id: c.id,
       name: sanitizeText(c.name, 80),
@@ -244,6 +259,40 @@ export function importFromJson(content: string): ImportResult {
 }
 
 // ─── CSV Import ────────────────────────────────────────────────────
+
+/** Parse a single score cell, returning the value and any errors/warnings. */
+function parseCsvScoreCell(
+  cell: string,
+  row: number,
+  column: number
+): { value: number | null; error?: ImportError } {
+  if (cell === "") return { value: null };
+
+  const num = Number(cell);
+  if (!Number.isFinite(num)) {
+    return {
+      value: null,
+      error: {
+        type: "validation",
+        message: `Row ${row}, column ${column} ("${cell}"): not a valid number.`,
+        row,
+        column,
+      },
+    };
+  }
+  if (num < 0 || num > 10) {
+    return {
+      value: Math.max(0, Math.min(10, Math.round(num))),
+      error: {
+        type: "validation",
+        message: `Row ${row}, column ${column}: score ${num} must be between 0 and 10.`,
+        row,
+        column,
+      },
+    };
+  }
+  return { value: Math.round(num) };
+}
 
 /**
  * Parse CSV text into a preview data structure.
@@ -304,30 +353,9 @@ export function parseCsvPreview(content: string): { data?: CsvPreviewData; error
     const scores: (number | null)[] = [];
     for (let c = 1; c < headerRow.length; c++) {
       const cell = row[c] ?? "";
-      if (cell === "") {
-        scores.push(null); // Will default to 0
-      } else {
-        const num = Number(cell);
-        if (!Number.isFinite(num)) {
-          errors.push({
-            type: "validation",
-            message: `Row ${r + 1}, column ${c + 1} ("${cell}"): not a valid number.`,
-            row: r + 1,
-            column: c + 1,
-          });
-          scores.push(null);
-        } else if (num < 0 || num > 10) {
-          errors.push({
-            type: "validation",
-            message: `Row ${r + 1}, column ${c + 1}: score ${num} must be between 0 and 10.`,
-            row: r + 1,
-            column: c + 1,
-          });
-          scores.push(Math.max(0, Math.min(10, Math.round(num))));
-        } else {
-          scores.push(Math.round(num));
-        }
-      }
+      const result = parseCsvScoreCell(cell, r + 1, c + 1);
+      if (result.error) errors.push(result.error);
+      scores.push(result.value);
     }
 
     dataRows.push({ option, scores });
@@ -423,10 +451,5 @@ export function validateFile(file: File): ImportError[] {
  * Read a File and return its text content.
  */
 export function readFileAsText(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new Error("Failed to read file."));
-    reader.readAsText(file);
-  });
+  return file.text();
 }

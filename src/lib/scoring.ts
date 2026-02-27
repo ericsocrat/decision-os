@@ -105,7 +105,7 @@ export function readScoreOrZero(
  * Used by the "penalize" strategy to scale effective scores.
  */
 export const CONFIDENCE_MULTIPLIERS: Record<Confidence, number> = {
-  high: 1.0,
+  high: 1,
   medium: 0.8,
   low: 0.5,
 };
@@ -120,7 +120,7 @@ export function confidenceMultiplier(
   confidence: Confidence | null,
   strategy: ConfidenceStrategy
 ): number {
-  if (strategy !== "penalize" || !confidence) return 1.0;
+  if (strategy !== "penalize" || !confidence) return 1;
   return CONFIDENCE_MULTIPLIERS[confidence];
 }
 

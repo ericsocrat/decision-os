@@ -17,7 +17,7 @@ const STORAGE_KEY = "decision-os:decisions";
  * Returns the demo decision if no decisions exist or storage is unavailable.
  */
 export function getDecisions(): Decision[] {
-  if (typeof window === "undefined") return [DEMO_DECISION];
+  if (globalThis.window === undefined) return [DEMO_DECISION];
 
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -53,7 +53,7 @@ export function getDecision(id: string): Decision | undefined {
  * Save a decision (create or update).
  */
 export function saveDecision(decision: Decision): void {
-  if (typeof window === "undefined") return;
+  if (globalThis.window === undefined) return;
 
   try {
     const decisions = getDecisions();
@@ -81,7 +81,7 @@ export function saveDecision(decision: Decision): void {
  * Will not delete the last remaining decision.
  */
 export function deleteDecision(id: string): boolean {
-  if (typeof window === "undefined") return false;
+  if (globalThis.window === undefined) return false;
 
   try {
     const decisions = getDecisions();
@@ -99,7 +99,7 @@ export function deleteDecision(id: string): boolean {
  * Reset all decisions back to demo data only.
  */
 export function resetToDemo(): void {
-  if (typeof window === "undefined") return;
+  if (globalThis.window === undefined) return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([DEMO_DECISION]));
   } catch {

@@ -42,9 +42,16 @@ const ScoreChart = lazy(() => import("./ScoreChart").then((m) => ({ default: m.S
 const ParetoChart = lazy(() => import("./ParetoChart").then((m) => ({ default: m.ParetoChart })));
 
 interface ResultsViewProps {
-  validation: ValidationResult;
-  completeness: CompletenessResult;
-  onSwitchToBuilder: () => void;
+  readonly validation: ValidationResult;
+  readonly completeness: CompletenessResult;
+  readonly onSwitchToBuilder: () => void;
+}
+
+/** Color class for method agreement indicator (non-full-agreement cases). */
+function methodAgreementColorClass(allAgree: boolean): string {
+  return allAgree
+    ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+    : "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300";
 }
 
 export function ResultsView({ validation, completeness, onSwitchToBuilder }: ResultsViewProps) {
@@ -108,8 +115,8 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
               Fix these issues to see results:
             </h3>
             <ul className="space-y-1 text-sm text-red-700 dark:text-red-400 list-disc list-inside">
-              {validation.errors.map((err, i) => (
-                <li key={i}>{err.message}</li>
+              {validation.errors.map((err) => (
+                <li key={err.message}>{err.message}</li>
               ))}
             </ul>
             <button
@@ -152,14 +159,14 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `decision-os-${decision.title.replace(/\s+/g, "-").toLowerCase()}.json`;
+    a.download = `decision-os-${decision.title.replaceAll(/\s+/g, "-").toLowerCase()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   const handleShareLink = async () => {
     try {
-      const shareUrl = buildShareLink(decision, window.location.origin);
+      const shareUrl = buildShareLink(decision, globalThis.location.origin);
       if (shareUrl) {
         await navigator.clipboard.writeText(shareUrl);
         setShareStatus("Link copied to clipboard!");
@@ -174,7 +181,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
   };
 
   const handlePrintPdf = () => {
-    window.print();
+    globalThis.print();
   };
 
   return (
@@ -225,7 +232,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
             </div>
             <button
               onClick={() => setBannerDismissed(true)}
-              className="flex-shrink-0 rounded p-1 text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-800/30 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="shrink-0 rounded p-1 text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-800/30 focus:outline-none focus:ring-2 focus:ring-amber-500"
               aria-label="Dismiss incomplete scores warning"
             >
               <X className="h-4 w-4" />
@@ -246,72 +253,38 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
           </h2>
           <div className="flex items-center gap-2">
             {/* Scoring method selector */}
-            <div
+            <fieldset
               className="flex items-center rounded-md border border-gray-300 dark:border-gray-600 overflow-hidden"
-              role="radiogroup"
               aria-label="Scoring method"
             >
-              <button
-                role="radio"
-                aria-checked={scoringMethod === "wsm"}
-                onClick={() => setScoringMethod("wsm")}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset ${
-                  scoringMethod === "wsm"
-                    ? "bg-blue-600 text-white"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
-              >
-                WSM
-              </button>
-              <button
-                role="radio"
-                aria-checked={scoringMethod === "topsis"}
-                onClick={() => setScoringMethod("topsis")}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset ${
-                  scoringMethod === "topsis"
-                    ? "bg-blue-600 text-white"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
-              >
-                TOPSIS
-              </button>
-              <button
-                role="radio"
-                aria-checked={scoringMethod === "minimax-regret"}
-                onClick={() => setScoringMethod("minimax-regret")}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset ${
-                  scoringMethod === "minimax-regret"
-                    ? "bg-blue-600 text-white"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
-              >
-                Regret
-              </button>
-              <button
-                role="radio"
-                aria-checked={scoringMethod === "consensus"}
-                onClick={() => setScoringMethod("consensus")}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset ${
-                  scoringMethod === "consensus"
-                    ? "bg-blue-600 text-white"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
-              >
-                Consensus
-              </button>
-              <button
-                role="radio"
-                aria-checked={scoringMethod === "compare"}
-                onClick={() => setScoringMethod("compare")}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset ${
-                  scoringMethod === "compare"
-                    ? "bg-blue-600 text-white"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
-              >
-                Compare
-              </button>
-            </div>
+              <legend className="sr-only">Scoring method</legend>
+              {([
+                { value: "wsm", label: "WSM" },
+                { value: "topsis", label: "TOPSIS" },
+                { value: "minimax-regret", label: "Regret" },
+                { value: "consensus", label: "Consensus" },
+                { value: "compare", label: "Compare" },
+              ] as const).map((method) => (
+                <label
+                  key={method.value}
+                  className={`cursor-pointer px-3 py-1.5 text-sm font-medium transition-colors focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-inset ${
+                    scoringMethod === method.value
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="scoring-method"
+                    value={method.value}
+                    checked={scoringMethod === method.value}
+                    onChange={() => setScoringMethod(method.value)}
+                    className="sr-only"
+                  />
+                  {method.label}
+                </label>
+              ))}
+            </fieldset>
             <button
               onClick={handleExportJson}
               className="inline-flex items-center gap-1 rounded-md border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
@@ -349,12 +322,11 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
         </div>
 
         {shareStatus && (
-          <div
+          <output
             className={`text-sm mb-3 px-3 py-2 rounded-md ${shareStatus.includes("copied") ? "bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300" : "bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300"}`}
-            role="status"
           >
             {shareStatus}
-          </div>
+          </output>
         )}
 
         {/* Method agreement / disagreement indicator */}
@@ -363,9 +335,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
             className={`text-sm mb-3 px-3 py-2 rounded-md flex items-center gap-2 ${
               methodAgreement.fullAgreement
                 ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300"
-                : methodAgreement.allAgree
-                  ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
-                  : "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300"
+                : methodAgreementColorClass(methodAgreement.allAgree)
             }`}
             data-testid="method-agreement"
           >
@@ -374,52 +344,21 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
                 <span className="font-medium">Full agreement:</span> All three methods produce the
                 same ranking order. This is an exceptionally robust decision.
               </>
-            ) : methodAgreement.allAgree ? (
-              <>
-                <span className="font-medium">Winner agrees:</span> All methods pick the same
-                winner, but differ on other ranks.
-              </>
             ) : (
-              <>
-                <span className="font-medium">Methods disagree:</span> WSM picks{" "}
-                <span className="font-semibold">
-                  {decision.options.find((o) => o.id === methodAgreement.wsmWinner)?.name}
-                </span>
-                , TOPSIS picks{" "}
-                <span className="font-semibold">
-                  {decision.options.find((o) => o.id === methodAgreement.topsisWinner)?.name}
-                </span>
-                {methodAgreement.regretWinner && (
-                  <>
-                    , Minimax Regret picks{" "}
-                    <span className="font-semibold">
-                      {decision.options.find((o) => o.id === methodAgreement.regretWinner)?.name}
-                    </span>
-                  </>
-                )}
-                . This decision involves genuine trade-offs.
-              </>
+              <MethodAgreementMessage methodAgreement={methodAgreement} decision={decision} />
             )}
           </div>
         )}
 
         {/* Rankings — render based on selected method */}
-        {scoringMethod === "wsm" ? (
-          <WsmRankings results={results} decision={decision} maxScore={maxScore} />
-        ) : scoringMethod === "topsis" ? (
-          <TopsisRankings topsisResults={topsisResults} decision={decision} />
-        ) : scoringMethod === "consensus" ? (
-          <HybridResults
-            results={results}
-            topsisResults={topsisResults}
-            regretResults={regretResults}
-            decision={decision}
-          />
-        ) : scoringMethod === "compare" ? (
-          <FrameworkComparison decision={decision} />
-        ) : (
-          <RegretRankings regretResults={regretResults} decision={decision} />
-        )}
+        <ScoringMethodView
+          scoringMethod={scoringMethod}
+          results={results}
+          topsisResults={topsisResults}
+          regretResults={regretResults}
+          decision={decision}
+          maxScore={maxScore}
+        />
       </section>
 
       {/* Score Chart Visualization */}
@@ -434,7 +373,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
         <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
           <Suspense
             fallback={
-              <div className="h-[200px] flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
+              <div className="h-50 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
                 Loading chart…
               </div>
             }
@@ -457,7 +396,7 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
           <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
             <Suspense
               fallback={
-                <div className="h-[200px] flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
+                <div className="h-50 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
                   Loading chart…
                 </div>
               }
@@ -527,21 +466,8 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
               weight. Cost criteria are inverted (10 − score) so lower costs yield higher effective
               scores.
             </p>
-          ) : scoringMethod === "topsis" ? (
-            <p>
-              <strong>How TOPSIS works:</strong> Scores are vector-normalized per criterion, then
-              weighted. The ideal (best possible) and anti-ideal (worst possible) solutions are
-              identified. Each option is ranked by how close it is to the ideal and how far from the
-              anti-ideal (closeness coefficient C* ∈ [0,&nbsp;1]).
-            </p>
           ) : (
-            <p>
-              <strong>How Minimax Regret works:</strong> For each criterion, regret measures how
-              much worse an option is compared to the best option on that criterion. The
-              &quot;maximum regret&quot; is the single worst regret across all criteria. The winner
-              is the option that minimizes its maximum regret — the option you&apos;ll least kick
-              yourself about.
-            </p>
+            <ScoringMethodExplanation scoringMethod={scoringMethod} />
           )}
           {scoringMethod === "wsm" && results.optionResults.length > 0 && (
             <p>
@@ -677,13 +603,122 @@ function NormalizedWeightsTable() {
 }
 
 // ---------------------------------------------------------------------------
+//  Scoring Method View sub-component (eliminates nested ternary)
+// ---------------------------------------------------------------------------
+
+type ScoringMethod = "wsm" | "topsis" | "minimax-regret" | "consensus" | "compare";
+
+function ScoringMethodView({
+  scoringMethod,
+  results,
+  topsisResults,
+  regretResults,
+  decision,
+  maxScore,
+}: {
+  readonly scoringMethod: ScoringMethod;
+  readonly results: DecisionResults;
+  readonly topsisResults: TopsisResults;
+  readonly regretResults: RegretResults;
+  readonly decision: Decision;
+  readonly maxScore: number;
+}) {
+  switch (scoringMethod) {
+    case "wsm":
+      return <WsmRankings results={results} decision={decision} maxScore={maxScore} />;
+    case "topsis":
+      return <TopsisRankings topsisResults={topsisResults} decision={decision} />;
+    case "consensus":
+      return (
+        <HybridResults
+          results={results}
+          topsisResults={topsisResults}
+          regretResults={regretResults}
+          decision={decision}
+        />
+      );
+    case "compare":
+      return <FrameworkComparison decision={decision} />;
+    default:
+      return <RegretRankings regretResults={regretResults} decision={decision} />;
+  }
+}
+
+// ---------------------------------------------------------------------------
+//  Scoring Method Explanation sub-component (eliminates nested ternary)
+// ---------------------------------------------------------------------------
+
+function ScoringMethodExplanation({ scoringMethod }: { readonly scoringMethod: string }) {
+  if (scoringMethod === "topsis") {
+    return (
+      <p>
+        <strong>How TOPSIS works:</strong> Scores are vector-normalized per criterion, then
+        weighted. The ideal (best possible) and anti-ideal (worst possible) solutions are identified.
+        Each option is ranked by how close it is to the ideal and how far from the anti-ideal
+        (closeness coefficient C* ∈ [0,&nbsp;1]).
+      </p>
+    );
+  }
+  return (
+    <p>
+      <strong>How Minimax Regret works:</strong> For each criterion, regret measures how much worse
+      an option is compared to the best option on that criterion. The &quot;maximum regret&quot; is
+      the single worst regret across all criteria. The winner is the option that minimizes its
+      maximum regret — the option you&apos;ll least kick yourself about.
+    </p>
+  );
+}
+
+// ---------------------------------------------------------------------------
+//  Method Agreement Message sub-component
+// ---------------------------------------------------------------------------
+
+function MethodAgreementMessage({
+  methodAgreement,
+  decision,
+}: {
+  readonly methodAgreement: { allAgree: boolean; fullAgreement: boolean; wsmWinner: string; topsisWinner: string; regretWinner: string | null };
+  readonly decision: Decision;
+}) {
+  if (methodAgreement.allAgree) {
+    return (
+      <>
+        <span className="font-medium">Winner agrees:</span> All methods pick the same winner, but
+        differ on other ranks.
+      </>
+    );
+  }
+  return (
+    <>
+      <span className="font-medium">Methods disagree:</span> WSM picks{" "}
+      <span className="font-semibold">
+        {decision.options.find((o) => o.id === methodAgreement.wsmWinner)?.name}
+      </span>
+      , TOPSIS picks{" "}
+      <span className="font-semibold">
+        {decision.options.find((o) => o.id === methodAgreement.topsisWinner)?.name}
+      </span>
+      {methodAgreement.regretWinner && (
+        <>
+          , Minimax Regret picks{" "}
+          <span className="font-semibold">
+            {decision.options.find((o) => o.id === methodAgreement.regretWinner)?.name}
+          </span>
+        </>
+      )}
+      . This decision involves genuine trade-offs.
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
 //  WSM Rankings sub-component (extracted from inline)
 // ---------------------------------------------------------------------------
 
 interface WsmRankingsProps {
-  results: DecisionResults;
-  decision: Decision;
-  maxScore: number;
+  readonly results: DecisionResults;
+  readonly decision: Decision;
+  readonly maxScore: number;
 }
 
 function WsmRankings({ results, decision, maxScore }: WsmRankingsProps) {
@@ -720,7 +755,7 @@ function WsmRankings({ results, decision, maxScore }: WsmRankingsProps) {
                   </span>
                   {optionDesc && (
                     <p
-                      className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[280px] sm:max-w-[400px]"
+                      className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-70 sm:max-w-100"
                       title={optionDesc}
                     >
                       {optionDesc}
@@ -738,7 +773,7 @@ function WsmRankings({ results, decision, maxScore }: WsmRankingsProps) {
               </span>
             </div>
 
-            {/* Score bar */}
+            {/* Score bar — custom styled div requires role="progressbar" since <progress> cannot be styled consistently cross-browser */}
             <div className="h-2 w-full rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${
@@ -801,8 +836,8 @@ function WsmRankings({ results, decision, maxScore }: WsmRankingsProps) {
 // ---------------------------------------------------------------------------
 
 interface TopsisRankingsProps {
-  topsisResults: TopsisResults;
-  decision: Decision;
+  readonly topsisResults: TopsisResults;
+  readonly decision: Decision;
 }
 
 function TopsisRankings({ topsisResults, decision }: TopsisRankingsProps) {
@@ -841,7 +876,7 @@ function TopsisRankings({ topsisResults, decision }: TopsisRankingsProps) {
                   </span>
                   {optionDesc && (
                     <p
-                      className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[280px] sm:max-w-[400px]"
+                      className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-70 sm:max-w-100"
                       title={optionDesc}
                     >
                       {optionDesc}
@@ -904,8 +939,8 @@ function TopsisRankings({ topsisResults, decision }: TopsisRankingsProps) {
 // ---------------------------------------------------------------------------
 
 interface RegretRankingsProps {
-  regretResults: RegretResults;
-  decision: Decision;
+  readonly regretResults: RegretResults;
+  readonly decision: Decision;
 }
 
 /**
@@ -974,7 +1009,7 @@ function RegretRankings({ regretResults, decision }: RegretRankingsProps) {
                     </span>
                     {optionDesc && (
                       <p
-                        className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[280px] sm:max-w-[400px]"
+                        className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-70 sm:max-w-100"
                         title={optionDesc}
                       >
                         {optionDesc}
@@ -1031,7 +1066,7 @@ function RegretRankings({ regretResults, decision }: RegretRankingsProps) {
       </div>
 
       {/* Regret Matrix Table */}
-      <div className="overflow-x-auto" role="region" aria-label="Regret matrix">
+      <section className="overflow-x-auto" aria-label="Regret matrix">
         <table
           className="min-w-full text-sm border-collapse"
           aria-label="Regret matrix — lower values mean less regret"
@@ -1094,7 +1129,7 @@ function RegretRankings({ regretResults, decision }: RegretRankingsProps) {
             })}
           </tbody>
         </table>
-      </div>
+      </section>
 
       {/* "Why this ranking?" explanation */}
       <details className="text-sm text-gray-600 dark:text-gray-400">

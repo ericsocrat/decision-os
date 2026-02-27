@@ -67,7 +67,7 @@ export function decodeDecisionFromUrl<T>(encoded: string, fallback: T): T {
     // Fall back to legacy base64
     const legacyJson = decodeURIComponent(
       Array.from(atob(encoded))
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .map((c) => "%" + ("00" + (c.codePointAt(0) ?? 0).toString(16)).slice(-2))
         .join("")
     );
     return JSON.parse(legacyJson) as T;

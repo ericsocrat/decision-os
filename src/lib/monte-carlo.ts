@@ -71,7 +71,7 @@ export function createPRNG(seed: number): () => number {
   let s = seed === 0 ? Date.now() : seed;
   const state = new Uint32Array(4);
   for (let i = 0; i < 4; i++) {
-    s = (s + 0x6d2b79f5) | 0;
+    s = (s + 0x6d2b79f5) | 0; // intentional 32-bit integer wrap
     let t = Math.imul(s ^ (s >>> 15), 1 | s);
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     state[i] = (t ^ (t >>> 14)) >>> 0;
@@ -130,7 +130,7 @@ export function samplePerturbation(
 
     case "triangular":
       // Symmetric triangular on [-range, +range] (mode = 0)
-      delta = (rand() - rand()) * range;
+      delta = (rand() - rand()) * range; // rand() is stateful PRNG, each call returns a different value
       break;
 
     default:
@@ -163,7 +163,7 @@ export function perturbWeights(
 
 /** Multiplier for per-cell score perturbation based on confidence */
 export const CONFIDENCE_PERTURBATION: Record<Confidence, number> = {
-  high: 1.0, // standard perturbation
+  high: 1, // standard perturbation
   medium: 1.5, // 50% wider
   low: 2.5, // 150% wider
 };
@@ -289,6 +289,93 @@ export function percentile(sorted: number[], p: number): number {
 // Main simulation
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Simulation helpers (extracted to keep runMonteCarloSimulation simple)
+// ---------------------------------------------------------------------------
+
+interface SimulationAccumulators {
+  winCounts: Uint32Array;
+  allScores: Float64Array[];
+  optionIndexMap: Map<string, number>;
+}
+
+/** Record computed results into accumulators for a single simulation. */
+function recordSimResults(
+  results: ReturnType<typeof computeResults>,
+  accum: SimulationAccumulators,
+  simIndex: number
+): void {
+  for (const optResult of results.optionResults) {
+    const idx = accum.optionIndexMap.get(optResult.optionId);
+    if (idx !== undefined) {
+      accum.allScores[idx][simIndex] = optResult.totalScore;
+    }
+  }
+
+  if (results.optionResults.length > 0) {
+    const winnerIdx = accum.optionIndexMap.get(results.optionResults[0].optionId);
+    if (winnerIdx !== undefined) {
+      accum.winCounts[winnerIdx]++;
+    }
+  }
+}
+
+/** Build per-option statistics from accumulated simulation data. */
+function buildOptionResults(
+  options: Decision["options"],
+  accum: SimulationAccumulators,
+  effectiveSims: number
+): MonteCarloOptionResult[] {
+  const divisor = effectiveSims || 1;
+  const results: MonteCarloOptionResult[] = options.map((opt, idx) => {
+    const scores = Array.from(accum.allScores[idx].subarray(0, effectiveSims));
+    scores.sort((a, b) => a - b);
+
+    const mean = scores.reduce((s, v) => s + v, 0) / divisor;
+    const variance = scores.reduce((s, v) => s + (v - mean) ** 2, 0) / divisor;
+
+    return {
+      optionId: opt.id,
+      optionName: opt.name,
+      winProbability: roundDisplay(accum.winCounts[idx] / divisor),
+      winCount: accum.winCounts[idx],
+      meanScore: roundDisplay(mean),
+      stdDev: roundDisplay(Math.sqrt(variance)),
+      p5: roundDisplay(percentile(scores, 5)),
+      p25: roundDisplay(percentile(scores, 25)),
+      p50: roundDisplay(percentile(scores, 50)),
+      p75: roundDisplay(percentile(scores, 75)),
+      p95: roundDisplay(percentile(scores, 95)),
+      histogram: buildHistogram(scores),
+    };
+  });
+
+  results.sort((a, b) => b.winProbability - a.winProbability || b.meanScore - a.meanScore);
+  return results;
+}
+
+/** Generate a human-readable summary of the simulation. */
+function buildSimulationSummary(
+  mcOptions: MonteCarloOptionResult[],
+  effectiveSims: number,
+  elapsedMs: number,
+  cancelled: boolean
+): string {
+  const topOption = mcOptions[0];
+  if (!topOption) return "No results.";
+
+  const cancelNote = cancelled ? ` (cancelled after ${effectiveSims.toLocaleString()})` : "";
+  return (
+    `"${topOption.optionName}" wins ${roundDisplay(topOption.winProbability * 100)}% of simulations ` +
+    `(mean score ${topOption.meanScore}, 90% CI [${topOption.p5}–${topOption.p95}]). ` +
+    `${effectiveSims.toLocaleString()} simulations completed in ${elapsedMs} ms${cancelNote}.`
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main simulation
+// ---------------------------------------------------------------------------
+
 /**
  * Run a full Monte Carlo simulation on a decision.
  *
@@ -321,127 +408,56 @@ export function runMonteCarloSimulation(
 
   const rand = createPRNG(seed);
   const baseWeights = criteria.map((c) => c.weight);
-  const numOptions = options.length;
   const shouldPerturbScores = hasNonHighConfidence(decision.scores);
 
-  // Accumulators ----------------------------------------------------------
-
-  /** winCounts[optionIndex] = number of sims where this option ranked #1 */
-  const winCounts = new Uint32Array(numOptions);
-
-  /** scoreAccumulator[optionIndex][simIndex] = total score for that sim */
-  const allScores: Float64Array[] = options.map(() => new Float64Array(numSimulations));
-
-  /** O(1) lookup from optionId → array index (built once, used numSimulations times) */
-  const optionIndexMap = new Map(options.map((o, i) => [o.id, i]));
+  const accum: SimulationAccumulators = {
+    winCounts: new Uint32Array(options.length),
+    allScores: options.map(() => new Float64Array(numSimulations)),
+    optionIndexMap: new Map(options.map((o, i) => [o.id, i])),
+  };
 
   // Run simulations -------------------------------------------------------
 
   let completedSims = 0;
 
   for (let sim = 0; sim < numSimulations; sim++) {
-    // Check for cancellation at batch boundaries
-    if (callbacks?.signal?.aborted) {
-      completedSims = sim;
-      break;
-    }
+    if (callbacks?.signal?.aborted) break;
 
-    // Perturb weights
     const perturbedWeights = perturbWeights(baseWeights, rand, perturbationRange, distribution);
-
-    // Perturb scores based on per-cell confidence (skip if all high)
     const perturbedScores = shouldPerturbScores
       ? perturbScores(decision.scores, options, criteria, rand, perturbationRange, distribution)
       : decision.scores;
 
-    // Build a shallow-copy decision with the perturbed weights and scores
     const simDecision: Decision = {
       ...decision,
       scores: perturbedScores,
       criteria: criteria.map((c, i) => ({ ...c, weight: perturbedWeights[i] })),
     };
 
-    const results = computeResults(simDecision);
-
-    // Record scores
-    for (const optResult of results.optionResults) {
-      const idx = optionIndexMap.get(optResult.optionId);
-      if (idx !== undefined) {
-        allScores[idx][sim] = optResult.totalScore;
-      }
-    }
-
-    // Record winner (rank 1)
-    if (results.optionResults.length > 0) {
-      const winnerId = results.optionResults[0].optionId;
-      const winnerIdx = optionIndexMap.get(winnerId);
-      if (winnerIdx !== undefined) {
-        winCounts[winnerIdx]++;
-      }
-    }
-
+    recordSimResults(computeResults(simDecision), accum, sim);
     completedSims = sim + 1;
 
-    // Report progress at batch boundaries
     if (callbacks?.onProgress && completedSims % PROGRESS_BATCH_SIZE === 0) {
       callbacks.onProgress(completedSims, numSimulations);
     }
   }
 
-  // Final progress report (only if not already reported at a batch boundary)
+  // Final progress report
   if (callbacks?.onProgress && completedSims > 0 && completedSims % PROGRESS_BATCH_SIZE !== 0) {
     callbacks.onProgress(completedSims, numSimulations);
   }
 
-  // If cancelled, adjust array slices to only include completed sims
-  const effectiveSims = completedSims;
+  // Build results ---------------------------------------------------------
 
-  // Build option results --------------------------------------------------
-
-  const mcOptions: MonteCarloOptionResult[] = options.map((opt, idx) => {
-    const scores = Array.from(allScores[idx].subarray(0, effectiveSims));
-    scores.sort((a, b) => a - b);
-
-    const mean = scores.reduce((s, v) => s + v, 0) / (effectiveSims || 1);
-    const variance = scores.reduce((s, v) => s + (v - mean) ** 2, 0) / (effectiveSims || 1);
-    const stdDev = Math.sqrt(variance);
-
-    return {
-      optionId: opt.id,
-      optionName: opt.name,
-      winProbability: roundDisplay(winCounts[idx] / (effectiveSims || 1)),
-      winCount: winCounts[idx],
-      meanScore: roundDisplay(mean),
-      stdDev: roundDisplay(stdDev),
-      p5: roundDisplay(percentile(scores, 5)),
-      p25: roundDisplay(percentile(scores, 25)),
-      p50: roundDisplay(percentile(scores, 50)),
-      p75: roundDisplay(percentile(scores, 75)),
-      p95: roundDisplay(percentile(scores, 95)),
-      histogram: buildHistogram(scores),
-    };
-  });
-
-  // Sort by win probability descending
-  mcOptions.sort((a, b) => b.winProbability - a.winProbability || b.meanScore - a.meanScore);
-
+  const mcOptions = buildOptionResults(options, accum, completedSims);
   const elapsedMs = roundDisplay(performance.now() - t0);
   const cancelled = callbacks?.signal?.aborted ?? false;
-
-  // Summary text
-  const topOption = mcOptions[0];
-  const cancelNote = cancelled ? ` (cancelled after ${effectiveSims.toLocaleString()})` : "";
-  const summary = topOption
-    ? `"${topOption.optionName}" wins ${roundDisplay(topOption.winProbability * 100)}% of simulations ` +
-      `(mean score ${topOption.meanScore}, 90% CI [${topOption.p5}–${topOption.p95}]). ` +
-      `${effectiveSims.toLocaleString()} simulations completed in ${elapsedMs} ms${cancelNote}.`
-    : "No results.";
 
   return {
     decisionId: decision.id,
     config: cfg,
     options: mcOptions,
     elapsedMs,
-    summary,
+    summary: buildSimulationSummary(mcOptions, completedSims, elapsedMs, cancelled),
   };
 }
