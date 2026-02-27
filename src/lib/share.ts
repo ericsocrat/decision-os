@@ -24,6 +24,7 @@ import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from
 import type { Decision, CriterionType, ScoreValue } from "./types";
 import { generateId } from "./utils";
 import { readScoreOrZero, resolveConfidence } from "./scoring";
+import { sanitizeText, sanitizeMultilineText, sanitizeNumber } from "./sanitize";
 
 /** Compacted share payload — version 1 */
 export interface SharePayloadV1 {
@@ -143,14 +144,14 @@ export function sharePayloadToDecision(payload: SharePayloadV1): Decision {
 
   const options = payload.o.map((name) => ({
     id: generateId(),
-    name,
+    name: sanitizeText(name, 80),
   }));
 
   const typeMap: Record<string, CriterionType> = { b: "benefit", c: "cost" };
   const criteria = payload.c.map(([name, weight, typeInitial]) => ({
     id: generateId(),
-    name,
-    weight,
+    name: sanitizeText(name, 80),
+    weight: sanitizeNumber(weight, 0, 100, 50),
     type: typeMap[typeInitial] ?? ("benefit" as CriterionType),
   }));
 
@@ -162,15 +163,16 @@ export function sharePayloadToDecision(payload: SharePayloadV1): Decision {
       if (cell === null || cell === undefined) {
         scores[options[oi].id][criteria[ci].id] = null;
       } else {
+        const safeScore = sanitizeNumber(cell, 0, 10, 0);
         // Check for confidence data
         const confInt = payload.cf?.[oi]?.[ci];
         if (confInt !== undefined && confInt !== null && confInt > 0) {
           scores[options[oi].id][criteria[ci].id] = {
-            value: cell,
+            value: safeScore,
             confidence: INT_TO_CONF[confInt] ?? "high",
           };
         } else {
-          scores[options[oi].id][criteria[ci].id] = cell;
+          scores[options[oi].id][criteria[ci].id] = safeScore;
         }
       }
     }
@@ -178,8 +180,8 @@ export function sharePayloadToDecision(payload: SharePayloadV1): Decision {
 
   return {
     id: decisionId,
-    title: payload.t,
-    description: payload.d,
+    title: sanitizeText(payload.t, 100),
+    description: payload.d ? sanitizeMultilineText(payload.d, 500) : undefined,
     options,
     criteria,
     scores,

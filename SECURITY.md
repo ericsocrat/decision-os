@@ -18,12 +18,19 @@ If you discover a security vulnerability, please report it responsibly:
 ## Security Practices
 
 - **No secrets in code**: All sensitive values use environment variables
-- **Input validation**: All user input is validated before processing
+- **Input validation**: All user input is validated and sanitized before processing
+- **Input sanitization**: Dedicated `sanitize.ts` module strips control characters, enforces length limits
 - **No server-side data**: MVP uses localStorage only (client-side)
-- **Dependencies**: We regularly audit dependencies with `npm audit`
+- **Dependencies**: We regularly audit dependencies with `npm audit` (0 vulnerabilities)
 - **No external data fetching**: The app does not scrape or fetch external data
-- **CSP headers**: Configured via Next.js middleware (when applicable)
-- **XSS prevention**: React's default escaping + no `dangerouslySetInnerHTML`
+- **CSP headers**: Strict Content-Security-Policy with `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`
+- **XSS prevention**: React's default escaping + input sanitization on import/share boundaries
+- **Error handling**: Production error messages are generic (no stack trace leakage)
+- **Security headers**: HSTS (2-year), X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy
+
+## Security Audit
+
+A comprehensive OWASP Top 10 security audit has been conducted. See [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md) for the full report with findings, severity ratings, and remediation status.
 
 ## Dependency Updates
 

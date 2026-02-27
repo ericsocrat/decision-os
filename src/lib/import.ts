@@ -12,6 +12,7 @@ import type { Criterion, Decision, Option, ScoreMatrix } from "./types";
 import type { ScoreValue } from "./types";
 import { isDecision } from "./validation";
 import { generateId } from "./utils";
+import { sanitizeText, sanitizeMultilineText } from "./sanitize";
 
 // ─── Types ─────────────────────────────────────────────────────────
 
@@ -215,11 +216,26 @@ export function importFromJson(content: string): ImportResult {
     return { success: false, errors, warnings };
   }
 
-  // Generate fresh ID and timestamps
+  // Generate fresh ID and timestamps, sanitize text fields
+  const validated = candidate as Decision;
   const now = new Date().toISOString();
   const decision: Decision = {
-    ...(candidate as Decision),
+    ...validated,
     id: generateId(),
+    title: sanitizeText(validated.title, 100),
+    description: validated.description
+      ? sanitizeMultilineText(validated.description, 500)
+      : undefined,
+    options: validated.options.map((o) => ({
+      ...o,
+      id: o.id,
+      name: sanitizeText(o.name, 80),
+    })),
+    criteria: validated.criteria.map((c) => ({
+      ...c,
+      id: c.id,
+      name: sanitizeText(c.name, 80),
+    })),
     createdAt: now,
     updatedAt: now,
   };
@@ -341,14 +357,14 @@ export function csvToDecision(
 
   const criteria: Criterion[] = preview.headers.map((name, i) => ({
     id: generateId(),
-    name,
+    name: sanitizeText(name, 80),
     weight: weights[i] ?? 50,
     type: criterionTypes[i] ?? "benefit",
   }));
 
   const options: Option[] = preview.rows.map((row) => ({
     id: generateId(),
-    name: row.option,
+    name: sanitizeText(row.option, 80),
   }));
 
   const scores: ScoreMatrix = {};
@@ -366,7 +382,7 @@ export function csvToDecision(
 
   return {
     id: generateId(),
-    title: title || "Imported Decision",
+    title: sanitizeText(title, 100) || "Imported Decision",
     options,
     criteria,
     scores,
