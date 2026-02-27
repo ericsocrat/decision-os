@@ -118,6 +118,7 @@ export function WhatIfPanel({ decision, originalResults, onApply, onClose }: Wha
   const [weights, setWeights] = useState(() => cloneWeights(decision));
   const [scores, setScores] = useState(() => cloneScores(decision));
   const panelRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<Element | null>(null);
 
   // ── Recompute what-if results on each change ────────────
   const whatIfDecision = useMemo(
@@ -148,6 +149,7 @@ export function WhatIfPanel({ decision, originalResults, onApply, onClose }: Wha
 
   // ── Keyboard: Escape closes + focus trap ─────────────
   useEffect(() => {
+    triggerRef.current = document.activeElement;
     const panel = panelRef.current;
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
@@ -173,7 +175,13 @@ export function WhatIfPanel({ decision, originalResults, onApply, onClose }: Wha
     document.addEventListener("keydown", handleKey);
     // Focus the panel on mount
     panel?.focus();
-    return () => document.removeEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      // Restore focus to the element that opened the panel
+      if (triggerRef.current instanceof HTMLElement) {
+        triggerRef.current.focus();
+      }
+    };
   }, [onClose]);
 
   // ── Handlers ────────────────────────────────────────────

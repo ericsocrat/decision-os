@@ -87,6 +87,28 @@ describe("ImportModal", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it("traps Tab focus within the modal", () => {
+    renderWithProviders(<ImportModal onClose={onClose} />);
+    const dialog = screen.getByRole("dialog");
+    const focusable = dialog.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    expect(focusable.length).toBeGreaterThan(0);
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    // Focus last element, Tab should wrap to first
+    last.focus();
+    fireEvent.keyDown(document, { key: "Tab" });
+    expect(document.activeElement).toBe(first);
+
+    // Focus first element, Shift+Tab should wrap to last
+    first.focus();
+    fireEvent.keyDown(document, { key: "Tab", shiftKey: true });
+    expect(document.activeElement).toBe(last);
+  });
+
   it("closes when close button is clicked", async () => {
     const { user } = renderWithProviders(<ImportModal onClose={onClose} />);
     const closeBtn = screen.getByLabelText("Close import dialog");

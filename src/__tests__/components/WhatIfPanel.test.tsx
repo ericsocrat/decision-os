@@ -146,7 +146,22 @@ describe("WhatIfPanel", () => {
     fireEvent.keyDown(document, { key: "Escape" });
     expect(onClose).toHaveBeenCalledOnce();
   });
+  it("restores focus to previously focused element on close", () => {
+    const trigger = document.createElement("button");
+    trigger.textContent = "Open";
+    document.body.appendChild(trigger);
+    trigger.focus();
+    expect(document.activeElement).toBe(trigger);
 
+    const { unmount } = setup();
+    // Panel steals focus on mount
+    expect(document.activeElement).not.toBe(trigger);
+
+    unmount();
+    // Focus should be restored to the trigger
+    expect(document.activeElement).toBe(trigger);
+    document.body.removeChild(trigger);
+  });
   it("calls onApply with modified weights and scores when Apply is clicked", () => {
     const { onApply, decision } = setup();
 
