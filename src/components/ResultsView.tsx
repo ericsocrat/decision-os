@@ -33,6 +33,7 @@ import { QualityBar } from "./QualityBar";
 import { ConfidenceStrategySelector } from "./ConfidenceStrategySelector";
 import { WhatIfPanel } from "./WhatIfPanel";
 import { FrameworkComparison } from "./FrameworkComparison";
+import { CompositeConfidenceIndicator } from "./CompositeConfidenceIndicator";
 
 const ScoreChart = lazy(() => import("./ScoreChart").then((m) => ({ default: m.ScoreChart })));
 const ParetoChart = lazy(() => import("./ParetoChart").then((m) => ({ default: m.ParetoChart })));
@@ -169,6 +170,9 @@ export function ResultsView({ validation, completeness, onSwitchToBuilder }: Res
     <div className="space-y-6">
       {/* Decision quality dashboard */}
       <QualityBar decision={decision} />
+
+      {/* Composite confidence indicator */}
+      <CompositeConfidenceIndicator decision={decision} />
 
       {/* Confidence adjustment strategy */}
       <ConfidenceStrategySelector
