@@ -87,6 +87,7 @@ Decision OS is a client-side web application built with Next.js 16 (App Router),
 | `journal.ts`          | Decision journal — CRUD for structured entries (notes, reasoning, outcomes) in localStorage |
 | `outcome-tracking.ts` | Records post-decision outcomes, compares actual vs. predicted scores                        |
 | `provenance.ts`       | Per-cell score provenance metadata (manual, enriched, or user-overridden)                   |
+| `version-history.ts`  | Decision version snapshots — save, browse, restore, diff, auto-versioning with throttle     |
 
 #### Utilities
 

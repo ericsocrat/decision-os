@@ -344,6 +344,27 @@ describe("Decision mutations", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Version history restore action
+// ---------------------------------------------------------------------------
+
+describe("RESTORE_VERSION", () => {
+  it("replaces decision with snapshot, clears history, marks dirty", () => {
+    const state = init();
+    // Build up some undo history
+    let s = dispatch(state, { type: "ADD_OPTION" });
+    expect(s.canUndo).toBe(true);
+
+    const snapshot = makeDecision({ id: state.decision.id, title: "Restored Version" });
+    s = dispatch(s, { type: "RESTORE_VERSION", decision: snapshot });
+
+    expect(s.decision.title).toBe("Restored Version");
+    expect(s.canUndo).toBe(false);
+    expect(s.canRedo).toBe(false);
+    expect(s.isDirty).toBe(true); // Marked dirty for auto-save
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Navigation actions
 // ---------------------------------------------------------------------------
 

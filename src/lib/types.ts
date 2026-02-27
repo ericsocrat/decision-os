@@ -223,3 +223,45 @@ export interface MonteCarloResults {
   /** Summary text */
   summary: string;
 }
+
+// ---------------------------------------------------------------------------
+// Version History
+// ---------------------------------------------------------------------------
+
+/** A saved snapshot of a decision at a point in time */
+export interface DecisionVersion {
+  /** Unique version ID */
+  id: string;
+  /** Parent decision ID */
+  decisionId: string;
+  /** User-provided label (e.g. "v2 — added cost criterion") */
+  label?: string;
+  /** Full frozen Decision snapshot */
+  snapshot: Decision;
+  /** Content-addressable hash of scoring-relevant fields */
+  snapshotHash: string;
+  /** ISO 8601 creation timestamp */
+  createdAt: string;
+  /** Whether this version was saved manually or by auto-checkpoint */
+  trigger: "manual" | "auto";
+}
+
+/** Structural diff between two decision versions */
+export interface VersionDiff {
+  /** Options added in the newer version */
+  addedOptions: string[];
+  /** Options removed from the older version */
+  removedOptions: string[];
+  /** Criteria added in the newer version */
+  addedCriteria: string[];
+  /** Criteria removed from the older version */
+  removedCriteria: string[];
+  /** Number of score cells that changed */
+  changedScores: number;
+  /** Criteria whose weights changed */
+  changedWeights: Array<{ name: string; oldWeight: number; newWeight: number }>;
+  /** Whether the title changed */
+  titleChanged: boolean;
+  /** Whether the description changed */
+  descriptionChanged: boolean;
+}

@@ -68,6 +68,7 @@ import {
 import { DEMO_DECISION } from "@/lib/demo-data";
 import { generateId } from "@/lib/utils";
 import { useAnnounce } from "./Announcer";
+import { autoVersion, resetAutoVersionThrottle } from "@/lib/version-history";
 
 // ---------------------------------------------------------------------------
 // Derived state (computed from decision via useMemo)
@@ -138,6 +139,7 @@ export interface ActionsValue {
   createNewDecision: () => void;
   removeDecision: (id: string) => void;
   resetDemo: () => void;
+  restoreVersion: (decision: Decision) => void;
 }
 
 /** Read-only state: reducer state + derived computations */
@@ -179,6 +181,7 @@ export interface DecisionContextValue extends DecisionStateValue {
   createNewDecision: () => void;
   removeDecision: (id: string) => void;
   resetDemo: () => void;
+  restoreVersion: (decision: Decision) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -257,13 +260,15 @@ export function DecisionProvider({ children }: Readonly<{ children: ReactNode }>
     announceRef.current = announce;
   }, [announce]);
 
-  // ── Auto-save side effect ────────────────────────────────
+  // ── Auto-save side effect (with auto-versioning) ────────
   useEffect(() => {
     if (state.isDirty) {
       saveDecision(state.decision);
       dispatch({ type: "MARK_CLEAN" });
       dispatch({ type: "REFRESH_DECISIONS", decisions: getDecisions() });
       announceRef.current("Changes saved");
+      // Auto-version (throttled, deduped by hash — fire-and-forget)
+      void autoVersion(state.decision);
     }
   }, [state.isDirty, state.decision]);
 
@@ -435,6 +440,15 @@ export function DecisionProvider({ children }: Readonly<{ children: ReactNode }>
     announceRef.current("Demo data restored");
   }, [dispatch]);
 
+  const restoreVersion = useCallback(
+    (decision: Decision) => {
+      dispatch({ type: "RESTORE_VERSION", decision });
+      resetAutoVersionThrottle(decision.id);
+      announceRef.current(`Restored version`);
+    },
+    [dispatch]
+  );
+
   // ── Assemble context values ──────────────────────────────
 
   // Focused context: decision data (re-renders only on decision/list changes)
@@ -489,6 +503,7 @@ export function DecisionProvider({ children }: Readonly<{ children: ReactNode }>
       createNewDecision,
       removeDecision,
       resetDemo,
+      restoreVersion,
     }),
     [
       dispatch,
@@ -515,6 +530,7 @@ export function DecisionProvider({ children }: Readonly<{ children: ReactNode }>
       createNewDecision,
       removeDecision,
       resetDemo,
+      restoreVersion,
     ]
   );
 

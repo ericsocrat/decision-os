@@ -60,7 +60,7 @@
 - [x] localStorage → cloud migration (one-click MigrationBanner)
 - [x] Offline fallback (app works fully without connectivity)
 - [ ] Collaborative decision-making (real-time)
-- [ ] Decision history / versioning
+- [x] Decision history / versioning
 - [x] Shareable decision links (server-stored, short URLs)
 
 ## v0.4.0 — Advanced Analysis ✅

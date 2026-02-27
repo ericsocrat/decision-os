@@ -38,6 +38,7 @@ import {
   Keyboard,
   Upload,
   HelpCircle,
+  History,
 } from "lucide-react";
 import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
 import { ToastProvider, showToast } from "@/components/Toast";
@@ -56,6 +57,7 @@ const CompareView = lazy(() =>
 const MonteCarloView = lazy(() =>
   import("@/components/MonteCarloView").then((m) => ({ default: m.MonteCarloView }))
 );
+const VersionHistory = lazy(() => import("@/components/VersionHistory"));
 
 /** Skeleton fallback for lazy-loaded tab panels */
 function TabPanelSkeleton({ label }: Readonly<{ label: string }>) {
@@ -77,7 +79,7 @@ function useIsMounted() {
   );
 }
 
-type Tab = "builder" | "results" | "sensitivity" | "compare" | "montecarlo";
+type Tab = "builder" | "results" | "sensitivity" | "compare" | "montecarlo" | "history";
 
 const tabLabels: Record<Tab, string> = {
   builder: "Builder",
@@ -85,9 +87,10 @@ const tabLabels: Record<Tab, string> = {
   sensitivity: "Sensitivity",
   compare: "Compare",
   montecarlo: "Monte Carlo",
+  history: "History",
 };
 
-const TAB_IDS: Tab[] = ["builder", "results", "sensitivity", "compare", "montecarlo"];
+const TAB_IDS: Tab[] = ["builder", "results", "sensitivity", "compare", "montecarlo", "history"];
 
 function AppContent() {
   const onboarding = useOnboarding();
@@ -279,6 +282,10 @@ function AppContent() {
           setActiveTab("montecarlo");
           announce("Monte Carlo tab");
           break;
+        case "6":
+          setActiveTab("history");
+          announce("History tab");
+          break;
         case "?":
           setShowShortcuts((prev) => !prev);
           break;
@@ -312,6 +319,11 @@ function AppContent() {
       id: "montecarlo",
       label: "Monte Carlo",
       icon: <Dices className="h-4 w-4" />,
+    },
+    {
+      id: "history",
+      label: "History",
+      icon: <History className="h-4 w-4" />,
     },
   ];
 
@@ -438,6 +450,17 @@ function AppContent() {
             >
               <Suspense fallback={<TabPanelSkeleton label="Monte Carlo" />}>
                 <MonteCarloView />
+              </Suspense>
+            </ErrorBoundary>
+          </div>
+        )}
+        {activeTab === "history" && (
+          <div id="panel-history" role="tabpanel" aria-labelledby="tab-history">
+            <ErrorBoundary
+              fallback={(reset) => <TabErrorFallback tab="History" onReset={reset} />}
+            >
+              <Suspense fallback={<TabPanelSkeleton label="History" />}>
+                <VersionHistory />
               </Suspense>
             </ErrorBoundary>
           </div>

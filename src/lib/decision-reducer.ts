@@ -125,6 +125,9 @@ export type DecisionAction =
       timestamp: number;
     }
 
+  // Version history
+  | { type: "RESTORE_VERSION"; decision: Decision }
+
   // Undo / Redo
   | { type: "UNDO" }
   | { type: "REDO" }
@@ -550,6 +553,20 @@ export function decisionReducer(
       decisions: action.decisions,
       isDirty: false,
       isLoading: false,
+      past: [],
+      future: [],
+      canUndo: false,
+      canRedo: false,
+      _coalesce: null,
+    };
+  }
+
+  // ── Version restore (replace decision, mark dirty for auto-save) ──
+  if (action.type === "RESTORE_VERSION") {
+    return {
+      ...state,
+      decision: action.decision,
+      isDirty: true,
       past: [],
       future: [],
       canUndo: false,
