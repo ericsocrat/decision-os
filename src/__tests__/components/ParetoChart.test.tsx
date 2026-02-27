@@ -36,15 +36,11 @@ vi.mock("recharts", () => {
   };
 });
 
-/* eslint-disable @typescript-eslint/no-require-imports */
 // Must import AFTER mocks are set up
 const { ParetoChart } = await import("@/components/ParetoChart");
 
 /* ---------- helpers ---------- */
-function makeDecision(
-  criteriaCount: number,
-  optionCount: number,
-): Decision {
+function makeDecision(criteriaCount: number, optionCount: number): Decision {
   return {
     id: "d1",
     title: "Test",

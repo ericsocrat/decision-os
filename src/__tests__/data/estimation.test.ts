@@ -144,12 +144,10 @@ describe("Tier 3 Estimation Engine", () => {
     });
 
     it("falls back to regional only when income-group unavailable", () => {
-      // Find a country in COUNTRY_REGION but not in COUNTRY_INCOME_GROUP
-      // GR (Greece) is in COUNTRY_REGION (southern-europe) and COUNTRY_INCOME_GROUP (HIC)
-      // Let's use JP → both available → composite
-      // Since all test countries have both, test the composite path
-      const result = bestEstimate("JP", "healthcare");
+      // BY (Belarus) is in COUNTRY_REGION (eastern-europe) but not in COUNTRY_INCOME_GROUP
+      const result = bestEstimate("BY", "safety");
       expect(result).not.toBeNull();
+      expect(result?.strategy).toBe("regional");
     });
 
     it("returns null for completely unknown country", () => {

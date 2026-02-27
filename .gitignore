@@ -49,3 +49,6 @@ next-env.d.ts
 
 .vercel
 e2e-result.txt
+coverage-out.txt
+git-state.txt
+test-output.txt

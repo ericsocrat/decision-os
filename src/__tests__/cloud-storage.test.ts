@@ -157,6 +157,17 @@ describe("cloudGetDecision", () => {
     const result = await cloudGetDecision("missing");
     expect(result).toBeNull();
   });
+
+  it("returns null on Supabase error", async () => {
+    mockAuthed();
+    chainMock({ data: null, error: { message: "fetch failed" } });
+
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const result = await cloudGetDecision("err");
+    expect(result).toBeNull();
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
+  });
 });
 
 describe("cloudSaveDecision", () => {

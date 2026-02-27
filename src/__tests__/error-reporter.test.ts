@@ -92,6 +92,11 @@ describe("error-reporter", () => {
       expect(getStoredErrors()).toEqual([]);
     });
 
+    it("returns empty array when storage contains invalid JSON", () => {
+      localStorage.setItem("decision-os:errors", "not json{{{");
+      expect(getStoredErrors()).toEqual([]);
+    });
+
     it("returns stored errors", () => {
       vi.spyOn(console, "error").mockImplementation(() => {});
       reportError(new Error("e1"), { source: "a" });

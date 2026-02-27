@@ -27,11 +27,7 @@ class StubProvider extends DataProvider {
   readonly categories: readonly string[];
   result: DataPoint | null;
 
-  constructor(
-    id: string,
-    categories: string[],
-    result: DataPoint | null = makePoint(),
-  ) {
+  constructor(id: string, categories: string[], result: DataPoint | null = makePoint()) {
     super();
     this.id = id;
     this.name = `Provider ${id}`;
@@ -287,9 +283,7 @@ describe("EnrichmentEngine", () => {
     });
 
     const suggestions = engine.suggestEnrichments(decision);
-    const keys = suggestions.map(
-      (s) => `${s.country}|${s.city ?? "_"}|${s.category}|${s.metric}`,
-    );
+    const keys = suggestions.map((s) => `${s.country}|${s.city ?? "_"}|${s.category}|${s.metric}`);
     const unique = new Set(keys);
     expect(unique.size).toBe(keys.length);
   });
@@ -312,12 +306,12 @@ describe("EnrichmentEngine", () => {
     const fastProvider = new StubProvider(
       "fast",
       ["test"],
-      makePoint({ tier: 1, confidence: 0.95 }),
+      makePoint({ tier: 1, confidence: 0.95 })
     );
     const slowProvider = new StubProvider(
       "slow",
       ["test"],
-      makePoint({ tier: 1, confidence: 1.0, value: 999 }),
+      makePoint({ tier: 1, confidence: 1.0, value: 999 })
     );
     reg.register(fastProvider);
     reg.register(slowProvider);

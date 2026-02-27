@@ -178,6 +178,14 @@ describe("assessDecisionQuality", () => {
     expect(ind.score).toBe(100);
   });
 
+  it("marks completeness as critical when no options exist", () => {
+    const result = assessDecisionQuality(makeDecision({ options: [] }));
+    const ind = result.indicators.find((i) => i.id === "completeness")!;
+    expect(ind.severity).toBe("critical");
+    expect(ind.score).toBe(0);
+    expect(ind.suggestion).toContain("Add options and criteria");
+  });
+
   // --- Cost/benefit balance ---
   it("suggests adding cost criteria when all are benefits", () => {
     const result = assessDecisionQuality(
@@ -192,6 +200,21 @@ describe("assessDecisionQuality", () => {
     );
     const ind = result.indicators.find((i) => i.id === "cost-benefit-balance")!;
     expect(ind.suggestion).toContain("cost criteria");
+  });
+
+  it("suggests adding benefit criteria when all are costs", () => {
+    const result = assessDecisionQuality(
+      makeDecision({
+        criteria: [
+          { id: "c1", name: "A", weight: 25, type: "cost" },
+          { id: "c2", name: "B", weight: 25, type: "cost" },
+          { id: "c3", name: "C", weight: 25, type: "cost" },
+          { id: "c4", name: "D", weight: 25, type: "cost" },
+        ],
+      })
+    );
+    const ind = result.indicators.find((i) => i.id === "cost-benefit-balance")!;
+    expect(ind.suggestion).toContain("benefit criteria");
   });
 
   // --- Overall score ---
