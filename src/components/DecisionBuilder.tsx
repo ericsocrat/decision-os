@@ -22,8 +22,8 @@ import { showToast } from "./Toast";
 import { formatRelativeTime } from "@/lib/utils";
 import type { CriterionType } from "@/lib/types";
 import type { ValidationResult } from "@/hooks/useValidation";
-import { useCallback, useMemo, useRef, useState } from "react";
-import { computeCompleteness } from "@/lib/completeness";
+import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { type CompletenessResult } from "@/lib/completeness";
 import { readScore, resolveConfidence } from "@/lib/scoring";
 import { ConfidenceDot } from "./ConfidenceDot";
 import { CompletionRing } from "./CompletionRing";
@@ -58,9 +58,10 @@ import { CriterionTooltip } from "./CriterionTooltip";
 
 interface DecisionBuilderProps {
   validation: ValidationResult;
+  completeness: CompletenessResult;
 }
 
-export function DecisionBuilder({ validation }: DecisionBuilderProps) {
+export const DecisionBuilder = memo(function DecisionBuilder({ validation, completeness }: DecisionBuilderProps) {
   const { decision, canUndo, canRedo } = useDecisionData();
   const {
     updateTitle,
@@ -82,7 +83,6 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
   } = useActions();
 
   const gridRef = useRef<HTMLTableElement>(null);
-  const completeness = useMemo(() => computeCompleteness(decision), [decision]);
   const [autoNormalize, setAutoNormalize] = useState(false);
   const biasDetection = useBiasDetection(decision);
 
@@ -845,4 +845,4 @@ export function DecisionBuilder({ validation }: DecisionBuilderProps) {
       />
     </div>
   );
-}
+});

@@ -272,8 +272,8 @@ export function DecisionProvider({ children }: Readonly<{ children: ReactNode }>
   const topsisResults = useMemo(() => computeTopsisResults(state.decision), [state.decision]);
   const regretResults = useMemo(() => computeRegretResults(state.decision), [state.decision]);
   const sensitivity = useMemo(
-    () => sensitivityAnalysis(state.decision, state.swingPercent),
-    [state.decision, state.swingPercent]
+    () => sensitivityAnalysis(state.decision, state.swingPercent, results),
+    [state.decision, state.swingPercent, results]
   );
 
   // ── Convenience action wrappers ──────────────────────────

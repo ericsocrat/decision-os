@@ -35,6 +35,7 @@ import {
   Activity,
   GitCompareArrows,
   Dices,
+  Keyboard,
   Upload,
   HelpCircle,
 } from "lucide-react";
@@ -395,62 +396,54 @@ function AppContent() {
           aria-labelledby="tab-builder"
           className={activeTab === "builder" ? "" : "hidden"}
         >
-          {isLoading ? <DecisionSkeleton /> : <DecisionBuilder validation={validation} />}
+          {isLoading ? <DecisionSkeleton /> : <DecisionBuilder validation={validation} completeness={completeness} />}
         </div>
-        <div
-          id="panel-results"
-          role="tabpanel"
-          aria-labelledby="tab-results"
-          className={activeTab === "results" ? "" : "hidden"}
-        >
-          <ErrorBoundary fallback={(reset) => <TabErrorFallback tab="Results" onReset={reset} />}>
-            <ResultsView
-              validation={validation}
-              completeness={completeness}
-              onSwitchToBuilder={() => setActiveTab("builder")}
-            />
-          </ErrorBoundary>
-        </div>
-        <div
-          id="panel-sensitivity"
-          role="tabpanel"
-          aria-labelledby="tab-sensitivity"
-          className={activeTab === "sensitivity" ? "" : "hidden"}
-        >
-          <ErrorBoundary
-            fallback={(reset) => <TabErrorFallback tab="Sensitivity" onReset={reset} />}
-          >
-            <Suspense fallback={<TabPanelSkeleton label="Sensitivity" />}>
-              <SensitivityView />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
-        <div
-          id="panel-compare"
-          role="tabpanel"
-          aria-labelledby="tab-compare"
-          className={activeTab === "compare" ? "" : "hidden"}
-        >
-          <ErrorBoundary fallback={(reset) => <TabErrorFallback tab="Compare" onReset={reset} />}>
-            <Suspense fallback={<TabPanelSkeleton label="Compare" />}>
-              <CompareView />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
-        <div
-          id="panel-montecarlo"
-          role="tabpanel"
-          aria-labelledby="tab-montecarlo"
-          className={activeTab === "montecarlo" ? "" : "hidden"}
-        >
-          <ErrorBoundary
-            fallback={(reset) => <TabErrorFallback tab="Monte Carlo" onReset={reset} />}
-          >
-            <Suspense fallback={<TabPanelSkeleton label="Monte Carlo" />}>
-              <MonteCarloView />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
+        {activeTab === "results" && (
+          <div id="panel-results" role="tabpanel" aria-labelledby="tab-results">
+            <ErrorBoundary
+              fallback={(reset) => <TabErrorFallback tab="Results" onReset={reset} />}
+            >
+              <ResultsView
+                validation={validation}
+                completeness={completeness}
+                onSwitchToBuilder={() => setActiveTab("builder")}
+              />
+            </ErrorBoundary>
+          </div>
+        )}
+        {activeTab === "sensitivity" && (
+          <div id="panel-sensitivity" role="tabpanel" aria-labelledby="tab-sensitivity">
+            <ErrorBoundary
+              fallback={(reset) => <TabErrorFallback tab="Sensitivity" onReset={reset} />}
+            >
+              <Suspense fallback={<TabPanelSkeleton label="Sensitivity" />}>
+                <SensitivityView />
+              </Suspense>
+            </ErrorBoundary>
+          </div>
+        )}
+        {activeTab === "compare" && (
+          <div id="panel-compare" role="tabpanel" aria-labelledby="tab-compare">
+            <ErrorBoundary
+              fallback={(reset) => <TabErrorFallback tab="Compare" onReset={reset} />}
+            >
+              <Suspense fallback={<TabPanelSkeleton label="Compare" />}>
+                <CompareView />
+              </Suspense>
+            </ErrorBoundary>
+          </div>
+        )}
+        {activeTab === "montecarlo" && (
+          <div id="panel-montecarlo" role="tabpanel" aria-labelledby="tab-montecarlo">
+            <ErrorBoundary
+              fallback={(reset) => <TabErrorFallback tab="Monte Carlo" onReset={reset} />}
+            >
+              <Suspense fallback={<TabPanelSkeleton label="Monte Carlo" />}>
+                <MonteCarloView />
+              </Suspense>
+            </ErrorBoundary>
+          </div>
+        )}
       </main>
 
       {/* Footer */}

@@ -192,7 +192,13 @@ export function scoreOption(
   normalizedWeights: number[],
   strategy: ConfidenceStrategy = "none"
 ): OptionResult {
-  const criterionScores: CriterionScore[] = criteria.map((criterion, i) => {
+  // Single-pass: build criterion scores and accumulate weighted sum simultaneously
+  const criterionScores: CriterionScore[] = [];
+  let scoredWeightSum = 0;
+  let weightedSum = 0;
+
+  for (let i = 0; i < criteria.length; i++) {
+    const criterion = criteria[i];
     const raw = readScore(scores, optionId, criterion.id);
     const numericRaw = raw ?? 0;
     const eff = effectiveScore(numericRaw, criterion.type);
@@ -201,7 +207,7 @@ export function scoreOption(
     const mult = confidenceMultiplier(conf, strategy);
     const adjusted = eff * mult;
 
-    return {
+    criterionScores.push({
       criterionId: criterion.id,
       criterionName: criterion.name,
       rawScore: numericRaw,
@@ -211,23 +217,13 @@ export function scoreOption(
       isNull: raw === null,
       confidence: conf ?? undefined,
       confidenceMultiplier: mult,
-    };
-  });
+    });
 
-  // Accumulate only scored criteria; normalize by their weight sum
-  let scoredWeightSum = 0;
-  let weightedSum = 0;
-
-  criteria.forEach((criterion, i) => {
-    const raw = readScore(scores, optionId, criterion.id);
     if (raw !== null) {
-      const eff = effectiveScore(raw, criterion.type);
-      const conf = resolveConfidence(scores[optionId]?.[criterion.id]);
-      const mult = confidenceMultiplier(conf, strategy);
-      weightedSum += eff * mult * normalizedWeights[i];
-      scoredWeightSum += normalizedWeights[i];
+      weightedSum += adjusted * nw;
+      scoredWeightSum += nw;
     }
-  });
+  }
 
   const totalScore = roundDisplay(scoredWeightSum > 0 ? weightedSum / scoredWeightSum : 0);
 
@@ -322,9 +318,10 @@ export function computeTopDrivers(criteria: Criterion[], normalizedWeights: numb
  */
 export function sensitivityAnalysis(
   decision: Decision,
-  swingPercent: number = 20
+  swingPercent: number = 20,
+  precomputedBase?: DecisionResults
 ): SensitivityAnalysis {
-  const baseResults = computeResults(decision);
+  const baseResults = precomputedBase ?? computeResults(decision);
   if (baseResults.optionResults.length === 0) {
     return { decisionId: decision.id, points: [], summary: "No options to analyze." };
   }
