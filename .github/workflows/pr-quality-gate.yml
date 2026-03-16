@@ -173,7 +173,7 @@ jobs:
           echo "*Generated automatically by PR Quality Gate*" >> pr-comment.md
 
       - name: Post or update comment
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           path: pr-comment.md
         env:
