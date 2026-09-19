@@ -156,13 +156,10 @@ function AppContent() {
   }, [loadDecision]);
 
   /** Navigate from dashboard to a specific decision (already loaded by Dashboard). */
-  const handleOpenFromDashboard = useCallback(
-    (..._args: [string]) => {
-      void _args;
-      setShowDashboard(false);
-    },
-    []
-  );
+  const handleOpenFromDashboard = useCallback((..._args: [string]) => {
+    void _args;
+    setShowDashboard(false);
+  }, []);
 
   /** Navigate from dashboard to a new blank decision. */
   const handleNewFromDashboard = useCallback(() => {
@@ -455,148 +452,143 @@ function AppContent() {
             ) : (
               <>
                 {/* Tabs */}
-            <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
-              <nav role="tablist" aria-label="Decision sections" className="flex">
-                {tabs.map((tab) => (
+                <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
+                  <nav role="tablist" aria-label="Decision sections" className="flex">
+                    {tabs.map((tab) => (
+                      <button
+                        key={tab.id}
+                        id={`tab-${tab.id}`}
+                        role="tab"
+                        aria-selected={activeTab === tab.id}
+                        aria-controls={`panel-${tab.id}`}
+                        tabIndex={activeTab === tab.id ? 0 : -1}
+                        onClick={() => setActiveTab(tab.id)}
+                        onKeyDown={handleTabKeyDown}
+                        className={`inline-flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-t-md ${
+                          activeTab === tab.id
+                            ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
+                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200"
+                        }`}
+                      >
+                        {tab.icon}
+                        {tab.label}
+                        {tab.id === "builder" && validation.errorCount > 0 && (
+                          <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white px-1">
+                            {validation.errorCount}
+                          </span>
+                        )}
+                        {tab.id === "results" &&
+                          completeness.total > 0 &&
+                          (completeness.percent === 100 ? (
+                            <span
+                              className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white px-1"
+                              title="All scores filled"
+                            >
+                              ✓
+                            </span>
+                          ) : completeness.percent < 50 ? (
+                            <span
+                              className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white px-1"
+                              title={`${completeness.percent}% of scores filled`}
+                            >
+                              ⚠
+                            </span>
+                          ) : null)}
+                      </button>
+                    ))}
+                  </nav>
+
+                  {/* Keyboard shortcut hint */}
                   <button
-                    key={tab.id}
-                    id={`tab-${tab.id}`}
-                    role="tab"
-                    aria-selected={activeTab === tab.id}
-                    aria-controls={`panel-${tab.id}`}
-                    tabIndex={activeTab === tab.id ? 0 : -1}
-                    onClick={() => setActiveTab(tab.id)}
-                    onKeyDown={handleTabKeyDown}
-                    className={`inline-flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-t-md ${
-                      activeTab === tab.id
-                        ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200"
-                    }`}
+                    ref={shortcutTriggerRef}
+                    onClick={() => setShowShortcuts(true)}
+                    className="ml-auto text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors hidden sm:inline-flex items-center gap-1"
+                    aria-label="Show keyboard shortcuts"
                   >
-                    {tab.icon}
-                    {tab.label}
-                    {tab.id === "builder" && validation.errorCount > 0 && (
-                      <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white px-1">
-                        {validation.errorCount}
-                      </span>
-                    )}
-                    {tab.id === "results" &&
-                      completeness.total > 0 &&
-                      (completeness.percent === 100 ? (
-                        <span
-                          className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white px-1"
-                          title="All scores filled"
-                        >
-                          ✓
-                        </span>
-                      ) : completeness.percent < 50 ? (
-                        <span
-                          className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white px-1"
-                          title={`${completeness.percent}% of scores filled`}
-                        >
-                          ⚠
-                        </span>
-                      ) : null)}
+                    <Keyboard className="h-3.5 w-3.5" />
+                    <kbd className="rounded border border-gray-300 dark:border-gray-600 px-1 py-0.5 text-[10px] font-mono">
+                      ?
+                    </kbd>
                   </button>
-                ))}
-              </nav>
+                </div>
 
-              {/* Keyboard shortcut hint */}
-              <button
-                ref={shortcutTriggerRef}
-                onClick={() => setShowShortcuts(true)}
-                className="ml-auto text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors hidden sm:inline-flex items-center gap-1"
-                aria-label="Show keyboard shortcuts"
-              >
-                <Keyboard className="h-3.5 w-3.5" />
-                <kbd className="rounded border border-gray-300 dark:border-gray-600 px-1 py-0.5 text-[10px] font-mono">
-                  ?
-                </kbd>
-              </button>
-            </div>
-
-            {/* Tab Panels */}
-            <div
-              id="panel-builder"
-              role="tabpanel"
-              aria-labelledby="tab-builder"
-              className={activeTab === "builder" ? "" : "hidden"}
-            >
-              {isLoading ? (
-                <DecisionSkeleton />
-              ) : (
-                <DecisionBuilder validation={validation} completeness={completeness} />
-              )}
-            </div>
-            {activeTab === "results" && (
-              <div id="panel-results" role="tabpanel" aria-labelledby="tab-results">
-                <ErrorBoundary
-                  fallback={(reset) => <TabErrorFallback tab="Results" onReset={reset} />}
+                {/* Tab Panels */}
+                <div
+                  id="panel-builder"
+                  role="tabpanel"
+                  aria-labelledby="tab-builder"
+                  className={activeTab === "builder" ? "" : "hidden"}
                 >
-                  <ResultsView
-                    validation={validation}
-                    completeness={completeness}
-                    onSwitchToBuilder={() => setActiveTab("builder")}
-                    onTabChange={(tab) => setActiveTab(tab as Tab)}
-                  />
-                </ErrorBoundary>
-              </div>
-            )}
-            {activeTab === "sensitivity" && (
-              <div id="panel-sensitivity" role="tabpanel" aria-labelledby="tab-sensitivity">
-                <ErrorBoundary
-                  fallback={(reset) => <TabErrorFallback tab="Sensitivity" onReset={reset} />}
-                >
-                  <Suspense fallback={<TabPanelSkeleton label="Sensitivity" />}>
-                    <SensitivityView />
-                  </Suspense>
-                </ErrorBoundary>
-              </div>
-            )}
-            {activeTab === "compare" && (
-              <div id="panel-compare" role="tabpanel" aria-labelledby="tab-compare">
-                <ErrorBoundary
-                  fallback={(reset) => <TabErrorFallback tab="Compare" onReset={reset} />}
-                >
-                  <Suspense fallback={<TabPanelSkeleton label="Compare" />}>
-                    <CompareView />
-                  </Suspense>
-                </ErrorBoundary>
-              </div>
-            )}
-            {activeTab === "montecarlo" && (
-              <div id="panel-montecarlo" role="tabpanel" aria-labelledby="tab-montecarlo">
-                <ErrorBoundary
-                  fallback={(reset) => <TabErrorFallback tab="Monte Carlo" onReset={reset} />}
-                >
-                  <Suspense fallback={<TabPanelSkeleton label="Monte Carlo" />}>
-                    <MonteCarloView />
-                  </Suspense>
-                </ErrorBoundary>
-              </div>
-            )}
-            {activeTab === "history" && (
-              <div id="panel-history" role="tabpanel" aria-labelledby="tab-history">
-                <ErrorBoundary
-                  fallback={(reset) => <TabErrorFallback tab="History" onReset={reset} />}
-                >
-                  <Suspense fallback={<TabPanelSkeleton label="History" />}>
-                    <VersionHistory />
-                  </Suspense>
-                </ErrorBoundary>
-              </div>
-            )}
+                  {isLoading ? (
+                    <DecisionSkeleton />
+                  ) : (
+                    <DecisionBuilder validation={validation} completeness={completeness} />
+                  )}
+                </div>
+                {activeTab === "results" && (
+                  <div id="panel-results" role="tabpanel" aria-labelledby="tab-results">
+                    <ErrorBoundary
+                      fallback={(reset) => <TabErrorFallback tab="Results" onReset={reset} />}
+                    >
+                      <ResultsView
+                        validation={validation}
+                        completeness={completeness}
+                        onSwitchToBuilder={() => setActiveTab("builder")}
+                        onTabChange={(tab) => setActiveTab(tab as Tab)}
+                      />
+                    </ErrorBoundary>
+                  </div>
+                )}
+                {activeTab === "sensitivity" && (
+                  <div id="panel-sensitivity" role="tabpanel" aria-labelledby="tab-sensitivity">
+                    <ErrorBoundary
+                      fallback={(reset) => <TabErrorFallback tab="Sensitivity" onReset={reset} />}
+                    >
+                      <Suspense fallback={<TabPanelSkeleton label="Sensitivity" />}>
+                        <SensitivityView />
+                      </Suspense>
+                    </ErrorBoundary>
+                  </div>
+                )}
+                {activeTab === "compare" && (
+                  <div id="panel-compare" role="tabpanel" aria-labelledby="tab-compare">
+                    <ErrorBoundary
+                      fallback={(reset) => <TabErrorFallback tab="Compare" onReset={reset} />}
+                    >
+                      <Suspense fallback={<TabPanelSkeleton label="Compare" />}>
+                        <CompareView />
+                      </Suspense>
+                    </ErrorBoundary>
+                  </div>
+                )}
+                {activeTab === "montecarlo" && (
+                  <div id="panel-montecarlo" role="tabpanel" aria-labelledby="tab-montecarlo">
+                    <ErrorBoundary
+                      fallback={(reset) => <TabErrorFallback tab="Monte Carlo" onReset={reset} />}
+                    >
+                      <Suspense fallback={<TabPanelSkeleton label="Monte Carlo" />}>
+                        <MonteCarloView />
+                      </Suspense>
+                    </ErrorBoundary>
+                  </div>
+                )}
+                {activeTab === "history" && (
+                  <div id="panel-history" role="tabpanel" aria-labelledby="tab-history">
+                    <ErrorBoundary
+                      fallback={(reset) => <TabErrorFallback tab="History" onReset={reset} />}
+                    >
+                      <Suspense fallback={<TabPanelSkeleton label="History" />}>
+                        <VersionHistory />
+                      </Suspense>
+                    </ErrorBoundary>
+                  </div>
+                )}
               </>
             )}
           </>
         )}
         {/* Mode toggle — visible when decision has data */}
-        {!showDashboard && !isEmpty && (
-          <ModeToggle
-            mode={mode}
-            onModeChange={setMode}
-          />
-        )}
+        {!showDashboard && !isEmpty && <ModeToggle mode={mode} onModeChange={setMode} />}
       </main>
 
       {/* Footer */}

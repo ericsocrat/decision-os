@@ -78,9 +78,7 @@ test.describe("Mode Toggle — Guided ↔ Advanced", () => {
     await expect(page.locator('button[role="tab"]:has-text("Builder")')).toBeVisible();
 
     // Decision title should still show demo data
-    await expect(page.locator('input[aria-label="Decision title"]')).toHaveValue(
-      /Best City/i,
-    );
+    await expect(page.locator('input[aria-label="Decision title"]')).toHaveValue(/Best City/i);
 
     // Switch back to guided
     await page.getByTestId("mode-guided").click();
@@ -97,6 +95,8 @@ test.describe("Mode Toggle — Guided ↔ Advanced", () => {
     await page.goto("/?share=test-share-id");
 
     // Should be in Advanced mode regardless of localStorage
-    await expect(page.locator('button[role="tab"]:has-text("Builder")')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('button[role="tab"]:has-text("Builder")')).toBeVisible({
+      timeout: 10000,
+    });
   });
 });

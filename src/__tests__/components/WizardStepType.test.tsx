@@ -4,7 +4,7 @@
  * @see https://github.com/ericsocrat/decision-os/issues/226
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { screen, fireEvent, within } from "@testing-library/react";
 import { renderWithProviders } from "../test-utils";
 import { WizardStepType } from "@/components/wizard/WizardStepType";

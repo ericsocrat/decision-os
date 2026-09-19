@@ -9,9 +9,9 @@ import { ResultsView } from "@/components/ResultsView";
 import type { ValidationResult } from "@/hooks/useValidation";
 import type { CompletenessResult } from "@/lib/completeness";
 
-// Mock lazy-loaded ScoreChart
-vi.mock("@/components/ScoreChart", () => ({
-  ScoreChart: () => <div data-testid="score-chart">Chart</div>,
+// Mock the lazy chart bundle; chart behavior has dedicated component tests.
+vi.mock("@/components/ResultsCharts", () => ({
+  default: () => <div data-testid="results-charts">Charts</div>,
 }));
 
 const validResult: ValidationResult = {

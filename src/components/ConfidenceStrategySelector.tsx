@@ -48,10 +48,7 @@ const STRATEGIES: {
   },
 ];
 
-export function ConfidenceStrategySelector({
-  value,
-  onChange,
-}: ConfidenceStrategySelectorProps) {
+export function ConfidenceStrategySelector({ value, onChange }: ConfidenceStrategySelectorProps) {
   return (
     <div
       className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4"
@@ -81,9 +78,7 @@ export function ConfidenceStrategySelector({
             >
               <Icon
                 className={`h-4 w-4 mt-0.5 shrink-0 ${
-                  selected
-                    ? "text-blue-600 dark:text-blue-400"
-                    : "text-gray-400 dark:text-gray-500"
+                  selected ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"
                 }`}
                 aria-hidden
               />

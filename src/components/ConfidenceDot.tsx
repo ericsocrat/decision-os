@@ -46,7 +46,9 @@ export function ConfidenceDot({ confidence, onChange, size = "sm" }: ConfidenceD
       aria-label={`${CONF_LABELS[confidence]} — click to change to ${CONF_LABELS[next].toLowerCase()}`}
       title={CONF_LABELS[confidence]}
     >
-      <span className={`block rounded-full ${dotSize} ${CONF_COLORS[confidence]} ring-1 ring-inset ring-black/10 dark:ring-white/20`} />
+      <span
+        className={`block rounded-full ${dotSize} ${CONF_COLORS[confidence]} ring-1 ring-inset ring-black/10 dark:ring-white/20`}
+      />
     </button>
   );
 }

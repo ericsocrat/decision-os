@@ -152,9 +152,7 @@ function detectAnchoring(decisions: Decision[]): DecisionPattern | undefined {
       `In ${(ratio * 100).toFixed(0)}% of your decisions, the first option scores highest. ` +
       "Try reordering options to check for anchoring bias.",
     confidence: Math.min(1, ratio),
-    evidence: [
-      `First option highest in ${firstHighest}/${eligible.length} decisions`,
-    ],
+    evidence: [`First option highest in ${firstHighest}/${eligible.length} decisions`],
   };
 }
 
@@ -228,10 +226,7 @@ interface PredComparison {
 /**
  * Build prediction–outcome comparisons from decision + outcome data.
  */
-function buildComparisons(
-  decisions: Decision[],
-  outcomes: DecisionOutcome[],
-): PredComparison[] {
+function buildComparisons(decisions: Decision[], outcomes: DecisionOutcome[]): PredComparison[] {
   const comparisons: PredComparison[] = [];
 
   for (const outcome of outcomes) {
@@ -258,19 +253,19 @@ function detectDeltaBias(comparisons: PredComparison[]): DecisionPattern | undef
   if (Math.abs(avgDelta) <= 1) return undefined;
 
   const direction = avgDelta < 0 ? "over-predicting" : "under-predicting";
-  const suffix = avgDelta < 0
-    ? "Your predictions are more optimistic than actual results."
-    : "Actual outcomes tend to exceed your predictions.";
+  const suffix =
+    avgDelta < 0
+      ? "Your predictions are more optimistic than actual results."
+      : "Actual outcomes tend to exceed your predictions.";
 
   return {
     id: generateId(),
     type: "prediction-accuracy",
     title: avgDelta < 0 ? "Optimism Bias" : "Pessimism Bias",
-    description:
-      `You tend to be ${direction} outcomes by an average of ${Math.abs(avgDelta).toFixed(1)} points. ${suffix}`,
+    description: `You tend to be ${direction} outcomes by an average of ${Math.abs(avgDelta).toFixed(1)} points. ${suffix}`,
     confidence: Math.min(1, Math.abs(avgDelta) / 5),
     evidence: comparisons.map(
-      (c) => `"${c.title}": predicted ${c.predicted.toFixed(1)}, actual ${c.actual}`,
+      (c) => `"${c.title}": predicted ${c.predicted.toFixed(1)}, actual ${c.actual}`
     ),
   };
 }
@@ -314,7 +309,7 @@ function detectConsistentDirection(comparisons: PredComparison[]): DecisionPatte
  */
 function detectPredictionAccuracy(
   decisions: Decision[],
-  outcomes: DecisionOutcome[],
+  outcomes: DecisionOutcome[]
 ): DecisionPattern[] {
   const comparisons = buildComparisons(decisions, outcomes);
   if (comparisons.length < 2) return [];
@@ -363,9 +358,7 @@ function detectCriterionReuse(decisions: Decision[]): DecisionPattern[] {
         reused.map((r) => `"${r.name}" (${r.count}x)`).join(", ") +
         ". These seem to be core values driving your decisions.",
       confidence: Math.min(1, reused[0].count / decisions.length),
-      evidence: reused.map(
-        (r) => `"${r.name}" used in ${r.count}/${decisions.length} decisions`,
-      ),
+      evidence: reused.map((r) => `"${r.name}" used in ${r.count}/${decisions.length} decisions`),
     });
   }
 
@@ -382,7 +375,7 @@ function detectCriterionReuse(decisions: Decision[]): DecisionPattern[] {
  */
 export function detectPatterns(
   decisions: Decision[],
-  outcomes: DecisionOutcome[] = [],
+  outcomes: DecisionOutcome[] = []
 ): DecisionPattern[] {
   if (decisions.length < MIN_DECISIONS) return [];
 

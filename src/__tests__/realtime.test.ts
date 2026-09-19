@@ -135,7 +135,7 @@ describe("realtime engine", () => {
           displayName: "Alice",
           avatarUrl: "https://example.com/avatar.png",
           editingField: null,
-        }),
+        })
       );
     });
 
@@ -199,7 +199,7 @@ describe("realtime engine", () => {
             senderId: "u-1",
             action,
           }),
-        }),
+        })
       );
     });
 
@@ -227,7 +227,7 @@ describe("realtime engine", () => {
             senderId: "u-1",
             decision,
           }),
-        }),
+        })
       );
     });
   });
@@ -255,7 +255,7 @@ describe("realtime engine", () => {
       expect(mockChannel.track).toHaveBeenCalledWith(
         expect.objectContaining({
           editingField: "title",
-        }),
+        })
       );
     });
 

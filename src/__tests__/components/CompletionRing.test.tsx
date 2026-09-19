@@ -32,7 +32,13 @@ describe("CompletionRing", () => {
   it("shows 'fully informed' message at 100%", () => {
     render(
       <CompletionRing
-        completeness={makeCompleteness({ filled: 6, total: 6, ratio: 1, percent: 100, tier: "blue" })}
+        completeness={makeCompleteness({
+          filled: 6,
+          total: 6,
+          ratio: 1,
+          percent: 100,
+          tier: "blue",
+        })}
       />
     );
     expect(screen.getByText("100%")).toBeInTheDocument();
@@ -45,9 +51,7 @@ describe("CompletionRing", () => {
   });
 
   it("renders SVG with correct size", () => {
-    const { container } = render(
-      <CompletionRing completeness={makeCompleteness()} size={120} />
-    );
+    const { container } = render(<CompletionRing completeness={makeCompleteness()} size={120} />);
     const svg = container.querySelector("svg");
     expect(svg).toHaveAttribute("width", "120");
     expect(svg).toHaveAttribute("height", "120");

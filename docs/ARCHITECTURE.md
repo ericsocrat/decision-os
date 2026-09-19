@@ -66,16 +66,16 @@ Decision OS is a client-side web application built with Next.js 16 (App Router),
 
 #### Data & Storage
 
-| File                | Responsibility                                                           |
-| ------------------- | ------------------------------------------------------------------------ |
-| `storage.ts`          | localStorage CRUD operations                                             |
-| `cloud-storage.ts`    | Supabase cloud CRUD (guarded, returns empty when offline)                |
-| `sync.ts`             | Bidirectional sync engine (local ↔ cloud, last-write-wins)               |
-| `supabase.ts`         | Supabase client singleton with feature-flag guard                        |
-| `supabase-types.ts`   | Generated Supabase Database types for the decisions table                |
-| `rate-limiter.ts`     | Client-side rate limiter with exponential backoff for Supabase API calls |
-| `realtime.ts`         | Realtime collaboration engine (Broadcast + Presence via Supabase)        |
-| `realtime-types.ts`   | Type definitions for realtime collaboration (presence, broadcast, config) |
+| File                | Responsibility                                                            |
+| ------------------- | ------------------------------------------------------------------------- |
+| `storage.ts`        | localStorage CRUD operations                                              |
+| `cloud-storage.ts`  | Supabase cloud CRUD (guarded, returns empty when offline)                 |
+| `sync.ts`           | Bidirectional sync engine (local ↔ cloud, last-write-wins)                |
+| `supabase.ts`       | Supabase client singleton with feature-flag guard                         |
+| `supabase-types.ts` | Generated Supabase Database types for the decisions table                 |
+| `rate-limiter.ts`   | Client-side rate limiter with exponential backoff for Supabase API calls  |
+| `realtime.ts`       | Realtime collaboration engine (Broadcast + Presence via Supabase)         |
+| `realtime-types.ts` | Type definitions for realtime collaboration (presence, broadcast, config) |
 
 #### Feature Modules
 
@@ -207,11 +207,11 @@ Decision OS is a client-side web application built with Next.js 16 (App Router),
 
 #### Collaboration (Real-Time)
 
-| File                       | Responsibility                                                        |
-| -------------------------- | --------------------------------------------------------------------- |
-| `CollaborationProvider.tsx` | Context provider wrapping `useRealtime` hook for the component tree   |
-| `CollaborationBadge.tsx`    | Connection status indicator (green/yellow dot) with live count        |
-| `PresenceAvatars.tsx`       | Stacked avatar circles for connected collaborators with overflow      |
+| File                        | Responsibility                                                      |
+| --------------------------- | ------------------------------------------------------------------- |
+| `CollaborationProvider.tsx` | Context provider wrapping `useRealtime` hook for the component tree |
+| `CollaborationBadge.tsx`    | Connection status indicator (green/yellow dot) with live count      |
+| `PresenceAvatars.tsx`       | Stacked avatar circles for connected collaborators with overflow    |
 
 #### UX & Onboarding
 

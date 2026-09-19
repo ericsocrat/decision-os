@@ -45,12 +45,8 @@ describe("UniversityRankingsProvider", () => {
 
   it("supports valid university queries", () => {
     expect(provider.supports(query())).toBe(true);
-    expect(
-      provider.supports(query({ metric: "academic-reputation" })),
-    ).toBe(true);
-    expect(
-      provider.supports(query({ metric: "city-university-density" })),
-    ).toBe(true);
+    expect(provider.supports(query({ metric: "academic-reputation" }))).toBe(true);
+    expect(provider.supports(query({ metric: "city-university-density" }))).toBe(true);
   });
 
   it("rejects unsupported category", () => {
@@ -82,9 +78,7 @@ describe("UniversityRankingsProvider", () => {
     expect(result?.value).toBe(100);
 
     // Check a lower-ranked university
-    const result2 = await provider.fetch(
-      query({ city: "São Paulo", country: "BR" }),
-    );
+    const result2 = await provider.fetch(query({ city: "São Paulo", country: "BR" }));
     expect(result2).not.toBeNull();
     // rank 100 → (200-100+1)/200*100 = 50.5
     expect(result2?.value).toBe(50.5);
@@ -92,9 +86,7 @@ describe("UniversityRankingsProvider", () => {
   });
 
   it("returns direct score metrics (academic-reputation)", async () => {
-    const result = await provider.fetch(
-      query({ metric: "academic-reputation" }),
-    );
+    const result = await provider.fetch(query({ metric: "academic-reputation" }));
     expect(result).not.toBeNull();
     // MIT academic reputation = 100
     expect(result?.rawValue).toBe(100);
@@ -127,7 +119,7 @@ describe("UniversityRankingsProvider", () => {
         city: "London",
         country: "GB",
         metric: "city-university-density",
-      }),
+      })
     );
     expect(result).not.toBeNull();
     expect(result?.rawValue).toBeGreaterThanOrEqual(3);
@@ -135,18 +127,14 @@ describe("UniversityRankingsProvider", () => {
   });
 
   it("matches city and country case-insensitively", async () => {
-    const result = await provider.fetch(
-      query({ city: "cambridge", country: "us" }),
-    );
+    const result = await provider.fetch(query({ city: "cambridge", country: "us" }));
     expect(result).not.toBeNull();
     expect(result?.rawValue).toBe(1);
   });
 
   it("picks best university when city has multiple", async () => {
     // Beijing has Peking U (rank 14) and Tsinghua (rank 19)
-    const result = await provider.fetch(
-      query({ city: "Beijing", country: "CN" }),
-    );
+    const result = await provider.fetch(query({ city: "Beijing", country: "CN" }));
     expect(result).not.toBeNull();
     expect(result?.rawValue).toBe(14); // Peking is ranked higher
   });
@@ -155,9 +143,7 @@ describe("UniversityRankingsProvider", () => {
 
   it("returns Tier 3 data for unknown city in known country", async () => {
     // Houston is not in the dataset but US has universities
-    const result = await provider.fetch(
-      query({ city: "Houston", country: "US" }),
-    );
+    const result = await provider.fetch(query({ city: "Houston", country: "US" }));
     // No universities in Houston → falls through to country estimate
     expect(result).not.toBeNull();
     expect(result?.tier).toBe(3);
@@ -168,9 +154,7 @@ describe("UniversityRankingsProvider", () => {
   });
 
   it("returns Tier 3 data for country-only query (no city)", async () => {
-    const result = await provider.fetch(
-      query({ city: undefined, country: "GB" }),
-    );
+    const result = await provider.fetch(query({ city: undefined, country: "GB" }));
     expect(result).not.toBeNull();
     expect(result?.tier).toBe(3);
     // Best GB university is Cambridge, rank 2
@@ -178,9 +162,7 @@ describe("UniversityRankingsProvider", () => {
   });
 
   it("returns null for completely unknown country", async () => {
-    const result = await provider.fetch(
-      query({ city: "Unknown", country: "XX" }),
-    );
+    const result = await provider.fetch(query({ city: "Unknown", country: "XX" }));
     expect(result).toBeNull();
   });
 

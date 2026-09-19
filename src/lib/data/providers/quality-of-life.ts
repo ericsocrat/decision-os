@@ -72,10 +72,7 @@ export class QualityOfLifeProvider extends DataProvider {
   ] as const;
 
   supports(query: DataQuery): boolean {
-    return (
-      SUPPORTED_CATEGORIES.has(query.category) &&
-      SUPPORTED_METRICS.includes(query.metric)
-    );
+    return SUPPORTED_CATEGORIES.has(query.category) && SUPPORTED_METRICS.includes(query.metric);
   }
 
   protected async fetchData(query: DataQuery): Promise<DataPoint | null> {
@@ -141,7 +138,7 @@ export class QualityOfLifeProvider extends DataProvider {
     entry: QualityOfLifeData,
     metric: string,
     confidence: number,
-    tier: 2 | 3,
+    tier: 2 | 3
   ): DataPoint | null {
     const field = METRIC_TO_FIELD[metric];
     if (field === undefined) return null;

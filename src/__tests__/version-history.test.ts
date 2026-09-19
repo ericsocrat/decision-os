@@ -53,9 +53,7 @@ function makeDecisionV2(overrides: Partial<Decision> = {}): Decision {
       { id: "o2", name: "Option B" },
       { id: "o3", name: "Option C" },
     ],
-    criteria: [
-      { id: "c1", name: "Speed", weight: 70, type: "benefit" },
-    ],
+    criteria: [{ id: "c1", name: "Speed", weight: 70, type: "benefit" }],
     scores: { o1: { c1: 9 }, o2: { c1: 4 }, o3: { c1: 6 } },
     ...overrides,
   });
@@ -223,7 +221,7 @@ describe("pruneVersions", () => {
     for (let i = 0; i < 5; i++) {
       await saveVersion(
         makeDecision({ scores: { o1: { c1: i }, o2: { c1: i + 10 } } }),
-        `label-${i}`,
+        `label-${i}`
       );
     }
     expect(getVersions("dec-1")).toHaveLength(5);
@@ -297,8 +295,12 @@ describe("autoVersion", () => {
 
     resetAutoVersionThrottle();
 
-    const v1 = await autoVersion(makeDecision({ id: "dec-1", scores: { o1: { c1: 10 }, o2: { c1: 1 } } }));
-    const v2 = await autoVersion(makeDecision({ id: "dec-2", scores: { o1: { c1: 1 }, o2: { c1: 10 } } }));
+    const v1 = await autoVersion(
+      makeDecision({ id: "dec-1", scores: { o1: { c1: 10 }, o2: { c1: 1 } } })
+    );
+    const v2 = await autoVersion(
+      makeDecision({ id: "dec-2", scores: { o1: { c1: 1 }, o2: { c1: 10 } } })
+    );
     expect(v1).not.toBeNull();
     expect(v2).not.toBeNull();
   });
@@ -399,9 +401,7 @@ describe("diffVersions", () => {
       ],
     });
     const diff = diffVersions(older, newer);
-    expect(diff.changedWeights).toEqual([
-      { name: "Speed", oldWeight: 50, newWeight: 80 },
-    ]);
+    expect(diff.changedWeights).toEqual([{ name: "Speed", oldWeight: 50, newWeight: 80 }]);
   });
 
   it("detects score changes", () => {
@@ -424,9 +424,7 @@ describe("diffVersions", () => {
     expect(diff.removedOptions).toEqual([]);
     expect(diff.removedCriteria).toEqual(["Cost"]);
     expect(diff.addedCriteria).toEqual([]);
-    expect(diff.changedWeights).toEqual([
-      { name: "Speed", oldWeight: 50, newWeight: 70 },
-    ]);
+    expect(diff.changedWeights).toEqual([{ name: "Speed", oldWeight: 50, newWeight: 70 }]);
     // o1.c1: 7→9, o2.c1: 5→4
     expect(diff.changedScores).toBe(2);
   });

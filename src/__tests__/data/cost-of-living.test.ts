@@ -95,9 +95,7 @@ describe("CostOfLivingProvider", () => {
   });
 
   it("falls back to first country entry when no city specified", async () => {
-    const result = await provider.fetch(
-      query({ country: "US", city: undefined }),
-    );
+    const result = await provider.fetch(query({ country: "US", city: undefined }));
     expect(result).not.toBeNull();
     // Should match the first US city in dataset (New York)
     expect(result?.rawValue).toBe(3500);
@@ -106,9 +104,7 @@ describe("CostOfLivingProvider", () => {
   // ── Tier 3 — estimation ─────────────────────────────────────────
 
   it("returns Tier 3 estimated data for unknown city in known country", async () => {
-    const result = await provider.fetch(
-      query({ country: "US", city: "Nowhere Town" }),
-    );
+    const result = await provider.fetch(query({ country: "US", city: "Nowhere Town" }));
     expect(result).not.toBeNull();
     expect(result?.tier).toBe(3);
     expect(result?.source).toContain("estimated");
@@ -116,9 +112,7 @@ describe("CostOfLivingProvider", () => {
   });
 
   it("returns Tier 3 for a low-income country not in dataset", async () => {
-    const result = await provider.fetch(
-      query({ country: "ET", city: "Bahir Dar" }),
-    );
+    const result = await provider.fetch(query({ country: "ET", city: "Bahir Dar" }));
     expect(result).not.toBeNull();
     expect(result?.tier).toBe(3);
     expect(result?.confidence).toBe(0.4);
@@ -127,9 +121,7 @@ describe("CostOfLivingProvider", () => {
   });
 
   it("returns null for a country not in income-group map", async () => {
-    const result = await provider.fetch(
-      query({ country: "XX", city: "Unknown" }),
-    );
+    const result = await provider.fetch(query({ country: "XX", city: "Unknown" }));
     expect(result).toBeNull();
   });
 
@@ -138,16 +130,14 @@ describe("CostOfLivingProvider", () => {
   it("returns null when metric has no field mapping (bypasses supports)", async () => {
     // Calling fetch() directly with an unsupported metric exercises the
     // field === undefined guards in both lookupBundled and estimate
-    const result = await provider.fetch(
-      query({ metric: "nonexistent-metric" }),
-    );
+    const result = await provider.fetch(query({ metric: "nonexistent-metric" }));
     expect(result).toBeNull();
   });
 
   it("returns null for unknown metric with estimation-eligible country", async () => {
     // Country in income-group map but metric is invalid
     const result = await provider.fetch(
-      query({ country: "ET", city: "Addis Ababa", metric: "fake-metric" }),
+      query({ country: "ET", city: "Addis Ababa", metric: "fake-metric" })
     );
     expect(result).toBeNull();
   });

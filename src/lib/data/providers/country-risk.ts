@@ -12,11 +12,7 @@
 
 import { DataProvider } from "../provider";
 import type { DataPoint, DataQuery } from "../provider";
-import {
-  COUNTRY_RISK_DATA,
-  WGI_MIN,
-  WGI_MAX,
-} from "../datasets/country-risk";
+import { COUNTRY_RISK_DATA, WGI_MIN, WGI_MAX } from "../datasets/country-risk";
 import type { CountryRiskData } from "../datasets/country-risk";
 
 // ---------------------------------------------------------------------------
@@ -47,9 +43,7 @@ export class CountryRiskProvider extends DataProvider {
   readonly categories = ["safety"] as const;
 
   supports(query: DataQuery): boolean {
-    return (
-      query.category === "safety" && SUPPORTED_METRICS.includes(query.metric)
-    );
+    return query.category === "safety" && SUPPORTED_METRICS.includes(query.metric);
   }
 
   protected async fetchData(query: DataQuery): Promise<DataPoint | null> {
@@ -108,8 +102,6 @@ export class CountryRiskProvider extends DataProvider {
 
   private findCountry(country: string): CountryRiskData | undefined {
     const upper = country.toUpperCase();
-    return COUNTRY_RISK_DATA.find(
-      (c) => c.country.toUpperCase() === upper,
-    );
+    return COUNTRY_RISK_DATA.find((c) => c.country.toUpperCase() === upper);
   }
 }

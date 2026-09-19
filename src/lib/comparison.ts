@@ -263,9 +263,7 @@ export function compareDecisions(decA: Decision, decB: Decision): ComparisonResu
   // Summary
   const rankedDifferently = options.shared.filter((o) => o.rankDelta !== 0).length;
   const maxRankChange =
-    options.shared.length > 0
-      ? Math.max(...options.shared.map((o) => Math.abs(o.rankDelta)))
-      : 0;
+    options.shared.length > 0 ? Math.max(...options.shared.map((o) => Math.abs(o.rankDelta))) : 0;
 
   let summary: string;
   if (options.shared.length === 0) {

@@ -64,7 +64,7 @@ describe("HelpTooltip", () => {
       <div>
         <HelpTooltip topic="topsis" />
         <button>other</button>
-      </div>,
+      </div>
     );
 
     await user.tab();
@@ -81,7 +81,7 @@ describe("HelpTooltip", () => {
       <div>
         <HelpTooltip topic="topsis" />
         <button>other</button>
-      </div>,
+      </div>
     );
 
     await user.tab(); // focuses trigger
@@ -119,7 +119,7 @@ describe("HelpTooltip", () => {
       <div>
         <HelpTooltip topic="sensitivity" />
         <button>other</button>
-      </div>,
+      </div>
     );
     const btn = screen.getByTestId("help-trigger-sensitivity");
 
@@ -136,7 +136,7 @@ describe("HelpTooltip", () => {
       <div>
         <HelpTooltip topic="ahp" />
         <button data-testid="outside">outside</button>
-      </div>,
+      </div>
     );
     const btn = screen.getByTestId("help-trigger-ahp");
 
@@ -153,7 +153,7 @@ describe("HelpTooltip", () => {
       <div>
         <HelpTooltip topic="wsm" />
         <button>other</button>
-      </div>,
+      </div>
     );
     const btn = screen.getByTestId("help-trigger-wsm");
 
@@ -190,7 +190,7 @@ describe("HelpTooltip", () => {
       <div>
         <HelpTooltip topic="wsm" />
         <HelpTooltip topic="topsis" />
-      </div>,
+      </div>
     );
 
     fireEvent.click(screen.getByTestId("help-trigger-wsm"));
@@ -214,7 +214,7 @@ describe("HelpTooltip", () => {
     render(
       <HelpTooltip topic="wsm">
         <span data-testid="custom-child">Custom trigger</span>
-      </HelpTooltip>,
+      </HelpTooltip>
     );
 
     expect(screen.getByTestId("custom-child")).toBeInTheDocument();

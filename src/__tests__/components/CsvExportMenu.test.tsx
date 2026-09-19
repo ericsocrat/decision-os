@@ -61,9 +61,7 @@ describe("CsvExportMenu", () => {
 
   it("renders the Export CSV button", () => {
     renderWithProviders(<CsvExportMenu {...defaultProps} />);
-    expect(
-      screen.getByRole("button", { name: /export csv/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /export csv/i })).toBeInTheDocument();
   });
 
   it("does not show dropdown initially", () => {
@@ -72,9 +70,7 @@ describe("CsvExportMenu", () => {
   });
 
   it("opens dropdown on click", async () => {
-    const { user } = renderWithProviders(
-      <CsvExportMenu {...defaultProps} />,
-    );
+    const { user } = renderWithProviders(<CsvExportMenu {...defaultProps} />);
     await user.click(screen.getByRole("button", { name: /export csv/i }));
     const menu = screen.getByRole("menu");
     expect(menu).toBeInTheDocument();
@@ -84,9 +80,7 @@ describe("CsvExportMenu", () => {
   });
 
   it("closes dropdown on second click", async () => {
-    const { user } = renderWithProviders(
-      <CsvExportMenu {...defaultProps} />,
-    );
+    const { user } = renderWithProviders(<CsvExportMenu {...defaultProps} />);
     const btn = screen.getByRole("button", { name: /export csv/i });
     await user.click(btn);
     expect(screen.getByRole("menu")).toBeInTheDocument();
@@ -96,9 +90,7 @@ describe("CsvExportMenu", () => {
 
   it("calls downloadCSV when Decision Matrix is clicked", async () => {
     const { downloadCSV } = await import("@/lib/csv-export");
-    const { user } = renderWithProviders(
-      <CsvExportMenu {...defaultProps} />,
-    );
+    const { user } = renderWithProviders(<CsvExportMenu {...defaultProps} />);
     await user.click(screen.getByRole("button", { name: /export csv/i }));
     await user.click(screen.getByText("Decision Matrix"));
     expect(downloadCSV).toHaveBeenCalledOnce();
@@ -107,9 +99,7 @@ describe("CsvExportMenu", () => {
 
   it("calls downloadCSV when Results Summary is clicked", async () => {
     const { downloadCSV } = await import("@/lib/csv-export");
-    const { user } = renderWithProviders(
-      <CsvExportMenu {...defaultProps} />,
-    );
+    const { user } = renderWithProviders(<CsvExportMenu {...defaultProps} />);
     await user.click(screen.getByRole("button", { name: /export csv/i }));
     await user.click(screen.getByText("Results Summary"));
     expect(downloadCSV).toHaveBeenCalledOnce();
@@ -117,9 +107,7 @@ describe("CsvExportMenu", () => {
   });
 
   it("has correct ARIA attributes", async () => {
-    const { user } = renderWithProviders(
-      <CsvExportMenu {...defaultProps} />,
-    );
+    const { user } = renderWithProviders(<CsvExportMenu {...defaultProps} />);
     const btn = screen.getByRole("button", { name: /export csv/i });
     expect(btn).toHaveAttribute("aria-haspopup", "true");
     expect(btn).toHaveAttribute("aria-expanded", "false");

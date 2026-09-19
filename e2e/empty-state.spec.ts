@@ -42,8 +42,14 @@ test.describe("Empty State — First Visit", () => {
     await expect(page.getByTestId("empty-state")).not.toBeVisible({ timeout: 5000 });
 
     // Guided wizard or builder should be present (new blank decision)
-    const hasWizard = await page.getByTestId("guided-wizard").isVisible().catch(() => false);
-    const hasBuilder = await page.locator('button[role="tab"]:has-text("Builder")').isVisible().catch(() => false);
+    const hasWizard = await page
+      .getByTestId("guided-wizard")
+      .isVisible()
+      .catch(() => false);
+    const hasBuilder = await page
+      .locator('button[role="tab"]:has-text("Builder")')
+      .isVisible()
+      .catch(() => false);
     expect(hasWizard || hasBuilder).toBe(true);
   });
 

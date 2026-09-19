@@ -10,12 +10,7 @@
  * @module lib/provenance
  */
 
-import type {
-  Decision,
-  ScoreMetadata,
-  ScoreMetadataMatrix,
-  ScoreProvenance,
-} from "./types";
+import type { Decision, ScoreMetadata, ScoreMetadataMatrix, ScoreProvenance } from "./types";
 
 // ---------------------------------------------------------------------------
 // Factory helpers
@@ -30,7 +25,7 @@ export function createManualMetadata(): ScoreMetadata {
 export function createEnrichedMetadata(
   value: number,
   source: string,
-  tier: 1 | 2 | 3,
+  tier: 1 | 2 | 3
 ): ScoreMetadata {
   return {
     provenance: "enriched",
@@ -44,10 +39,7 @@ export function createEnrichedMetadata(
  * Create metadata for a user override of an enriched score.
  * Preserves the original enrichment information so the value can be restored.
  */
-export function createOverrideMetadata(
-  existing: ScoreMetadata,
-  reason?: string,
-): ScoreMetadata {
+export function createOverrideMetadata(existing: ScoreMetadata, reason?: string): ScoreMetadata {
   return {
     provenance: "overridden",
     enrichedValue: existing.enrichedValue,
@@ -66,7 +58,7 @@ export function createOverrideMetadata(
 export function getProvenance(
   decision: Readonly<Decision>,
   optionId: string,
-  criterionId: string,
+  criterionId: string
 ): ScoreProvenance {
   return decision.scoreMetadata?.[optionId]?.[criterionId]?.provenance ?? "manual";
 }
@@ -75,7 +67,7 @@ export function getProvenance(
 export function getMetadata(
   decision: Readonly<Decision>,
   optionId: string,
-  criterionId: string,
+  criterionId: string
 ): ScoreMetadata | undefined {
   return decision.scoreMetadata?.[optionId]?.[criterionId];
 }
@@ -87,7 +79,7 @@ export function getMetadata(
 export function canRestoreEnriched(
   decision: Readonly<Decision>,
   optionId: string,
-  criterionId: string,
+  criterionId: string
 ): boolean {
   const meta = getMetadata(decision, optionId, criterionId);
   return meta?.provenance === "overridden" && meta.enrichedValue !== undefined;
@@ -102,7 +94,7 @@ export function setMetadataCell(
   matrix: ScoreMetadataMatrix | undefined,
   optionId: string,
   criterionId: string,
-  metadata: ScoreMetadata,
+  metadata: ScoreMetadata
 ): ScoreMetadataMatrix {
   const current = matrix ?? {};
   const optionRow = current[optionId];
@@ -118,7 +110,7 @@ export function setMetadataCell(
 /** Remove metadata for a deleted option. */
 export function removeOptionMetadata(
   matrix: ScoreMetadataMatrix | undefined,
-  optionId: string,
+  optionId: string
 ): ScoreMetadataMatrix | undefined {
   if (!matrix?.[optionId]) return matrix;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -129,7 +121,7 @@ export function removeOptionMetadata(
 /** Remove metadata for a deleted criterion across all options. */
 export function removeCriterionMetadata(
   matrix: ScoreMetadataMatrix | undefined,
-  criterionId: string,
+  criterionId: string
 ): ScoreMetadataMatrix | undefined {
   if (!matrix) return undefined;
   let changed = false;

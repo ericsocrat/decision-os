@@ -46,25 +46,15 @@ describe("QualityOfLifeProvider", () => {
 
   it("supports valid queries across multiple categories", () => {
     expect(provider.supports(query())).toBe(true);
+    expect(provider.supports(query({ category: "healthcare", metric: "healthcare-index" }))).toBe(
+      true
+    );
+    expect(provider.supports(query({ category: "climate", metric: "climate-comfort" }))).toBe(true);
+    expect(provider.supports(query({ category: "environment", metric: "pollution-index" }))).toBe(
+      true
+    );
     expect(
-      provider.supports(
-        query({ category: "healthcare", metric: "healthcare-index" }),
-      ),
-    ).toBe(true);
-    expect(
-      provider.supports(
-        query({ category: "climate", metric: "climate-comfort" }),
-      ),
-    ).toBe(true);
-    expect(
-      provider.supports(
-        query({ category: "environment", metric: "pollution-index" }),
-      ),
-    ).toBe(true);
-    expect(
-      provider.supports(
-        query({ category: "infrastructure", metric: "infrastructure-quality" }),
-      ),
+      provider.supports(query({ category: "infrastructure", metric: "infrastructure-quality" }))
     ).toBe(true);
   });
 
@@ -95,7 +85,7 @@ describe("QualityOfLifeProvider", () => {
         country: "FI",
         category: "environment",
         metric: "pollution-index",
-      }),
+      })
     );
     // Delhi: pollutionIndex = 85 (high) → inverted score should be low
     const delhi = await provider.fetch(
@@ -104,7 +94,7 @@ describe("QualityOfLifeProvider", () => {
         country: "IN",
         category: "environment",
         metric: "pollution-index",
-      }),
+      })
     );
 
     expect(helsinki).not.toBeNull();
@@ -126,26 +116,20 @@ describe("QualityOfLifeProvider", () => {
     ];
 
     for (const metric of metrics) {
-      const result = await provider.fetch(
-        query({ metric, category: "safety" }),
-      );
+      const result = await provider.fetch(query({ metric, category: "safety" }));
       expect(result).not.toBeNull();
       expect(result?.tier).toBe(2);
     }
   });
 
   it("matches city and country case-insensitively", async () => {
-    const result = await provider.fetch(
-      query({ city: "new york", country: "us" }),
-    );
+    const result = await provider.fetch(query({ city: "new york", country: "us" }));
     expect(result).not.toBeNull();
     expect(result?.rawValue).toBe(52);
   });
 
   it("falls back to first country entry when no city specified", async () => {
-    const result = await provider.fetch(
-      query({ city: undefined, country: "US" }),
-    );
+    const result = await provider.fetch(query({ city: undefined, country: "US" }));
     expect(result).not.toBeNull();
     // First US city is New York
     expect(result?.rawValue).toBe(52);
@@ -155,9 +139,7 @@ describe("QualityOfLifeProvider", () => {
 
   it("returns Tier 3 data for unknown city in known country region", async () => {
     // Austin is not in the dataset but US → "north-america" region
-    const result = await provider.fetch(
-      query({ city: "Austin", country: "US" }),
-    );
+    const result = await provider.fetch(query({ city: "Austin", country: "US" }));
     expect(result).not.toBeNull();
     expect(result?.tier).toBe(3);
     expect(result?.confidence).toBe(0.4);
@@ -175,7 +157,7 @@ describe("QualityOfLifeProvider", () => {
         country: "PK",
         category: "environment",
         metric: "pollution-index",
-      }),
+      })
     );
     expect(result).not.toBeNull();
     expect(result?.rawValue).toBe(72); // South Asia pollution avg
@@ -183,24 +165,20 @@ describe("QualityOfLifeProvider", () => {
   });
 
   it("returns null for completely unknown country", async () => {
-    const result = await provider.fetch(
-      query({ city: "Unknown", country: "XX" }),
-    );
+    const result = await provider.fetch(query({ city: "Unknown", country: "XX" }));
     expect(result).toBeNull();
   });
 
   // ── Defensive guards (field === undefined) ──────────────────────
 
   it("returns null when metric has no field mapping (bypasses supports)", async () => {
-    const result = await provider.fetch(
-      query({ metric: "nonexistent-metric" }),
-    );
+    const result = await provider.fetch(query({ metric: "nonexistent-metric" }));
     expect(result).toBeNull();
   });
 
   it("returns null for unknown metric with estimation-eligible country", async () => {
     const result = await provider.fetch(
-      query({ country: "PK", city: "Karachi", metric: "fake-metric" }),
+      query({ country: "PK", city: "Karachi", metric: "fake-metric" })
     );
     expect(result).toBeNull();
   });
@@ -230,7 +208,7 @@ describe("QualityOfLifeProvider", () => {
   });
 
   it("all index values are between 0 and 100", () => {
-    const fields: (keyof typeof QUALITY_OF_LIFE_DATA[0])[] = [
+    const fields: (keyof (typeof QUALITY_OF_LIFE_DATA)[0])[] = [
       "safetyIndex",
       "healthcareIndex",
       "climateComfort",

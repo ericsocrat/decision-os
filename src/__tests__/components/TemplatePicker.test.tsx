@@ -46,7 +46,7 @@ describe("TemplatePicker", () => {
     renderPicker();
     // Multiple templates may share the same count string, so use getAllByText
     const countTexts = TEMPLATES.map(
-      (t) => `${t.criteria.length} criteria · ${t.options.length} options`,
+      (t) => `${t.criteria.length} criteria · ${t.options.length} options`
     );
     const unique = [...new Set(countTexts)];
     for (const label of unique) {

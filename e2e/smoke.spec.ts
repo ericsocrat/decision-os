@@ -6,18 +6,20 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Decision OS — Smoke Tests", () => {
   test.beforeEach(async ({ page }) => {
-    // Set onboarding flag before navigating so the tour doesn't interfere with tests
+    // Skip onboarding, force the advanced workspace, and load the visible demo
+    // fixture so every test starts from a usable decision state.
     await page.addInitScript(() => {
       localStorage.setItem("decisionos:onboarded", "true");
     });
-    await page.goto("/");
-    // Wait for hydration
-    await page.waitForSelector('h1:has-text("Decision OS")');
+    await page.goto("/?mode=advanced");
+    await page.getByRole("button", { name: "Try Demo Decision" }).click();
+    await expect(page.getByRole("heading", { name: "Decision OS" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "Builder" })).toBeVisible();
   });
 
   test("homepage loads with demo decision", async ({ page }) => {
     await expect(page).toHaveTitle(/Decision OS/);
-    await expect(page.locator("h1")).toContainText("Decision OS");
+    await expect(page.getByRole("heading", { name: "Decision OS" })).toBeVisible();
     // Demo decision should be selected
     await expect(page.getByRole("combobox", { name: "Select decision" })).toBeVisible();
   });

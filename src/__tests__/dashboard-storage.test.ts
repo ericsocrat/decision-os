@@ -3,12 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import {
-  duplicateDecision,
-  exportAllDecisions,
-  saveDecision,
-  getDecisions,
-} from "@/lib/storage";
+import { duplicateDecision, exportAllDecisions, saveDecision, getDecisions } from "@/lib/storage";
 import { DEMO_DECISION } from "@/lib/demo-data";
 
 describe("duplicateDecision", () => {

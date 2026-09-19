@@ -37,9 +37,13 @@ export const CollaborationBadge = memo(function CollaborationBadge({
     prevCountRef.current = collaboratorCount;
 
     if (collaboratorCount > prev) {
-      announce(`A collaborator joined. ${collaboratorCount} collaborator${collaboratorCount !== 1 ? "s" : ""} connected.`);
+      announce(
+        `A collaborator joined. ${collaboratorCount} collaborator${collaboratorCount !== 1 ? "s" : ""} connected.`
+      );
     } else if (collaboratorCount < prev && prev > 0) {
-      announce(`A collaborator left. ${collaboratorCount} collaborator${collaboratorCount !== 1 ? "s" : ""} connected.`);
+      announce(
+        `A collaborator left. ${collaboratorCount} collaborator${collaboratorCount !== 1 ? "s" : ""} connected.`
+      );
     }
   }, [collaboratorCount, announce]);
 
@@ -48,17 +52,11 @@ export const CollaborationBadge = memo(function CollaborationBadge({
   const isConnecting = connectionStatus === "connecting";
 
   return (
-    <div
-      className="flex items-center gap-1.5 text-xs"
-      role="status"
-      aria-live="polite"
-    >
+    <div className="flex items-center gap-1.5 text-xs" role="status" aria-live="polite">
       {/* Status dot */}
       <span
         className={`inline-block h-2 w-2 rounded-full ${
-          isConnecting
-            ? "bg-yellow-400 animate-pulse"
-            : "bg-green-500"
+          isConnecting ? "bg-yellow-400 animate-pulse" : "bg-green-500"
         }`}
         aria-hidden="true"
       />

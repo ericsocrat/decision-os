@@ -29,11 +29,7 @@ export function escapeCSVField(field: string): string {
 
 /** Build a CSV string from rows of fields */
 function rowsToCSV(rows: string[][]): string {
-  return (
-    BOM +
-    rows.map((row) => row.map(escapeCSVField).join(",")).join("\r\n") +
-    "\r\n"
-  );
+  return BOM + rows.map((row) => row.map(escapeCSVField).join(",")).join("\r\n") + "\r\n";
 }
 
 /**
@@ -84,10 +80,7 @@ export function exportDecisionMatrixCSV(decision: Decision): string {
   ]);
 
   // Comment row for zero-score note
-  const commentRow = [
-    "# Scores of 0 may indicate unfilled values",
-    ...criteria.map(() => ""),
-  ];
+  const commentRow = ["# Scores of 0 may indicate unfilled values", ...criteria.map(() => "")];
 
   return rowsToCSV([commentRow, header, ...dataRows]);
 }
@@ -115,9 +108,7 @@ export function exportResultsSummaryCSV({
   topsisResults,
   regretResults,
 }: ExportResultsInput): string {
-  const sorted = [...results.optionResults].sort(
-    (a, b) => a.rank - b.rank,
-  );
+  const sorted = [...results.optionResults].sort((a, b) => a.rank - b.rank);
 
   // Build header dynamically based on available results
   const header = ["Rank", "Option", "WSM Score"];
@@ -126,12 +117,8 @@ export function exportResultsSummaryCSV({
   header.push("Consensus Rank");
 
   // Build a lookup for TOPSIS/Regret by optionId
-  const topsisMap = new Map(
-    topsisResults?.rankings.map((r) => [r.optionId, r]) ?? [],
-  );
-  const regretMap = new Map(
-    regretResults?.rankings.map((r) => [r.optionId, r]) ?? [],
-  );
+  const topsisMap = new Map(topsisResults?.rankings.map((r) => [r.optionId, r]) ?? []);
+  const regretMap = new Map(regretResults?.rankings.map((r) => [r.optionId, r]) ?? []);
 
   // For consensus rank, use simple average of available ranks
   const consensusRank = (optId: string, wsmRank: number): number => {

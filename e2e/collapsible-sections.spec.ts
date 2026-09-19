@@ -70,9 +70,7 @@ test.describe("Collapsible Sections — ResultsView", () => {
 
   test("collapsible section uses proper ARIA attributes", async ({ page }) => {
     // Find any collapsible trigger button
-    const collapsibleButton = page
-      .locator("button[aria-expanded]")
-      .first();
+    const collapsibleButton = page.locator("button[aria-expanded]").first();
 
     const count = await collapsibleButton.count();
     if (count === 0) return;

@@ -30,10 +30,7 @@ const DEFAULT_TIMEOUT_MS = 5_000;
  * Race a promise against a timeout. Resolves to `null` if the timeout
  * fires first.
  */
-function withTimeout<T>(
-  promise: Promise<T>,
-  ms: number,
-): Promise<T | null> {
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
   return new Promise<T | null>((resolve) => {
     const timer = setTimeout(() => resolve(null), ms);
     promise
@@ -57,7 +54,11 @@ const KEYWORD_MAP: ReadonlyArray<{
   category: string;
   metric: string;
 }> = [
-  { pattern: /cost.?of.?living|col\b|living.?cost/i, category: "cost-of-living", metric: "overall" },
+  {
+    pattern: /cost.?of.?living|col\b|living.?cost/i,
+    category: "cost-of-living",
+    metric: "overall",
+  },
   { pattern: /rent|housing/i, category: "cost-of-living", metric: "rent-1br-center" },
   { pattern: /groceries|food/i, category: "cost-of-living", metric: "groceries" },
   { pattern: /tax|income.?tax/i, category: "tax", metric: "income-tax-rate" },
@@ -66,8 +67,16 @@ const KEYWORD_MAP: ReadonlyArray<{
   { pattern: /safe|crime|security/i, category: "safety", metric: "safety-index" },
   { pattern: /climate|weather|temperature/i, category: "climate", metric: "avg-temperature" },
   { pattern: /health|healthcare/i, category: "healthcare", metric: "quality-index" },
-  { pattern: /internet|connectivity|broadband/i, category: "infrastructure", metric: "internet-speed" },
-  { pattern: /pollution|air.?quality|environment/i, category: "environment", metric: "pollution-index" },
+  {
+    pattern: /internet|connectivity|broadband/i,
+    category: "infrastructure",
+    metric: "internet-speed",
+  },
+  {
+    pattern: /pollution|air.?quality|environment/i,
+    category: "environment",
+    metric: "pollution-index",
+  },
   { pattern: /transport|commut/i, category: "infrastructure", metric: "transport-index" },
 ];
 
@@ -130,13 +139,9 @@ export class EnrichmentEngine {
    *
    * Queries that cannot be satisfied map to `null`.
    */
-  async enrichBatch(
-    queries: readonly DataQuery[],
-  ): Promise<Map<string, DataPoint | null>> {
+  async enrichBatch(queries: readonly DataQuery[]): Promise<Map<string, DataPoint | null>> {
     const results = new Map<string, DataPoint | null>();
-    const settled = await Promise.allSettled(
-      queries.map((q) => this.enrich(q)),
-    );
+    const settled = await Promise.allSettled(queries.map((q) => this.enrich(q)));
 
     for (let i = 0; i < queries.length; i++) {
       const key = queryKey(queries[i]);
@@ -173,7 +178,7 @@ export class EnrichmentEngine {
     criterionName: string,
     locations: readonly Location[],
     seen: Set<string>,
-    out: DataQuery[],
+    out: DataQuery[]
   ): void {
     for (const entry of KEYWORD_MAP) {
       if (!entry.pattern.test(criterionName)) continue;
@@ -215,12 +220,7 @@ function pickBetter(current: DataPoint | null, next: DataPoint): DataPoint {
 
 /** Deterministic string key for a DataQuery */
 function queryKey(q: DataQuery): string {
-  return [
-    q.country.toLowerCase(),
-    q.city?.toLowerCase() ?? "_",
-    q.category,
-    q.metric,
-  ].join("|");
+  return [q.country.toLowerCase(), q.city?.toLowerCase() ?? "_", q.category, q.metric].join("|");
 }
 
 /** Simple location struct */
@@ -243,14 +243,9 @@ function extractLocations(decision: Decision): Location[] {
   for (const option of decision.options) {
     const parts = option.name.split(",").map((s) => s.trim());
     const loc: Location =
-      parts.length >= 2
-        ? { city: parts[0], country: parts[1] }
-        : { country: parts[0] };
+      parts.length >= 2 ? { city: parts[0], country: parts[1] } : { country: parts[0] };
 
-    const key =
-      (loc.country?.toLowerCase() ?? "") +
-      "|" +
-      (loc.city?.toLowerCase() ?? "");
+    const key = (loc.country?.toLowerCase() ?? "") + "|" + (loc.city?.toLowerCase() ?? "");
     if (!seen.has(key)) {
       seen.add(key);
       locations.push(loc);

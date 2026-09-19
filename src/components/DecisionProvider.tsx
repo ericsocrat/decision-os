@@ -596,7 +596,9 @@ export function DecisionProvider({ children }: Readonly<{ children: ReactNode }>
                 <CollaborationProvider
                   decisionId={state.decision.id}
                   userId={auth.user?.id ?? null}
-                  displayName={auth.user?.user_metadata?.full_name ?? auth.user?.email ?? "Anonymous"}
+                  displayName={
+                    auth.user?.user_metadata?.full_name ?? auth.user?.email ?? "Anonymous"
+                  }
                   avatarUrl={auth.user?.user_metadata?.avatar_url ?? ""}
                   dispatch={dispatch}
                   getDecision={getLatestDecision}

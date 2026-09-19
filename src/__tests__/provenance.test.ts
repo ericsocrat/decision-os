@@ -27,9 +27,7 @@ import type { Decision, ScoreMetadata } from "@/lib/types";
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeDecision(
-  scoreMetadata?: Decision["scoreMetadata"],
-): Decision {
+function makeDecision(scoreMetadata?: Decision["scoreMetadata"]): Decision {
   return {
     id: "test",
     title: "Test",

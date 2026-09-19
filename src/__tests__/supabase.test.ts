@@ -83,7 +83,7 @@ describe("supabase", () => {
             autoRefreshToken: true,
             detectSessionInUrl: true,
           }),
-        }),
+        })
       );
 
       // Second call returns same instance (singleton)

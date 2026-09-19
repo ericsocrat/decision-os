@@ -60,7 +60,7 @@ export const WizardStepCriteria = memo(function WizardStepCriteria() {
 
   const totalWeight = useMemo(
     () => decision.criteria.reduce((s, c) => s + c.weight, 0),
-    [decision.criteria],
+    [decision.criteria]
   );
 
   // Scoring progress
@@ -140,7 +140,10 @@ export const WizardStepCriteria = memo(function WizardStepCriteria() {
               </div>
               <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
                 {decision.criteria.map((c) => (
-                  <span key={c.id} className="text-[10px] text-gray-400 dark:text-gray-500 truncate max-w-[80px]">
+                  <span
+                    key={c.id}
+                    className="text-[10px] text-gray-400 dark:text-gray-500 truncate max-w-[80px]"
+                  >
                     {c.name.split(" ")[0]} {c.weight}
                   </span>
                 ))}
@@ -179,7 +182,8 @@ export const WizardStepCriteria = memo(function WizardStepCriteria() {
         {/* Criterion cards with per-option sliders */}
         <div className="space-y-4">
           {decision.criteria.map((criterion) => {
-            const weightPct = totalWeight > 0 ? Math.round((criterion.weight / totalWeight) * 100) : 0;
+            const weightPct =
+              totalWeight > 0 ? Math.round((criterion.weight / totalWeight) * 100) : 0;
             return (
               <div
                 key={criterion.id}
@@ -255,7 +259,10 @@ interface CriterionRowProps {
   weight: number;
   type: "benefit" | "cost";
   totalWeight: number;
-  onUpdate: (id: string, updates: { name?: string; weight?: number; type?: "benefit" | "cost" }) => void;
+  onUpdate: (
+    id: string,
+    updates: { name?: string; weight?: number; type?: "benefit" | "cost" }
+  ) => void;
   onRemove: (id: string) => void;
   canRemove: boolean;
 }
@@ -365,7 +372,9 @@ const ScoreSlider = memo(function ScoreSlider({ optionName, score, onChange }: S
       <span className="w-10 text-center text-sm font-medium text-gray-700 dark:text-gray-300 tabular-nums">
         {score}/10
       </span>
-      <span className={`w-20 text-right text-xs font-medium ${score > 0 ? "text-gray-600 dark:text-gray-400" : "text-gray-400 dark:text-gray-500"}`}>
+      <span
+        className={`w-20 text-right text-xs font-medium ${score > 0 ? "text-gray-600 dark:text-gray-400" : "text-gray-400 dark:text-gray-500"}`}
+      >
         {label}
       </span>
     </div>

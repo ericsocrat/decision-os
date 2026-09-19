@@ -20,7 +20,7 @@ test.describe("Progressive Complexity — Builder Tiers", () => {
     // Builder tab should be active by default
     await expect(page.locator('button[role="tab"]:has-text("Builder")')).toHaveAttribute(
       "aria-selected",
-      "true",
+      "true"
     );
   });
 
@@ -49,7 +49,7 @@ test.describe("Progressive Complexity — Builder Tiers", () => {
     await expect(optionInputs.first()).toBeVisible();
 
     // Should have criterion name inputs or sections
-    const criteriaSection = page.locator('text=/Criteria|criterion/i').first();
+    const criteriaSection = page.locator("text=/Criteria|criterion/i").first();
     await expect(criteriaSection).toBeVisible();
   });
 });

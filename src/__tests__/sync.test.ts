@@ -47,8 +47,7 @@ vi.mock("@/lib/realtime", () => ({
 }));
 
 // Import AFTER mocking
-const { fullSync, hasMigrated, syncSaveDecision, syncDeleteDecision } =
-  await import("@/lib/sync");
+const { fullSync, hasMigrated, syncSaveDecision, syncDeleteDecision } = await import("@/lib/sync");
 
 // ─── Helpers ───────────────────────────────────────────────────────
 
@@ -267,9 +266,7 @@ describe("syncSaveDecision", () => {
     await syncSaveDecision(decision);
 
     expect(mockLocalSave).toHaveBeenCalledWith(decision);
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining("cloud save failed"),
-    );
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("cloud save failed"));
     warnSpy.mockRestore();
   });
 });
@@ -304,9 +301,7 @@ describe("syncDeleteDecision", () => {
     const result = await syncDeleteDecision("d1", localDeleteFn);
 
     expect(result).toBe(true);
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining("cloud delete failed"),
-    );
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("cloud delete failed"));
     warnSpy.mockRestore();
   });
 });

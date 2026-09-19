@@ -3,10 +3,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import {
-  generateProactiveInsights,
-  findClosestTippingPoint,
-} from "@/lib/proactive-insights";
+import { generateProactiveInsights, findClosestTippingPoint } from "@/lib/proactive-insights";
 import type {
   Decision,
   DecisionResults,

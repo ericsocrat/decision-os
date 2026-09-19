@@ -12,21 +12,11 @@
 
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useMemo,
-  type ReactNode,
-  type Dispatch,
-} from "react";
+import { createContext, useContext, useMemo, type ReactNode, type Dispatch } from "react";
 import type { DecisionAction } from "@/lib/decision-reducer";
 import type { Decision } from "@/lib/types";
 import type { PresenceUser, RealtimeConfig } from "@/lib/realtime-types";
-import {
-  useRealtime,
-  type ConnectionStatus,
-  type UseRealtimeReturn,
-} from "@/hooks/useRealtime";
+import { useRealtime, type ConnectionStatus, type UseRealtimeReturn } from "@/hooks/useRealtime";
 
 // ---------------------------------------------------------------------------
 // Context type
@@ -96,10 +86,7 @@ export function CollaborationProvider({
   config,
 }: Readonly<CollaborationProviderProps>) {
   // Memoize user meta to avoid recreating on every render
-  const userMeta = useMemo(
-    () => ({ displayName, avatarUrl }),
-    [displayName, avatarUrl],
-  );
+  const userMeta = useMemo(() => ({ displayName, avatarUrl }), [displayName, avatarUrl]);
 
   const realtimeState: UseRealtimeReturn = useRealtime(
     decisionId,
@@ -107,7 +94,7 @@ export function CollaborationProvider({
     userMeta,
     dispatch,
     getDecision,
-    config,
+    config
   );
 
   const value: CollaborationValue = {

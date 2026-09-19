@@ -43,14 +43,14 @@ test.describe("Decision OS — Core Workflows", () => {
     await newInput.fill("Portland, OR");
 
     // Verify the option shows by its remove button
-    await expect(
-      page.getByRole("button", { name: "Remove option Portland, OR" })
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Remove option Portland, OR" })).toBeVisible();
   });
 
   test("score an alternative and verify Results tab updates", async ({ page }) => {
     // Clear a score and set it to a known value (use spinbutton to avoid matching the range slider)
-    const scoreInput = page.getByRole("spinbutton", { name: "Score for Austin, TX on Cost of Living" });
+    const scoreInput = page.getByRole("spinbutton", {
+      name: "Score for Austin, TX on Cost of Living",
+    });
     await scoreInput.fill("10");
 
     // Navigate to Results
@@ -147,9 +147,7 @@ test.describe("Decision OS — Core Workflows", () => {
     await removeBtn.click();
 
     // Denver should be gone
-    await expect(
-      page.getByRole("button", { name: "Remove option Denver, CO" })
-    ).not.toBeVisible();
+    await expect(page.getByRole("button", { name: "Remove option Denver, CO" })).not.toBeVisible();
 
     // With only 2 options remaining, remove buttons are hidden.
     // Verify Austin and Raleigh option inputs still exist.

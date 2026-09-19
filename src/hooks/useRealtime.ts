@@ -86,7 +86,7 @@ export function useRealtime(
   userMeta: { displayName: string; avatarUrl: string },
   dispatch: Dispatch<DecisionAction>,
   getDecision: () => Decision,
-  config?: Partial<RealtimeConfig>,
+  config?: Partial<RealtimeConfig>
 ): UseRealtimeReturn {
   const [collaborators, setCollaborators] = useState<PresenceUser[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("disconnected");
@@ -164,22 +164,16 @@ export function useRealtime(
   }, [decisionId, userId]);
 
   // ── Broadcast helper ──
-  const broadcast = useCallback(
-    (action: DecisionAction) => {
-      if (!isChannelActive()) return;
-      broadcastAction(action);
-    },
-    [],
-  );
+  const broadcast = useCallback((action: DecisionAction) => {
+    if (!isChannelActive()) return;
+    broadcastAction(action);
+  }, []);
 
   // ── Editing field tracker ──
-  const setEditingField = useCallback(
-    (field: string | null) => {
-      if (!isChannelActive()) return;
-      void trackEditingField(field);
-    },
-    [],
-  );
+  const setEditingField = useCallback((field: string | null) => {
+    if (!isChannelActive()) return;
+    void trackEditingField(field);
+  }, []);
 
   // ── Periodic snapshot broadcast ──
   useEffect(() => {

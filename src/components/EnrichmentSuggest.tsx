@@ -59,18 +59,73 @@ const KEYWORD_MAP: ReadonlyArray<{
   metric: string;
   label: string;
 }> = [
-  { pattern: /cost.?of.?living|col\b|living.?cost/i, category: "cost-of-living", metric: "overall", label: "Cost of Living" },
-  { pattern: /rent|housing/i, category: "cost-of-living", metric: "rent-1br-center", label: "Rent" },
-  { pattern: /groceries|food/i, category: "cost-of-living", metric: "groceries-index", label: "Groceries" },
-  { pattern: /\btax\b|income.?tax/i, category: "tax", metric: "income-tax-rate", label: "Tax Rate" },
-  { pattern: /corporate.?tax|business.?tax/i, category: "tax", metric: "corporate-tax-rate", label: "Corporate Tax" },
-  { pattern: /universit|higher.?ed|college/i, category: "university", metric: "overall-rank", label: "University Rankings" },
+  {
+    pattern: /cost.?of.?living|col\b|living.?cost/i,
+    category: "cost-of-living",
+    metric: "overall",
+    label: "Cost of Living",
+  },
+  {
+    pattern: /rent|housing/i,
+    category: "cost-of-living",
+    metric: "rent-1br-center",
+    label: "Rent",
+  },
+  {
+    pattern: /groceries|food/i,
+    category: "cost-of-living",
+    metric: "groceries-index",
+    label: "Groceries",
+  },
+  {
+    pattern: /\btax\b|income.?tax/i,
+    category: "tax",
+    metric: "income-tax-rate",
+    label: "Tax Rate",
+  },
+  {
+    pattern: /corporate.?tax|business.?tax/i,
+    category: "tax",
+    metric: "corporate-tax-rate",
+    label: "Corporate Tax",
+  },
+  {
+    pattern: /universit|higher.?ed|college/i,
+    category: "university",
+    metric: "overall-rank",
+    label: "University Rankings",
+  },
   { pattern: /safe|crime|security/i, category: "safety", metric: "safety-index", label: "Safety" },
-  { pattern: /climate|weather|temperature/i, category: "climate", metric: "climate-comfort", label: "Climate" },
-  { pattern: /health|healthcare/i, category: "healthcare", metric: "healthcare-index", label: "Healthcare" },
-  { pattern: /internet|connectivity|broadband/i, category: "infrastructure", metric: "internet-monthly", label: "Internet" },
-  { pattern: /pollution|air.?quality|environment/i, category: "environment", metric: "pollution-index", label: "Pollution" },
-  { pattern: /transport|commut/i, category: "infrastructure", metric: "transport-monthly", label: "Transport" },
+  {
+    pattern: /climate|weather|temperature/i,
+    category: "climate",
+    metric: "climate-comfort",
+    label: "Climate",
+  },
+  {
+    pattern: /health|healthcare/i,
+    category: "healthcare",
+    metric: "healthcare-index",
+    label: "Healthcare",
+  },
+  {
+    pattern: /internet|connectivity|broadband/i,
+    category: "infrastructure",
+    metric: "internet-monthly",
+    label: "Internet",
+  },
+  {
+    pattern: /pollution|air.?quality|environment/i,
+    category: "environment",
+    metric: "pollution-index",
+    label: "Pollution",
+  },
+  {
+    pattern: /transport|commut/i,
+    category: "infrastructure",
+    metric: "transport-monthly",
+    label: "Transport",
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -101,7 +156,7 @@ interface ParsedLocation {
 }
 
 function parseOptionLocations(
-  options: ReadonlyArray<{ id: string; name: string }>,
+  options: ReadonlyArray<{ id: string; name: string }>
 ): ReadonlyMap<string, ParsedLocation> {
   const result = new Map<string, ParsedLocation>();
   for (const opt of options) {
@@ -121,9 +176,21 @@ function parseOptionLocations(
 
 function TierBadge({ tier, confidence }: Readonly<{ tier: 1 | 2 | 3; confidence: number }>) {
   const config = {
-    1: { label: "Live", icon: Globe, color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" },
-    2: { label: "Bundled", icon: Database, color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" },
-    3: { label: "Estimated", icon: BarChart3, color: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" },
+    1: {
+      label: "Live",
+      icon: Globe,
+      color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+    },
+    2: {
+      label: "Bundled",
+      icon: Database,
+      color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+    },
+    3: {
+      label: "Estimated",
+      icon: BarChart3,
+      color: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+    },
   }[tier];
 
   const Icon = config.icon;
@@ -170,8 +237,8 @@ function SuggestionCard({
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1">
           <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-            Auto-fill <strong>{suggestion.criterionName}</strong> scores for{" "}
-            {suggestion.matchCount} {suggestion.matchCount === 1 ? "option" : "options"}?
+            Auto-fill <strong>{suggestion.criterionName}</strong> scores for {suggestion.matchCount}{" "}
+            {suggestion.matchCount === 1 ? "option" : "options"}?
           </p>
           <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
             Category: {suggestion.category} · Metric: {suggestion.metric}
@@ -201,21 +268,30 @@ function SuggestionCard({
         )}
 
         {isLoading && (
-          <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400" aria-live="polite">
+          <div
+            className="flex items-center gap-1 text-blue-600 dark:text-blue-400"
+            aria-live="polite"
+          >
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             <span className="text-xs">Enriching…</span>
           </div>
         )}
 
         {isDone && (
-          <div className="flex items-center gap-1 text-green-600 dark:text-green-400" aria-live="polite">
+          <div
+            className="flex items-center gap-1 text-green-600 dark:text-green-400"
+            aria-live="polite"
+          >
             <Check className="h-4 w-4" aria-hidden="true" />
             <span className="text-xs">Applied</span>
           </div>
         )}
 
         {isError && (
-          <div className="flex items-center gap-1 text-red-600 dark:text-red-400" aria-live="polite">
+          <div
+            className="flex items-center gap-1 text-red-600 dark:text-red-400"
+            aria-live="polite"
+          >
             <AlertCircle className="h-4 w-4" aria-hidden="true" />
             <span className="text-xs">Partial failure</span>
           </div>
@@ -230,23 +306,16 @@ function SuggestionCard({
               key={r.optionId}
               className="flex items-center justify-between rounded-md bg-white/60 px-2 py-1 text-xs dark:bg-gray-800/60"
             >
-              <span className="font-medium text-gray-700 dark:text-gray-300">
-                {r.optionName}
-              </span>
+              <span className="font-medium text-gray-700 dark:text-gray-300">{r.optionName}</span>
               {r.dataPoint ? (
                 <div className="flex items-center gap-2">
                   <span className="tabular-nums text-gray-900 dark:text-gray-100">
                     {Math.round(r.dataPoint.value)}
                   </span>
-                  <TierBadge
-                    tier={r.dataPoint.tier}
-                    confidence={r.dataPoint.confidence}
-                  />
+                  <TierBadge tier={r.dataPoint.tier} confidence={r.dataPoint.confidence} />
                 </div>
               ) : (
-                <span className="text-gray-400 italic">
-                  {r.error ?? "No data"}
-                </span>
+                <span className="text-gray-400 italic">{r.error ?? "No data"}</span>
               )}
             </div>
           ))}
@@ -264,12 +333,10 @@ export function EnrichmentSuggest() {
   const { decision } = useDecisionData();
   const { updateScore } = useActions();
   const [dismissed, setDismissed] = useState<Set<string>>(() => new Set());
-  const [enrichStates, setEnrichStates] = useState<
-    Map<string, EnrichState>
-  >(() => new Map());
-  const [enrichResults, setEnrichResults] = useState<
-    Map<string, EnrichmentResult[]>
-  >(() => new Map());
+  const [enrichStates, setEnrichStates] = useState<Map<string, EnrichState>>(() => new Map());
+  const [enrichResults, setEnrichResults] = useState<Map<string, EnrichmentResult[]>>(
+    () => new Map()
+  );
   const abortRef = useRef<Map<string, AbortController>>(new Map());
 
   // Cleanup abort controllers on unmount
@@ -283,10 +350,7 @@ export function EnrichmentSuggest() {
   }, []);
 
   // Parse locations from option names
-  const locations = useMemo(
-    () => parseOptionLocations(decision.options),
-    [decision.options],
-  );
+  const locations = useMemo(() => parseOptionLocations(decision.options), [decision.options]);
 
   // Generate suggestions from criteria + options
   const suggestions = useMemo<EnrichmentSuggestion[]>(() => {
@@ -333,7 +397,7 @@ export function EnrichmentSuggest() {
   // Filter out dismissed suggestions and already-enriched ones
   const visibleSuggestions = useMemo(
     () => suggestions.filter((s) => !dismissed.has(s.criterionId)),
-    [suggestions, dismissed],
+    [suggestions, dismissed]
   );
 
   // Accept handler — run enrichment for a suggestion
@@ -352,12 +416,10 @@ export function EnrichmentSuggest() {
 
         // Process each option's query
         const entries = [...suggestion.queries.entries()];
-        const settled = await Promise.allSettled(
-          entries.map(([, query]) => engine.enrich(query)),
-        );
+        const settled = await Promise.allSettled(entries.map(([, query]) => engine.enrich(query)));
 
         for (let i = 0; i < entries.length; i++) {
-          const [optionId, ] = entries[i];
+          const [optionId] = entries[i];
           const option = decision.options.find((o) => o.id === optionId);
           const outcome = settled[i];
 
@@ -378,19 +440,14 @@ export function EnrichmentSuggest() {
               optionId,
               optionName: option?.name ?? optionId,
               dataPoint: null,
-              error:
-                outcome.status === "rejected"
-                  ? "Fetch failed"
-                  : "No data available",
+              error: outcome.status === "rejected" ? "Fetch failed" : "No data available",
             });
           }
         }
 
         if (!controller.signal.aborted) {
           setEnrichResults((prev) => new Map(prev).set(criterionId, results));
-          setEnrichStates((prev) =>
-            new Map(prev).set(criterionId, hasError ? "error" : "done"),
-          );
+          setEnrichStates((prev) => new Map(prev).set(criterionId, hasError ? "error" : "done"));
         }
       } catch {
         if (!controller.signal.aborted) {
@@ -400,7 +457,7 @@ export function EnrichmentSuggest() {
         abortRef.current.delete(criterionId);
       }
     },
-    [decision.options, updateScore],
+    [decision.options, updateScore]
   );
 
   // Dismiss handler
@@ -416,19 +473,13 @@ export function EnrichmentSuggest() {
   if (visibleSuggestions.length === 0) return null;
 
   return (
-    <section
-      className="space-y-3"
-      aria-label="Data enrichment suggestions"
-    >
+    <section className="space-y-3" aria-label="Data enrichment suggestions">
       <div className="flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-blue-500" aria-hidden="true" />
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-          Suggest Data
-        </h3>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Suggest Data</h3>
         <span className="text-xs text-gray-500 dark:text-gray-400">
           {visibleSuggestions.length}{" "}
-          {visibleSuggestions.length === 1 ? "suggestion" : "suggestions"}{" "}
-          available
+          {visibleSuggestions.length === 1 ? "suggestion" : "suggestions"} available
         </span>
       </div>
 

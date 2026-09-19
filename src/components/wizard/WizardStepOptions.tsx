@@ -63,7 +63,7 @@ export const WizardStepOptions = memo(function WizardStepOptions() {
   // Auto-focus first empty input on mount
   useEffect(() => {
     const firstEmpty = decision.options.find(
-      (o) => o.name.trim() === "" || /^Option \d+$/.test(o.name),
+      (o) => o.name.trim() === "" || /^Option \d+$/.test(o.name)
     );
     if (firstEmpty) {
       requestAnimationFrame(() => {
@@ -80,7 +80,7 @@ export const WizardStepOptions = memo(function WizardStepOptions() {
       updateOption(optionId, { name });
       if (validationError) setValidationError(null);
     },
-    [updateOption, validationError],
+    [updateOption, validationError]
   );
 
   const handleKeyDown = useCallback(
@@ -95,14 +95,14 @@ export const WizardStepOptions = memo(function WizardStepOptions() {
         }
       }
     },
-    [addOption, decision.options],
+    [addOption, decision.options]
   );
 
   const handleRemove = useCallback(
     (optionId: string) => {
       removeOption(optionId);
     },
-    [removeOption],
+    [removeOption]
   );
 
   const handleAddOption = useCallback(() => {
@@ -110,7 +110,7 @@ export const WizardStepOptions = memo(function WizardStepOptions() {
   }, [addOption]);
 
   const namedCount = decision.options.filter(
-    (o) => o.name.trim().length > 0 && !/^Option \d+$/.test(o.name),
+    (o) => o.name.trim().length > 0 && !/^Option \d+$/.test(o.name)
   ).length;
   const showWarning = decision.options.length > SOFT_LIMIT;
 
@@ -209,7 +209,10 @@ export const WizardStepOptions = memo(function WizardStepOptions() {
 
       {/* Soft limit warning */}
       {showWarning && (
-        <p className="mt-2 text-xs text-amber-600 dark:text-amber-400" data-testid="options-warning">
+        <p
+          className="mt-2 text-xs text-amber-600 dark:text-amber-400"
+          data-testid="options-warning"
+        >
           Consider narrowing your options for clearer results.
         </p>
       )}

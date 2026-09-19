@@ -130,7 +130,7 @@ describe("AuthButton", () => {
       <div>
         <div data-testid="outside">Outside</div>
         <AuthButton auth={makeAuth()} />
-      </div>,
+      </div>
     );
     await user.click(screen.getByLabelText("Sign in"));
     expect(screen.getByText("Continue with GitHub")).toBeInTheDocument();

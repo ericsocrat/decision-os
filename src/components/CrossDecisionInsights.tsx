@@ -64,8 +64,8 @@ export const CrossDecisionInsights = memo(function CrossDecisionInsights({
         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
           <TrendingUp className="h-4 w-4 text-green-500 shrink-0" />
           <span>
-            <strong className="text-gray-900 dark:text-gray-100">{insights.total}</strong>{" "}
-            decision{insights.total !== 1 ? "s" : ""} made ·{" "}
+            <strong className="text-gray-900 dark:text-gray-100">{insights.total}</strong> decision
+            {insights.total !== 1 ? "s" : ""} made ·{" "}
             <strong className="text-gray-900 dark:text-gray-100">{insights.scored}</strong> scored
           </span>
         </div>

@@ -78,9 +78,7 @@ test.describe("Wizard Flow — 4-Step Journey", () => {
     // Advanced mode should now be visible
     await expect(page.locator('button[role="tab"]:has-text("Builder")')).toBeVisible();
     // Decision title should still be there
-    await expect(page.locator('input[aria-label="Decision title"]')).toHaveValue(
-      /Best City/i,
-    );
+    await expect(page.locator('input[aria-label="Decision title"]')).toHaveValue(/Best City/i);
   });
 
   test("open in Advanced Mode from step 4", async ({ page }) => {

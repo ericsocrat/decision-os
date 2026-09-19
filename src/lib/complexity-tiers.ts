@@ -107,7 +107,7 @@ export function getSavedDecisionCount(): number {
 export function getComplexityTier(
   decision: Decision,
   preferences: TierPreferences,
-  savedDecisionCount: number,
+  savedDecisionCount: number
 ): ComplexityTier {
   if (preferences.showAllFeatures) return "expert";
 
@@ -124,10 +124,7 @@ export function getComplexityTier(
 /**
  * Check whether the current tier meets a minimum tier requirement.
  */
-export function isTierVisible(
-  currentTier: ComplexityTier,
-  minTier: ComplexityTier,
-): boolean {
+export function isTierVisible(currentTier: ComplexityTier, minTier: ComplexityTier): boolean {
   return TIER_RANK[currentTier] >= TIER_RANK[minTier];
 }
 

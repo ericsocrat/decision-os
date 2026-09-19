@@ -50,6 +50,8 @@ export interface CollapsibleSectionProps {
   readonly defaultExpanded?: boolean;
   /** Optional badge text shown next to the title */
   readonly badge?: string;
+  /** Optional control rendered beside, rather than inside, the heading button */
+  readonly headerAccessory?: React.ReactNode;
   /** Controlled expanded state — overrides internal state */
   readonly expanded?: boolean;
   /** Called when the section is toggled */
@@ -65,6 +67,7 @@ export const CollapsibleSection = memo(function CollapsibleSection({
   icon,
   defaultExpanded = false,
   badge,
+  headerAccessory,
   expanded: controlledExpanded,
   onToggle,
   children,
@@ -77,8 +80,7 @@ export const CollapsibleSection = memo(function CollapsibleSection({
     return saved !== undefined ? saved : defaultExpanded;
   });
 
-  const isExpanded =
-    controlledExpanded !== undefined ? controlledExpanded : internalExpanded;
+  const isExpanded = controlledExpanded !== undefined ? controlledExpanded : internalExpanded;
 
   const toggle = useCallback(() => {
     const next = !isExpanded;
@@ -96,27 +98,34 @@ export const CollapsibleSection = memo(function CollapsibleSection({
 
   return (
     <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden print:border-0">
-      <button
-        type="button"
-        onClick={toggle}
-        aria-expanded={isExpanded}
-        aria-controls={regionId}
-        className="w-full flex items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset transition-colors"
-      >
-        <ChevronRight
-          className={`h-4 w-4 shrink-0 transition-transform duration-200 ${
-            isExpanded ? "rotate-90" : ""
-          }`}
-          aria-hidden="true"
-        />
-        {icon && <span className="shrink-0">{icon}</span>}
-        <span className="flex-1">{title}</span>
-        {badge && (
-          <span className="ml-2 rounded-full bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300">
-            {badge}
-          </span>
+      <div className="flex items-center bg-gray-50 dark:bg-gray-800/50">
+        <button
+          type="button"
+          onClick={toggle}
+          aria-expanded={isExpanded}
+          aria-controls={regionId}
+          className="w-full flex items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset transition-colors"
+        >
+          <ChevronRight
+            className={`h-4 w-4 shrink-0 transition-transform duration-200 ${
+              isExpanded ? "rotate-90" : ""
+            }`}
+            aria-hidden="true"
+          />
+          {icon && <span className="shrink-0">{icon}</span>}
+          <span className="flex-1">{title}</span>
+          {badge && (
+            <span className="ml-2 rounded-full bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300">
+              {badge}
+            </span>
+          )}
+        </button>
+        {headerAccessory && (
+          <div className="shrink-0 pr-4" onClick={(event) => event.stopPropagation()}>
+            {headerAccessory}
+          </div>
         )}
-      </button>
+      </div>
 
       <div
         id={regionId}

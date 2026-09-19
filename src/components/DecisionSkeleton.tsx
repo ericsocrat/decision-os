@@ -9,7 +9,12 @@
 
 export function DecisionSkeleton() {
   return (
-    <div className="space-y-6 animate-pulse" aria-busy="true" aria-label="Loading decision…">
+    <div
+      className="space-y-6 animate-pulse"
+      role="status"
+      aria-busy="true"
+      aria-label="Loading decision…"
+    >
       {/* Title & Description skeleton */}
       <section>
         <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-3" />

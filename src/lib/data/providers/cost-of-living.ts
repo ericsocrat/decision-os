@@ -58,10 +58,7 @@ export class CostOfLivingProvider extends DataProvider {
   readonly categories = ["cost-of-living"] as const;
 
   supports(query: DataQuery): boolean {
-    return (
-      query.category === "cost-of-living" &&
-      SUPPORTED_METRICS.includes(query.metric)
-    );
+    return query.category === "cost-of-living" && SUPPORTED_METRICS.includes(query.metric);
   }
 
   protected async fetchData(query: DataQuery): Promise<DataPoint | null> {

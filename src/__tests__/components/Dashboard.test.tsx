@@ -48,10 +48,7 @@ describe("Dashboard", () => {
 
   it("renders decision cards for each saved decision", () => {
     const second = makeDecision();
-    localStorage.setItem(
-      "decision-os:decisions",
-      JSON.stringify([DEMO_DECISION, second])
-    );
+    localStorage.setItem("decision-os:decisions", JSON.stringify([DEMO_DECISION, second]));
 
     renderWithProviders(<Dashboard onOpenDecision={onOpen} onNewDecision={onNew} />);
 
@@ -92,10 +89,7 @@ describe("Dashboard", () => {
 
   it("filters cards when searching", async () => {
     const second = makeDecision({ title: "Apartment Hunt" });
-    localStorage.setItem(
-      "decision-os:decisions",
-      JSON.stringify([DEMO_DECISION, second])
-    );
+    localStorage.setItem("decision-os:decisions", JSON.stringify([DEMO_DECISION, second]));
 
     const { user } = renderWithProviders(
       <Dashboard onOpenDecision={onOpen} onNewDecision={onNew} />
@@ -110,10 +104,7 @@ describe("Dashboard", () => {
 
   it("shows cross-decision insights when 2+ decisions exist", () => {
     const second = makeDecision();
-    localStorage.setItem(
-      "decision-os:decisions",
-      JSON.stringify([DEMO_DECISION, second])
-    );
+    localStorage.setItem("decision-os:decisions", JSON.stringify([DEMO_DECISION, second]));
 
     renderWithProviders(<Dashboard onOpenDecision={onOpen} onNewDecision={onNew} />);
     expect(screen.getByTestId("cross-decision-insights")).toBeInTheDocument();

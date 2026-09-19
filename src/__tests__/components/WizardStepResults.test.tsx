@@ -72,9 +72,7 @@ describe("WizardStepResults", () => {
 
   it("calls onSwitchToAdvanced when an explore card is clicked", async () => {
     const onSwitch = vi.fn();
-    const { user } = renderWithProviders(
-      <WizardStepResults onSwitchToAdvanced={onSwitch} />,
-    );
+    const { user } = renderWithProviders(<WizardStepResults onSwitchToAdvanced={onSwitch} />);
 
     await user.click(screen.getByTestId("explore-what-if-analysis"));
     expect(onSwitch).toHaveBeenCalledTimes(1);

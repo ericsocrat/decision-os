@@ -116,13 +116,13 @@ describe("getComplexityTier", () => {
 
   it("returns expert when showAllFeatures is true", () => {
     expect(
-      getComplexityTier(makeDecision(), { showAllFeatures: true, expertUnlocked: false }, 0),
+      getComplexityTier(makeDecision(), { showAllFeatures: true, expertUnlocked: false }, 0)
     ).toBe("expert");
   });
 
   it("returns expert when expertUnlocked is true", () => {
     expect(
-      getComplexityTier(makeDecision(), { showAllFeatures: false, expertUnlocked: true }, 0),
+      getComplexityTier(makeDecision(), { showAllFeatures: false, expertUnlocked: true }, 0)
     ).toBe("expert");
   });
 
@@ -133,7 +133,7 @@ describe("getComplexityTier", () => {
 
   it("showAllFeatures overrides fill ratio (even 0%)", () => {
     expect(
-      getComplexityTier(makeDecision(), { showAllFeatures: true, expertUnlocked: false }, 0),
+      getComplexityTier(makeDecision(), { showAllFeatures: true, expertUnlocked: false }, 0)
     ).toBe("expert");
   });
 
@@ -219,7 +219,7 @@ describe("loadTierPreferences", () => {
   it("loads saved preferences", () => {
     localStorage.setItem(
       "decisionos:builder-tier-prefs",
-      JSON.stringify({ showAllFeatures: true, expertUnlocked: true }),
+      JSON.stringify({ showAllFeatures: true, expertUnlocked: true })
     );
     expect(loadTierPreferences()).toEqual({ showAllFeatures: true, expertUnlocked: true });
   });
@@ -237,7 +237,7 @@ describe("loadTierPreferences", () => {
   it("ignores non-boolean values", () => {
     localStorage.setItem(
       "decisionos:builder-tier-prefs",
-      JSON.stringify({ showAllFeatures: "yes", expertUnlocked: 1 }),
+      JSON.stringify({ showAllFeatures: "yes", expertUnlocked: 1 })
     );
     expect(loadTierPreferences()).toEqual({ showAllFeatures: false, expertUnlocked: false });
   });
@@ -255,7 +255,9 @@ describe("saveTierPreferences", () => {
     const spy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
       throw new Error("QuotaExceededError");
     });
-    expect(() => saveTierPreferences({ showAllFeatures: true, expertUnlocked: false })).not.toThrow();
+    expect(() =>
+      saveTierPreferences({ showAllFeatures: true, expertUnlocked: false })
+    ).not.toThrow();
     spy.mockRestore();
   });
 });

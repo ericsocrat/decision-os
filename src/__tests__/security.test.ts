@@ -226,9 +226,7 @@ describe("import pipeline sanitization", () => {
         { id: "o1", name: "Option\u200BA" },
         { id: "o2", name: "Option\x01B" },
       ],
-      criteria: [
-        { id: "c1", name: "Criterion\u202AC", weight: 50, type: "benefit" },
-      ],
+      criteria: [{ id: "c1", name: "Criterion\u202AC", weight: 50, type: "benefit" }],
       scores: { o1: { c1: 5 }, o2: { c1: 8 } },
       createdAt: "2024-01-01T00:00:00.000Z",
       updatedAt: "2024-01-01T00:00:00.000Z",
