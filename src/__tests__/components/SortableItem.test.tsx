@@ -16,7 +16,8 @@ vi.mock("@dnd-kit/sortable", () => ({
 vi.mock("@dnd-kit/utilities", () => ({
   CSS: {
     Transform: {
-      toString: (t: unknown) => (t ? `translate(${(t as { x: number }).x}px, ${(t as { y: number }).y}px)` : undefined),
+      toString: (t: unknown) =>
+        t ? `translate(${(t as { x: number }).x}px, ${(t as { y: number }).y}px)` : undefined,
     },
   },
 }));
@@ -42,7 +43,7 @@ describe("SortableItem", () => {
     render(
       <SortableItem id="item-1">
         <span>Test child</span>
-      </SortableItem>,
+      </SortableItem>
     );
     expect(screen.getByText("Test child")).toBeInTheDocument();
   });
@@ -51,7 +52,7 @@ describe("SortableItem", () => {
     render(
       <SortableItem id="item-1">
         <span>Content</span>
-      </SortableItem>,
+      </SortableItem>
     );
     expect(screen.getByLabelText("Drag to reorder")).toBeInTheDocument();
   });
@@ -60,7 +61,7 @@ describe("SortableItem", () => {
     render(
       <SortableItem id="item-1" dragLabel="Move criterion">
         <span>Content</span>
-      </SortableItem>,
+      </SortableItem>
     );
     expect(screen.getByLabelText("Move criterion")).toBeInTheDocument();
   });
@@ -69,7 +70,7 @@ describe("SortableItem", () => {
     render(
       <SortableItem id="item-1">
         <span>Content</span>
-      </SortableItem>,
+      </SortableItem>
     );
     const handle = screen.getByLabelText("Drag to reorder");
     expect(handle).toHaveAttribute("aria-roledescription", "sortable");
@@ -79,7 +80,7 @@ describe("SortableItem", () => {
     render(
       <SortableItem id="criterion-42">
         <span>X</span>
-      </SortableItem>,
+      </SortableItem>
     );
     expect(mockUseSortable).toHaveBeenCalledWith({ id: "criterion-42" });
   });
@@ -89,7 +90,7 @@ describe("SortableItem", () => {
     const { container } = render(
       <SortableItem id="item-1">
         <span>Dragging</span>
-      </SortableItem>,
+      </SortableItem>
     );
     const wrapper = container.firstElementChild as HTMLElement;
     expect(wrapper.className).toContain("z-10");
@@ -101,7 +102,7 @@ describe("SortableItem", () => {
     const { container } = render(
       <SortableItem id="item-1">
         <span>Static</span>
-      </SortableItem>,
+      </SortableItem>
     );
     const wrapper = container.firstElementChild as HTMLElement;
     expect(wrapper.className).not.toContain("opacity-60");

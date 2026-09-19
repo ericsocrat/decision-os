@@ -189,11 +189,7 @@ describe("Tier 3 Estimation Engine", () => {
 
     it("includes strategy name in source", () => {
       const incomeResult = estimateFromIncomeGroup("US", "safety");
-      const point = estimationToDataPoint(
-        incomeResult!,
-        "My Provider",
-        "score",
-      );
+      const point = estimationToDataPoint(incomeResult!, "My Provider", "score");
       expect(point.source).toBe("My Provider (income-group estimate)");
     });
 

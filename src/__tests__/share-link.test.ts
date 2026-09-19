@@ -21,12 +21,8 @@ vi.mock("@/lib/supabase", () => ({
 }));
 
 // Import AFTER mocking
-const {
-  generateShortId,
-  createSharedLink,
-  fetchSharedDecision,
-  buildServerShareUrl,
-} = await import("@/lib/share-link");
+const { generateShortId, createSharedLink, fetchSharedDecision, buildServerShareUrl } =
+  await import("@/lib/share-link");
 
 import { getSupabase } from "@/lib/supabase";
 
@@ -127,7 +123,7 @@ describe("createSharedLink", () => {
         id: result,
         created_by: TEST_USER_ID,
         decision: expect.objectContaining({ title: "Test Decision" }),
-      }),
+      })
     );
   });
 
@@ -142,7 +138,7 @@ describe("createSharedLink", () => {
     expect(result).toBeNull();
     expect(spy).toHaveBeenCalledWith(
       "[DecisionOS:share] Failed to create shared link:",
-      "insert failed",
+      "insert failed"
     );
     spy.mockRestore();
   });
@@ -156,7 +152,7 @@ describe("createSharedLink", () => {
     expect(result).toBeNull();
     expect(spy).toHaveBeenCalledWith(
       "[DecisionOS:share] Unexpected error creating shared link:",
-      expect.any(Error),
+      expect.any(Error)
     );
     spy.mockRestore();
   });
@@ -271,7 +267,7 @@ describe("fetchSharedDecision", () => {
     expect(result).toBeNull();
     expect(spy).toHaveBeenCalledWith(
       "[DecisionOS:share] Failed to fetch shared decision:",
-      expect.any(Error),
+      expect.any(Error)
     );
     spy.mockRestore();
   });

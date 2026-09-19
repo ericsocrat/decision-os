@@ -247,7 +247,7 @@ describe("ShareView (/share route)", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Shared decision not found. The link may have expired or is invalid."),
+        screen.getByText("Shared decision not found. The link may have expired or is invalid.")
       ).toBeInTheDocument();
     });
   });

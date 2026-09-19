@@ -4,7 +4,15 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { interpolate, translate, detectLocale, I18nProvider, useT, useTf, useLocale } from "@/lib/i18n";
+import {
+  interpolate,
+  translate,
+  detectLocale,
+  I18nProvider,
+  useT,
+  useTf,
+  useLocale,
+} from "@/lib/i18n";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { type ReactNode } from "react";
@@ -199,7 +207,13 @@ function Wrapper({ children }: { children: ReactNode }) {
   return <I18nProvider>{children}</I18nProvider>;
 }
 
-function TfConsumer({ translationKey, params }: { translationKey: string; params?: Record<string, string | number> }) {
+function TfConsumer({
+  translationKey,
+  params,
+}: {
+  translationKey: string;
+  params?: Record<string, string | number>;
+}) {
   const tf = useTf();
   return <span data-testid="tf-result">{tf(translationKey, params)}</span>;
 }
@@ -224,7 +238,7 @@ describe("useTf hook", () => {
     render(
       <Wrapper>
         <TfConsumer translationKey="app.title" />
-      </Wrapper>,
+      </Wrapper>
     );
     expect(screen.getByTestId("tf-result").textContent).toBeTruthy();
   });
@@ -240,7 +254,7 @@ describe("useT hook", () => {
     render(
       <Wrapper>
         <TConsumer />
-      </Wrapper>,
+      </Wrapper>
     );
     expect(screen.getByTestId("t-result").textContent).toBeTruthy();
   });
@@ -252,7 +266,7 @@ describe("useLocale hook", () => {
     render(
       <Wrapper>
         <LocaleConsumer />
-      </Wrapper>,
+      </Wrapper>
     );
     expect(screen.getByTestId("locale").textContent).toBe("en");
     await user.click(screen.getByText("Switch to FR"));

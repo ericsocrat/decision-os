@@ -10,13 +10,16 @@ import AxeBuilder from "@axe-core/playwright";
 
 test.describe("Accessibility — axe-core scans", () => {
   test.beforeEach(async ({ page }) => {
-    // Set onboarding flag before navigating so the tour doesn't interfere with tests
+    // Skip the onboarding tour and exercise the advanced workspace. The app starts
+    // with no decision, so load its visible demo fixture before testing tab content.
     await page.addInitScript(() => {
       localStorage.setItem("decisionos:onboarded", "true");
     });
-    await page.goto("/");
+    await page.goto("/?mode=advanced");
+    await page.getByRole("button", { name: "Try Demo Decision" }).click();
     // Wait for the app to fully hydrate
     await expect(page.getByRole("heading", { name: "Decision OS" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "Builder" })).toBeVisible();
   });
 
   test("Builder tab has no critical a11y violations", async ({ page }) => {

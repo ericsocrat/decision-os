@@ -43,7 +43,7 @@ describe("CollapsibleSection", () => {
     render(
       <CollapsibleSection sectionId="test" title="My Section">
         <p>Content</p>
-      </CollapsibleSection>,
+      </CollapsibleSection>
     );
 
     const button = screen.getByRole("button", { name: /my section/i });
@@ -60,7 +60,7 @@ describe("CollapsibleSection", () => {
     render(
       <CollapsibleSection sectionId="expand-test" title="Expand Me">
         <p>Hidden Content</p>
-      </CollapsibleSection>,
+      </CollapsibleSection>
     );
 
     const button = screen.getByRole("button", { name: /expand me/i });
@@ -78,7 +78,7 @@ describe("CollapsibleSection", () => {
     render(
       <CollapsibleSection sectionId="toggle-test" title="Toggle" defaultExpanded>
         <p>Content</p>
-      </CollapsibleSection>,
+      </CollapsibleSection>
     );
 
     const button = screen.getByRole("button", { name: /toggle/i });
@@ -92,7 +92,7 @@ describe("CollapsibleSection", () => {
     render(
       <CollapsibleSection sectionId="default-exp" title="Open" defaultExpanded>
         <p>Already visible</p>
-      </CollapsibleSection>,
+      </CollapsibleSection>
     );
 
     const button = screen.getByRole("button", { name: /open/i });
@@ -104,7 +104,7 @@ describe("CollapsibleSection", () => {
     render(
       <CollapsibleSection sectionId="persist-test" title="Persist">
         <p>Content</p>
-      </CollapsibleSection>,
+      </CollapsibleSection>
     );
 
     await user.click(screen.getByRole("button", { name: /persist/i }));
@@ -116,14 +116,12 @@ describe("CollapsibleSection", () => {
   });
 
   it("restores state from localStorage on mount", () => {
-    localStorageMock.getItem.mockReturnValueOnce(
-      JSON.stringify({ "restore-test": true }),
-    );
+    localStorageMock.getItem.mockReturnValueOnce(JSON.stringify({ "restore-test": true }));
 
     render(
       <CollapsibleSection sectionId="restore-test" title="Restored">
         <p>Content</p>
-      </CollapsibleSection>,
+      </CollapsibleSection>
     );
 
     const button = screen.getByRole("button", { name: /restored/i });
@@ -134,7 +132,7 @@ describe("CollapsibleSection", () => {
     render(
       <CollapsibleSection sectionId="badge-test" title="With Badge" badge="NEW">
         <p>Content</p>
-      </CollapsibleSection>,
+      </CollapsibleSection>
     );
 
     expect(screen.getByText("NEW")).toBeInTheDocument();
@@ -148,7 +146,7 @@ describe("CollapsibleSection", () => {
         icon={<span data-testid="custom-icon">★</span>}
       >
         <p>Content</p>
-      </CollapsibleSection>,
+      </CollapsibleSection>
     );
 
     expect(screen.getByTestId("custom-icon")).toBeInTheDocument();
@@ -161,7 +159,7 @@ describe("CollapsibleSection", () => {
     render(
       <CollapsibleSection sectionId="cb-test" title="Callback" onToggle={onToggle}>
         <p>Content</p>
-      </CollapsibleSection>,
+      </CollapsibleSection>
     );
 
     await user.click(screen.getByRole("button", { name: /callback/i }));
@@ -175,23 +173,23 @@ describe("CollapsibleSection", () => {
     const { rerender } = render(
       <CollapsibleSection sectionId="ctrl" title="Controlled" expanded={false}>
         <p>Content</p>
-      </CollapsibleSection>,
+      </CollapsibleSection>
     );
 
     expect(screen.getByRole("button", { name: /controlled/i })).toHaveAttribute(
       "aria-expanded",
-      "false",
+      "false"
     );
 
     rerender(
       <CollapsibleSection sectionId="ctrl" title="Controlled" expanded>
         <p>Content</p>
-      </CollapsibleSection>,
+      </CollapsibleSection>
     );
 
     expect(screen.getByRole("button", { name: /controlled/i })).toHaveAttribute(
       "aria-expanded",
-      "true",
+      "true"
     );
   });
 
@@ -199,7 +197,7 @@ describe("CollapsibleSection", () => {
     render(
       <CollapsibleSection sectionId="key-test" title="Keyboard">
         <p>Content</p>
-      </CollapsibleSection>,
+      </CollapsibleSection>
     );
 
     const button = screen.getByRole("button", { name: /keyboard/i });
@@ -214,7 +212,7 @@ describe("CollapsibleSection", () => {
     render(
       <CollapsibleSection sectionId="print-test" title="Print">
         <p>Content</p>
-      </CollapsibleSection>,
+      </CollapsibleSection>
     );
 
     const region = screen.getByRole("region", { name: /print/i });
@@ -232,7 +230,7 @@ describe("AdvancedSectionsGroup", () => {
       <AdvancedSectionsGroup sectionIds={["a", "b"]}>
         <p>Child A</p>
         <p>Child B</p>
-      </AdvancedSectionsGroup>,
+      </AdvancedSectionsGroup>
     );
 
     expect(screen.getByText("Advanced Analysis")).toBeInTheDocument();
@@ -245,7 +243,7 @@ describe("AdvancedSectionsGroup", () => {
     render(
       <AdvancedSectionsGroup sectionIds={["x", "y"]}>
         <p>Content</p>
-      </AdvancedSectionsGroup>,
+      </AdvancedSectionsGroup>
     );
 
     const btn = screen.getByRole("button", { name: /expand all/i });
@@ -263,7 +261,7 @@ describe("AdvancedSectionsGroup", () => {
     render(
       <AdvancedSectionsGroup sectionIds={["s1"]} onExpandAll={onExpandAll}>
         <p>Content</p>
-      </AdvancedSectionsGroup>,
+      </AdvancedSectionsGroup>
     );
 
     await user.click(screen.getByRole("button", { name: /expand all/i }));
@@ -279,7 +277,7 @@ describe("AdvancedSectionsGroup", () => {
     render(
       <AdvancedSectionsGroup sectionIds={["aa", "bb", "cc"]}>
         <p>Content</p>
-      </AdvancedSectionsGroup>,
+      </AdvancedSectionsGroup>
     );
 
     await user.click(screen.getByRole("button", { name: /expand all/i }));
@@ -295,7 +293,7 @@ describe("AdvancedSectionsGroup", () => {
       <AdvancedSectionsGroup sectionIds={[]}>
         <div data-testid="child-1">Child 1</div>
         <div data-testid="child-2">Child 2</div>
-      </AdvancedSectionsGroup>,
+      </AdvancedSectionsGroup>
     );
 
     expect(screen.getByTestId("child-1")).toBeInTheDocument();

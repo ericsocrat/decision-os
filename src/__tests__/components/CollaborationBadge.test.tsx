@@ -19,7 +19,7 @@ function renderBadge(props: {
   return render(
     <AnnouncerProvider>
       <CollaborationBadge {...props} />
-    </AnnouncerProvider>,
+    </AnnouncerProvider>
   );
 }
 
@@ -83,14 +83,14 @@ describe("CollaborationBadge", () => {
     const { rerender } = render(
       <AnnouncerProvider>
         <CollaborationBadge connectionStatus="connected" collaboratorCount={1} />
-      </AnnouncerProvider>,
+      </AnnouncerProvider>
     );
 
     // Increase count to trigger join announcement
     rerender(
       <AnnouncerProvider>
         <CollaborationBadge connectionStatus="connected" collaboratorCount={2} />
-      </AnnouncerProvider>,
+      </AnnouncerProvider>
     );
 
     // The announcement is made via the Announcer — verify the badge updates
@@ -101,13 +101,13 @@ describe("CollaborationBadge", () => {
     const { rerender } = render(
       <AnnouncerProvider>
         <CollaborationBadge connectionStatus="connected" collaboratorCount={3} />
-      </AnnouncerProvider>,
+      </AnnouncerProvider>
     );
 
     rerender(
       <AnnouncerProvider>
         <CollaborationBadge connectionStatus="connected" collaboratorCount={2} />
-      </AnnouncerProvider>,
+      </AnnouncerProvider>
     );
 
     expect(screen.getByText("2 collaborators")).toBeInTheDocument();

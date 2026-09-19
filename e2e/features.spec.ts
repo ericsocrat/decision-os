@@ -107,9 +107,7 @@ test.describe("Decision OS — Feature Integration", () => {
     await page.getByRole("button", { name: "Delete current decision" }).click();
 
     // Should no longer be in the selector
-    await expect(
-      selector.locator('option:has-text("To Be Deleted")')
-    ).not.toBeAttached();
+    await expect(selector.locator('option:has-text("To Be Deleted")')).not.toBeAttached();
 
     // Should fall back to another decision (demo)
     await expect(selector).toContainText("Best City to Relocate To");

@@ -15,7 +15,6 @@ import {
   AlertCircle,
   AlertTriangle,
   X,
-  Crosshair,
   FlaskConical,
 } from "lucide-react";
 import { useState, lazy, Suspense, useMemo } from "react";
@@ -43,8 +42,7 @@ import { PatternInsights } from "./PatternInsights";
 import { HelpTooltip } from "./HelpTooltip";
 import { ProactiveInsights } from "./ProactiveInsights";
 
-const ScoreChart = lazy(() => import("./ScoreChart").then((m) => ({ default: m.ScoreChart })));
-const ParetoChart = lazy(() => import("./ParetoChart").then((m) => ({ default: m.ParetoChart })));
+const ResultsCharts = lazy(() => import("./ResultsCharts"));
 
 interface ResultsViewProps {
   readonly validation: ValidationResult;
@@ -341,16 +339,18 @@ export function ResultsView({
               <Link className="h-4 w-4" />
               <span className="hidden sm:inline">Share</span>
             </button>
-            <button
-              onClick={() => setWhatIfOpen(true)}
-              className="inline-flex items-center gap-1 rounded-md border border-purple-300 dark:border-purple-600 px-3 py-1.5 text-sm font-medium text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors"
-              aria-label="Open what-if analysis"
-              data-testid="whatif-open-btn"
-            >
-              <FlaskConical className="h-4 w-4" />
-              <span className="hidden sm:inline">What-If</span>
+            <span className="inline-flex items-center gap-1">
+              <button
+                onClick={() => setWhatIfOpen(true)}
+                className="inline-flex items-center gap-1 rounded-md border border-purple-300 dark:border-purple-600 px-3 py-1.5 text-sm font-medium text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors"
+                aria-label="Open what-if analysis"
+                data-testid="whatif-open-btn"
+              >
+                <FlaskConical className="h-4 w-4" />
+                <span className="hidden sm:inline">What-If</span>
+              </button>
               <HelpTooltip topic="what-if" />
-            </button>
+            </span>
           </div>
         </div>
 
@@ -394,51 +394,19 @@ export function ResultsView({
         />
       </section>
 
-      {/* Score Chart Visualization */}
-      <section aria-labelledby="chart-heading" className="print:hidden">
-        <h2
-          id="chart-heading"
-          className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3"
-        >
-          <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-          Score Visualization
-        </h2>
-        <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-          <Suspense
-            fallback={
-              <div className="h-50 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
-                Loading chart…
-              </div>
-            }
-          >
-            <ScoreChart optionResults={results.optionResults} />
-          </Suspense>
-        </div>
-      </section>
-
-      {/* Trade-Off Explorer (Pareto Frontier) — collapsible */}
-      {decision.criteria.length >= 2 && decision.options.length >= 2 && (
-        <CollapsibleSection
-          sectionId="pareto"
-          title={
-            <>
-              Trade-Off Explorer <HelpTooltip topic="pareto" />
-            </>
-          }
-          ariaLabel="Trade-Off Explorer"
-          icon={<Crosshair className="h-4 w-4 text-blue-600 dark:text-blue-400" />}
-        >
-          <Suspense
-            fallback={
-              <div className="h-50 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
-                Loading chart…
-              </div>
-            }
-          >
-            <ParetoChart decision={decision} results={results} />
-          </Suspense>
-        </CollapsibleSection>
-      )}
+      <Suspense
+        fallback={
+          <div className="h-50 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
+            Loading charts…
+          </div>
+        }
+      >
+        <ResultsCharts
+          decision={decision}
+          results={results}
+          optionResults={results.optionResults}
+        />
+      </Suspense>
 
       {/* Top Drivers */}
       <section aria-labelledby="drivers-heading">

@@ -17,11 +17,7 @@ import { generateId, safeJsonParse } from "./utils";
 // ---------------------------------------------------------------------------
 
 /** What kind of journal entry this is */
-export type JournalEntryType =
-  | "note"
-  | "reasoning"
-  | "outcome"
-  | "retrospective";
+export type JournalEntryType = "note" | "reasoning" | "outcome" | "retrospective";
 
 /** Emotional context at time of entry */
 export type JournalMood = "confident" | "uncertain" | "anxious" | "excited";
@@ -157,7 +153,7 @@ export function addEntry(
   decisionId: string,
   entry: Pick<JournalEntry, "type" | "content"> & {
     metadata?: JournalEntryMetadata;
-  },
+  }
 ): JournalEntry {
   const now = new Date().toISOString();
   const full: JournalEntry = {
@@ -190,10 +186,7 @@ export function addEntry(
 /**
  * Retrieve journal entries for a decision, optionally filtered.
  */
-export function getEntries(
-  decisionId: string,
-  filter?: JournalFilter,
-): JournalEntry[] {
+export function getEntries(decisionId: string, filter?: JournalFilter): JournalEntry[] {
   const journals = loadJournals();
   const journal = journals[decisionId];
   if (!journal) return [];
@@ -209,25 +202,18 @@ export function getEntries(
   }
   if (filter?.before) {
     const beforeMs = new Date(filter.before).getTime();
-    entries = entries.filter(
-      (e) => new Date(e.timestamp).getTime() < beforeMs,
-    );
+    entries = entries.filter((e) => new Date(e.timestamp).getTime() < beforeMs);
   }
 
   // Chronological order
-  return entries.sort(
-    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-  );
+  return entries.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 }
 
 /**
  * Delete a single journal entry by ID.
  * Returns `true` if the entry was found and removed.
  */
-export function deleteEntry(
-  decisionId: string,
-  entryId: string,
-): boolean {
+export function deleteEntry(decisionId: string, entryId: string): boolean {
   const journals = loadJournals();
   const journal = journals[decisionId];
   if (!journal) return false;
@@ -241,8 +227,7 @@ export function deleteEntry(
     // Remove empty journal entirely
     delete journals[decisionId];
   } else {
-    journal.lastEntryAt =
-      journal.entries.at(-1)!.timestamp;
+    journal.lastEntryAt = journal.entries.at(-1)!.timestamp;
   }
 
   persistJournals(journals);

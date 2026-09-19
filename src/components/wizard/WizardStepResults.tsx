@@ -93,7 +93,7 @@ export const WizardStepResults = memo(function WizardStepResults({
   // ── Winner explanation ─────────────────────────────
   const explanation = useMemo(
     () => (winner ? generateWinnerExplanation(winner, decision, results) : ""),
-    [winner, decision, results],
+    [winner, decision, results]
   );
 
   // ── Confidence indicators ──────────────────────────
@@ -108,8 +108,7 @@ export const WizardStepResults = memo(function WizardStepResults({
       indicators.push({
         label: "Robustness",
         level: "strong",
-        description:
-          "The winner holds even with ±20% weight changes on all criteria.",
+        description: "The winner holds even with ±20% weight changes on all criteria.",
       });
     } else if (flips <= 2) {
       indicators.push({
@@ -130,15 +129,9 @@ export const WizardStepResults = memo(function WizardStepResults({
       const wsmWinner = results.optionResults[0].optionId;
       const topsisWinner = topsisResults.rankings[0].optionId;
       const regretWinner =
-        regretResults.rankings.length > 0
-          ? regretResults.rankings[0].optionId
-          : null;
+        regretResults.rankings.length > 0 ? regretResults.rankings[0].optionId : null;
 
-      const methods = [
-        wsmWinner,
-        topsisWinner,
-        ...(regretWinner ? [regretWinner] : []),
-      ];
+      const methods = [wsmWinner, topsisWinner, ...(regretWinner ? [regretWinner] : [])];
       const agreeing = methods.filter((m) => m === wsmWinner).length;
       const total = methods.length;
 
@@ -158,16 +151,14 @@ export const WizardStepResults = memo(function WizardStepResults({
         indicators.push({
           label: "Agreement",
           level: "weak",
-          description:
-            "Methods disagree on the winner. Explore Compare Methods for details.",
+          description: "Methods disagree on the winner. Explore Compare Methods for details.",
         });
       }
     }
 
     // 3. Close Call — score margin
     if (results.optionResults.length >= 2) {
-      const margin =
-        results.optionResults[0].totalScore - results.optionResults[1].totalScore;
+      const margin = results.optionResults[0].totalScore - results.optionResults[1].totalScore;
       if (margin > 1.5) {
         indicators.push({
           label: "Margin",
@@ -237,9 +228,7 @@ export const WizardStepResults = memo(function WizardStepResults({
         <div className="rounded-lg border-2 border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20 p-5">
           <div className="flex items-baseline justify-between mb-3">
             <div className="flex items-baseline gap-2">
-              <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
-                #1
-              </span>
+              <span className="text-xs font-bold text-blue-600 dark:text-blue-400">#1</span>
               <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                 {winner.optionName}
               </h3>
@@ -271,9 +260,7 @@ export const WizardStepResults = memo(function WizardStepResults({
       {/* ── Runner-ups ──────────────────────────────── */}
       {runnerUps.length > 0 && (
         <div data-testid="runner-ups">
-          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-            Runner-ups
-          </h4>
+          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Runner-ups</h4>
           <div className="rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
             {runnerUps.map((option) => (
               <div
@@ -330,9 +317,7 @@ export const WizardStepResults = memo(function WizardStepResults({
                 <div>
                   <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
                     {ind.label}:{" "}
-                    <span className={levelColor(ind.level)}>
-                      {levelLabel(ind.level)}
-                    </span>
+                    <span className={levelColor(ind.level)}>{levelLabel(ind.level)}</span>
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                     {ind.description}
@@ -364,9 +349,7 @@ export const WizardStepResults = memo(function WizardStepResults({
                 <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
                   {card.title}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {card.description}
-                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{card.description}</span>
               </button>
             );
           })}

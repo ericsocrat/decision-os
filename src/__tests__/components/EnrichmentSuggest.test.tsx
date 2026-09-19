@@ -34,7 +34,7 @@ function seedDecision(decision: Decision): void {
 
 /** Factory for a minimal test decision. */
 function makeDecision(
-  overrides: Partial<Decision> & Pick<Decision, "options" | "criteria">,
+  overrides: Partial<Decision> & Pick<Decision, "options" | "criteria">
 ): Decision {
   return {
     id: `test-${Math.random().toString(36).slice(2, 8)}`,
@@ -82,9 +82,7 @@ describe("EnrichmentSuggest", () => {
       expect(screen.getByText("Suggest Data")).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByLabelText("Enrichment suggestion for Cost of Living"),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Enrichment suggestion for Cost of Living")).toBeInTheDocument();
     expect(screen.getAllByText(/3 options/).length).toBeGreaterThanOrEqual(1);
   });
 
@@ -95,9 +93,7 @@ describe("EnrichmentSuggest", () => {
       expect(screen.getByText("Suggest Data")).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByLabelText("Enrichment suggestion for Weather"),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Enrichment suggestion for Weather")).toBeInTheDocument();
   });
 
   it("displays correct suggestion count", async () => {
@@ -114,10 +110,8 @@ describe("EnrichmentSuggest", () => {
     seedDecision(
       makeDecision({
         options: [{ id: "o1", name: "Tokyo, Japan" }],
-        criteria: [
-          { id: "c1", name: "Random Stuff", weight: 50, type: "benefit" },
-        ],
-      }),
+        criteria: [{ id: "c1", name: "Random Stuff", weight: 50, type: "benefit" }],
+      })
     );
 
     renderWithProviders(<EnrichmentSuggest />);
@@ -128,10 +122,8 @@ describe("EnrichmentSuggest", () => {
     seedDecision(
       makeDecision({
         options: [],
-        criteria: [
-          { id: "c1", name: "Cost of Living", weight: 50, type: "cost" },
-        ],
-      }),
+        criteria: [{ id: "c1", name: "Cost of Living", weight: 50, type: "cost" }],
+      })
     );
 
     renderWithProviders(<EnrichmentSuggest />);
@@ -147,9 +139,7 @@ describe("EnrichmentSuggest", () => {
       expect(screen.getByText("2 suggestions available")).toBeInTheDocument();
     });
 
-    const dismissBtn = screen.getByLabelText(
-      "Dismiss suggestion for Cost of Living",
-    );
+    const dismissBtn = screen.getByLabelText("Dismiss suggestion for Cost of Living");
     await user.click(dismissBtn);
 
     await waitFor(() => {
@@ -157,7 +147,7 @@ describe("EnrichmentSuggest", () => {
     });
 
     expect(
-      screen.queryByLabelText("Enrichment suggestion for Cost of Living"),
+      screen.queryByLabelText("Enrichment suggestion for Cost of Living")
     ).not.toBeInTheDocument();
   });
 
@@ -167,9 +157,7 @@ describe("EnrichmentSuggest", () => {
     renderWithProviders(<EnrichmentSuggest />);
 
     await waitFor(() => {
-      expect(
-        screen.getByLabelText("Enrich Cost of Living"),
-      ).toBeInTheDocument();
+      expect(screen.getByLabelText("Enrich Cost of Living")).toBeInTheDocument();
     });
   });
 
@@ -180,18 +168,14 @@ describe("EnrichmentSuggest", () => {
     seedDecision(
       makeDecision({
         options: [{ id: "o1", name: "Tokyo, Japan" }],
-        criteria: [
-          { id: "c1", name: "Cost of Living", weight: 100, type: "cost" },
-        ],
-      }),
+        criteria: [{ id: "c1", name: "Cost of Living", weight: 100, type: "cost" }],
+      })
     );
 
     const { user } = renderWithProviders(<EnrichmentSuggest />);
 
     await waitFor(() => {
-      expect(
-        screen.getByLabelText("Enrich Cost of Living"),
-      ).toBeInTheDocument();
+      expect(screen.getByLabelText("Enrich Cost of Living")).toBeInTheDocument();
     });
 
     await user.click(screen.getByLabelText("Enrich Cost of Living"));
@@ -203,13 +187,11 @@ describe("EnrichmentSuggest", () => {
         const partial = screen.queryByText("Partial failure");
         expect(applied ?? partial).toBeTruthy();
       },
-      { timeout: 10_000 },
+      { timeout: 10_000 }
     );
 
     // The Enrich button should be gone (replaced by result state)
-    expect(
-      screen.queryByLabelText("Enrich Cost of Living"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Enrich Cost of Living")).not.toBeInTheDocument();
 
     // Should show option name in results
     expect(screen.getByText("Tokyo, Japan")).toBeInTheDocument();
@@ -221,16 +203,10 @@ describe("EnrichmentSuggest", () => {
     renderWithProviders(<EnrichmentSuggest />);
 
     await waitFor(() => {
-      expect(
-        screen.getByLabelText("Data enrichment suggestions"),
-      ).toBeInTheDocument();
+      expect(screen.getByLabelText("Data enrichment suggestions")).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByLabelText("Enrichment suggestion for Cost of Living"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByLabelText("Enrichment suggestion for Weather"),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Enrichment suggestion for Cost of Living")).toBeInTheDocument();
+    expect(screen.getByLabelText("Enrichment suggestion for Weather")).toBeInTheDocument();
   });
 });

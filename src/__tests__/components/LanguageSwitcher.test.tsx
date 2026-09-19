@@ -29,17 +29,13 @@ describe("LanguageSwitcher", () => {
 
   it("defaults to English", () => {
     renderWithProviders(<LanguageSwitcher />);
-    const select = screen.getByLabelText(
-      "Select language",
-    ) as HTMLSelectElement;
+    const select = screen.getByLabelText("Select language") as HTMLSelectElement;
     expect(select.value).toBe("en");
   });
 
   it("changes locale when a different language is selected", async () => {
     const { user } = renderWithProviders(<LanguageSwitcher />);
-    const select = screen.getByLabelText(
-      "Select language",
-    ) as HTMLSelectElement;
+    const select = screen.getByLabelText("Select language") as HTMLSelectElement;
 
     await user.selectOptions(select, "fr");
     expect(select.value).toBe("fr");
@@ -51,9 +47,7 @@ describe("LanguageSwitcher", () => {
   it("persists locale preference in localStorage", async () => {
     globalThis.localStorage.setItem("decision-os:locale", "fr");
     renderWithProviders(<LanguageSwitcher />);
-    const select = screen.getByLabelText(
-      "Select language",
-    ) as HTMLSelectElement;
+    const select = screen.getByLabelText("Select language") as HTMLSelectElement;
     expect(select.value).toBe("fr");
   });
 });

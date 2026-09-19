@@ -79,7 +79,12 @@ describe("RetrospectiveView", () => {
   it("renders timeline items from journal entries", () => {
     mockGetEntries.mockReturnValue([
       makeJournalEntry({ id: "j1", content: "First note" }),
-      makeJournalEntry({ id: "j2", timestamp: "2024-01-03T12:00:00Z", type: "reasoning", content: "Reasoning entry" }),
+      makeJournalEntry({
+        id: "j2",
+        timestamp: "2024-01-03T12:00:00Z",
+        type: "reasoning",
+        content: "Reasoning entry",
+      }),
     ]);
 
     render(<RetrospectiveView decision={makeDecision()} />);
@@ -92,9 +97,7 @@ describe("RetrospectiveView", () => {
   });
 
   it("has aria-label for accessibility", () => {
-    mockGetEntries.mockReturnValue([
-      makeJournalEntry(),
-    ]);
+    mockGetEntries.mockReturnValue([makeJournalEntry()]);
 
     render(<RetrospectiveView decision={makeDecision()} />);
 
@@ -121,7 +124,12 @@ describe("RetrospectiveView", () => {
     const user = userEvent.setup();
     mockGetEntries.mockReturnValue([
       makeJournalEntry({ id: "j1", type: "note", content: "Note content" }),
-      makeJournalEntry({ id: "j2", timestamp: "2024-01-03T00:00:00Z", type: "reasoning", content: "Reasoning content" }),
+      makeJournalEntry({
+        id: "j2",
+        timestamp: "2024-01-03T00:00:00Z",
+        type: "reasoning",
+        content: "Reasoning content",
+      }),
     ]);
 
     render(<RetrospectiveView decision={makeDecision()} />);
@@ -144,9 +152,7 @@ describe("RetrospectiveView", () => {
   it("expands and collapses long entries", async () => {
     const user = userEvent.setup();
     const longContent = "A".repeat(200);
-    mockGetEntries.mockReturnValue([
-      makeJournalEntry({ id: "j1", content: longContent }),
-    ]);
+    mockGetEntries.mockReturnValue([makeJournalEntry({ id: "j1", content: longContent })]);
 
     render(<RetrospectiveView decision={makeDecision()} />);
 
@@ -192,7 +198,12 @@ describe("RetrospectiveView", () => {
   it("shows event count summary", () => {
     mockGetEntries.mockReturnValue([
       makeJournalEntry({ id: "j1" }),
-      makeJournalEntry({ id: "j2", timestamp: "2024-01-04T00:00:00Z", type: "outcome", content: "Outcome" }),
+      makeJournalEntry({
+        id: "j2",
+        timestamp: "2024-01-04T00:00:00Z",
+        type: "outcome",
+        content: "Outcome",
+      }),
     ]);
 
     render(<RetrospectiveView decision={makeDecision()} />);

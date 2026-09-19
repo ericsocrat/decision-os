@@ -1,11 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { CountryRiskProvider } from "@/lib/data/providers/country-risk";
 import type { DataQuery } from "@/lib/data/provider";
-import {
-  COUNTRY_RISK_DATA,
-  WGI_MIN,
-  WGI_MAX,
-} from "@/lib/data/datasets/country-risk";
+import { COUNTRY_RISK_DATA, WGI_MIN, WGI_MAX } from "@/lib/data/datasets/country-risk";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -44,9 +40,7 @@ describe("CountryRiskProvider", () => {
   it("supports valid safety queries", () => {
     expect(provider.supports(query())).toBe(true);
     expect(provider.supports(query({ metric: "rule-of-law" }))).toBe(true);
-    expect(
-      provider.supports(query({ metric: "composite-governance" })),
-    ).toBe(true);
+    expect(provider.supports(query({ metric: "composite-governance" }))).toBe(true);
   });
 
   it("rejects unsupported category", () => {
@@ -103,13 +97,11 @@ describe("CountryRiskProvider", () => {
   });
 
   it("returns composite governance as average of 6 indicators", async () => {
-    const result = await provider.fetch(
-      query({ metric: "composite-governance" }),
-    );
+    const result = await provider.fetch(query({ metric: "composite-governance" }));
     expect(result).not.toBeNull();
     expect(result?.tier).toBe(2);
     // US composite = avg(0.35, 1.55, 1.30, 1.50, 1.60, 1.10)
-    const expected = (0.35 + 1.55 + 1.30 + 1.50 + 1.60 + 1.10) / 6;
+    const expected = (0.35 + 1.55 + 1.3 + 1.5 + 1.6 + 1.1) / 6;
     expect(result?.rawValue).toBeCloseTo(expected, 2);
   });
 
@@ -146,7 +138,7 @@ describe("CountryRiskProvider", () => {
   });
 
   it("all WGI scores are within valid range", () => {
-    const fields: (keyof typeof COUNTRY_RISK_DATA[0])[] = [
+    const fields: (keyof (typeof COUNTRY_RISK_DATA)[0])[] = [
       "politicalStability",
       "ruleOfLaw",
       "corruptionControl",

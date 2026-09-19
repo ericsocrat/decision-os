@@ -50,14 +50,14 @@ describe("MigrationBanner", () => {
   it("returns null when cloud is not enabled", () => {
     mockIsCloudEnabled.mockReturnValue(false);
     const { container } = render(
-      <MigrationBanner isAuthenticated={true} onComplete={onComplete} />,
+      <MigrationBanner isAuthenticated={true} onComplete={onComplete} />
     );
     expect(container.innerHTML).toBe("");
   });
 
   it("returns null when user is not authenticated", () => {
     const { container } = render(
-      <MigrationBanner isAuthenticated={false} onComplete={onComplete} />,
+      <MigrationBanner isAuthenticated={false} onComplete={onComplete} />
     );
     expect(container.innerHTML).toBe("");
   });
@@ -65,7 +65,7 @@ describe("MigrationBanner", () => {
   it("returns null when already migrated", () => {
     mockHasMigrated.mockReturnValue(true);
     const { container } = render(
-      <MigrationBanner isAuthenticated={true} onComplete={onComplete} />,
+      <MigrationBanner isAuthenticated={true} onComplete={onComplete} />
     );
     expect(container.innerHTML).toBe("");
   });
@@ -73,7 +73,7 @@ describe("MigrationBanner", () => {
   it("returns null when no local decisions exist", () => {
     mockGetDecisions.mockReturnValue([]);
     const { container } = render(
-      <MigrationBanner isAuthenticated={true} onComplete={onComplete} />,
+      <MigrationBanner isAuthenticated={true} onComplete={onComplete} />
     );
     expect(container.innerHTML).toBe("");
   });

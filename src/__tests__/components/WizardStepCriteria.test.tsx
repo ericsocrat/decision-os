@@ -7,7 +7,12 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { screen, fireEvent } from "@testing-library/react";
 import { renderWithProviders } from "../test-utils";
-import { WizardStepCriteria, importanceLabel, scoreLabel, scoreColor } from "@/components/wizard/WizardStepCriteria";
+import {
+  WizardStepCriteria,
+  importanceLabel,
+  scoreLabel,
+  scoreColor,
+} from "@/components/wizard/WizardStepCriteria";
 
 beforeEach(() => {
   localStorage.clear();

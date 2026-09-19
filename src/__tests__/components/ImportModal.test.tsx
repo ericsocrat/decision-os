@@ -274,9 +274,7 @@ describe("ImportModal", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Import Error")).toBeInTheDocument();
-      expect(
-        screen.getByText("Only .json and .csv files are supported."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Only .json and .csv files are supported.")).toBeInTheDocument();
     });
   });
 

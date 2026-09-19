@@ -152,9 +152,7 @@ export function useDecisionList(decisions: Decision[]): UseDecisionListReturn {
         copy.sort((a, b) => b.completeness.percent - a.completeness.percent);
         break;
       case "status":
-        copy.sort(
-          (a, b) => STATUS_SORT_ORDER[a.status] - STATUS_SORT_ORDER[b.status]
-        );
+        copy.sort((a, b) => STATUS_SORT_ORDER[a.status] - STATUS_SORT_ORDER[b.status]);
         break;
     }
     return copy;

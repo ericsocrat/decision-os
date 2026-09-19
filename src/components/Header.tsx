@@ -331,7 +331,7 @@ export const Header = memo(function Header({ onShowShortcuts, shortcutsTriggerRe
               </button>
             )}
 
-                        {/* ── Mobile overflow menu (< 640px) ── */}
+            {/* ── Mobile overflow menu (< 640px) ── */}
             <MobileOverflowMenu items={overflowItems} />
           </div>
         </div>

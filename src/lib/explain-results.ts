@@ -43,7 +43,7 @@ function label(score: number): string {
 export function generateWinnerExplanation(
   winner: OptionResult,
   _decision: unknown,
-  results: DecisionResults,
+  results: DecisionResults
 ): string {
   const { optionName, totalScore, criterionScores } = winner;
 

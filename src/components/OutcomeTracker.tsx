@@ -15,7 +15,16 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { CheckCircle2, Clock, Star, MessageSquare, TrendingUp, TrendingDown, Minus, Plus } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock,
+  Star,
+  MessageSquare,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Plus,
+} from "lucide-react";
 import type { Decision, DecisionResults } from "@/lib/types";
 import {
   recordChoice,
@@ -46,10 +55,18 @@ const MILESTONE_STYLES: Record<
   TimelineMilestone["type"],
   { bg: string; border: string; icon: string }
 > = {
-  decision:       { bg: "bg-blue-100 dark:bg-blue-900/30",   border: "border-blue-400", icon: "📋" },
-  implementation: { bg: "bg-yellow-100 dark:bg-yellow-900/30", border: "border-yellow-400", icon: "🚀" },
-  outcome:        { bg: "bg-green-100 dark:bg-green-900/30",  border: "border-green-400", icon: "✅" },
-  "follow-up":    { bg: "bg-purple-100 dark:bg-purple-900/30", border: "border-purple-400", icon: "🔁" },
+  decision: { bg: "bg-blue-100 dark:bg-blue-900/30", border: "border-blue-400", icon: "📋" },
+  implementation: {
+    bg: "bg-yellow-100 dark:bg-yellow-900/30",
+    border: "border-yellow-400",
+    icon: "🚀",
+  },
+  outcome: { bg: "bg-green-100 dark:bg-green-900/30", border: "border-green-400", icon: "✅" },
+  "follow-up": {
+    bg: "bg-purple-100 dark:bg-purple-900/30",
+    border: "border-purple-400",
+    icon: "🔁",
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -68,14 +85,14 @@ export function OutcomeTracker({ decision, results }: Readonly<OutcomeTrackerPro
   const timeline = useMemo(
     () => getOutcomeTimeline(decision.id, decision),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- revision triggers re-read from localStorage
-    [decision, revision],
+    [decision, revision]
   );
 
   // ── Local form state ──────────────────────────────────────────────────
   const [ratingInput, setRatingInput] = useState<number>(outcome?.outcomeRating ?? 5);
   const [notesInput, setNotesInput] = useState(outcome?.outcomeNotes ?? "");
   const [implDate, setImplDate] = useState(
-    outcome?.implementedAt ? outcome.implementedAt.slice(0, 10) : "",
+    outcome?.implementedAt ? outcome.implementedAt.slice(0, 10) : ""
   );
   const [followUpSat, setFollowUpSat] = useState(5);
   const [followUpNotes, setFollowUpNotes] = useState("");
@@ -220,7 +237,10 @@ export function OutcomeTracker({ decision, results }: Readonly<OutcomeTrackerPro
 
           {/* ── Follow-up survey ─────────────────────────────────── */}
           {outcome.outcomeRating !== undefined && (
-            <div className="space-y-2 border-t border-gray-200 dark:border-gray-700 pt-4" data-testid="follow-up">
+            <div
+              className="space-y-2 border-t border-gray-200 dark:border-gray-700 pt-4"
+              data-testid="follow-up"
+            >
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
                 <MessageSquare className="h-4 w-4" />
                 Follow-up Check-in

@@ -102,7 +102,7 @@ function persistOutcomes(outcomes: OutcomeMap): void {
 export function recordChoice(
   decision: Decision,
   chosenOptionId: string,
-  predictedScore?: number,
+  predictedScore?: number
 ): { outcome: DecisionOutcome; journalEntry: JournalEntry } {
   const option = decision.options.find((o) => o.id === chosenOptionId);
   const optionName = option?.name ?? chosenOptionId;
@@ -141,7 +141,7 @@ export function recordChoice(
  */
 export function recordImplementation(
   decisionId: string,
-  implementedAt: string,
+  implementedAt: string
 ): DecisionOutcome | undefined {
   const outcomes = loadOutcomes();
   const outcome = outcomes[decisionId];
@@ -165,7 +165,7 @@ export function recordImplementation(
 export function recordOutcome(
   decisionId: string,
   rating: number,
-  notes?: string,
+  notes?: string
 ): DecisionOutcome | undefined {
   const outcomes = loadOutcomes();
   const outcome = outcomes[decisionId];
@@ -190,7 +190,7 @@ export function recordOutcome(
 export function addFollowUp(
   decisionId: string,
   satisfaction: number,
-  notes?: string,
+  notes?: string
 ): DecisionOutcome | undefined {
   const outcomes = loadOutcomes();
   const outcome = outcomes[decisionId];
@@ -208,7 +208,8 @@ export function addFollowUp(
 
   addEntry(decisionId, {
     type: "retrospective",
-    content: `Follow-up check-in: satisfaction ${followUp.satisfaction}/10.` + (notes ? ` ${notes}` : ""),
+    content:
+      `Follow-up check-in: satisfaction ${followUp.satisfaction}/10.` + (notes ? ` ${notes}` : ""),
   });
 
   return outcome;
@@ -240,9 +241,7 @@ export function deleteOutcome(decisionId: string): boolean {
  * Compare predicted score to actual outcome rating.
  * Returns undefined if either predicted score or outcome rating is missing.
  */
-export function comparePrediction(
-  decisionId: string,
-): PredictionComparison | undefined {
+export function comparePrediction(decisionId: string): PredictionComparison | undefined {
   const outcome = getOutcome(decisionId);
   if (!outcome) return undefined;
   if (outcome.predictedScore === undefined || outcome.outcomeRating === undefined) {
@@ -272,10 +271,7 @@ export function comparePrediction(
 /**
  * Build a timeline of milestones for a decision's lifecycle.
  */
-export function getOutcomeTimeline(
-  decisionId: string,
-  decision?: Decision,
-): TimelineMilestone[] {
+export function getOutcomeTimeline(decisionId: string, decision?: Decision): TimelineMilestone[] {
   const milestones: TimelineMilestone[] = [];
 
   // Decision creation
@@ -314,7 +310,8 @@ export function getOutcomeTimeline(
       date: outcome.implementedAt ?? outcome.decidedAt,
       label: "Outcome Rated",
       type: "outcome",
-      detail: `${outcome.outcomeRating}/10` + (outcome.outcomeNotes ? ` — ${outcome.outcomeNotes}` : ""),
+      detail:
+        `${outcome.outcomeRating}/10` + (outcome.outcomeNotes ? ` — ${outcome.outcomeNotes}` : ""),
     });
   }
 
@@ -329,19 +326,14 @@ export function getOutcomeTimeline(
   }
 
   // Sort chronologically
-  return milestones.sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-  );
+  return milestones.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
 
 /**
  * Find the predicted score for a specific option from decision results.
  * Useful for passing to `recordChoice`.
  */
-export function findPredictedScore(
-  optionId: string,
-  results: OptionResult[],
-): number | undefined {
+export function findPredictedScore(optionId: string, results: OptionResult[]): number | undefined {
   const match = results.find((r) => r.optionId === optionId);
   return match?.totalScore;
 }

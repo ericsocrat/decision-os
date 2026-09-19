@@ -47,9 +47,7 @@ function makeOption(overrides: Partial<OptionResult> & { optionName: string }): 
   };
 }
 
-function makeResults(
-  optionResults: OptionResult[],
-): DecisionResults {
+function makeResults(optionResults: OptionResult[]): DecisionResults {
   return {
     decisionId: "d1",
     optionResults,
@@ -100,7 +98,12 @@ describe("generateWinnerExplanation", () => {
 
   it("uses 'edges out' phrasing for a tie (margin < 0.5)", () => {
     const winner = makeOption({ optionName: "Alpha", totalScore: 7.5, rank: 1 });
-    const runnerUp = makeOption({ optionName: "Beta", totalScore: 7.2, rank: 2, optionId: "opt-2" } as OptionResult & { optionName: string });
+    const runnerUp = makeOption({
+      optionName: "Beta",
+      totalScore: 7.2,
+      rank: 2,
+      optionId: "opt-2",
+    } as OptionResult & { optionName: string });
     const results = makeResults([winner, runnerUp]);
 
     const text = generateWinnerExplanation(winner, DUMMY_DECISION, results);
@@ -112,7 +115,12 @@ describe("generateWinnerExplanation", () => {
 
   it("uses 'leads at' phrasing for a close race (0.5-1.5)", () => {
     const winner = makeOption({ optionName: "Alpha", totalScore: 8.0, rank: 1 });
-    const runnerUp = makeOption({ optionName: "Beta", totalScore: 7.0, rank: 2, optionId: "opt-2" } as OptionResult & { optionName: string });
+    const runnerUp = makeOption({
+      optionName: "Beta",
+      totalScore: 7.0,
+      rank: 2,
+      optionId: "opt-2",
+    } as OptionResult & { optionName: string });
     const results = makeResults([winner, runnerUp]);
 
     const text = generateWinnerExplanation(winner, DUMMY_DECISION, results);
@@ -124,7 +132,12 @@ describe("generateWinnerExplanation", () => {
 
   it("uses 'leads clearly' phrasing for a dominant winner (> 1.5)", () => {
     const winner = makeOption({ optionName: "Alpha", totalScore: 9.0, rank: 1 });
-    const runnerUp = makeOption({ optionName: "Beta", totalScore: 5.0, rank: 2, optionId: "opt-2" } as OptionResult & { optionName: string });
+    const runnerUp = makeOption({
+      optionName: "Beta",
+      totalScore: 5.0,
+      rank: 2,
+      optionId: "opt-2",
+    } as OptionResult & { optionName: string });
     const results = makeResults([winner, runnerUp]);
 
     const text = generateWinnerExplanation(winner, DUMMY_DECISION, results);
@@ -135,7 +148,12 @@ describe("generateWinnerExplanation", () => {
 
   it("references the top 2 criteria by name", () => {
     const winner = makeOption({ optionName: "React", totalScore: 8.0 });
-    const runnerUp = makeOption({ optionName: "Vue", totalScore: 5.0, rank: 2, optionId: "opt-2" } as OptionResult & { optionName: string });
+    const runnerUp = makeOption({
+      optionName: "Vue",
+      totalScore: 5.0,
+      rank: 2,
+      optionId: "opt-2",
+    } as OptionResult & { optionName: string });
     const results = makeResults([winner, runnerUp]);
 
     const text = generateWinnerExplanation(winner, DUMMY_DECISION, results);
@@ -146,7 +164,12 @@ describe("generateWinnerExplanation", () => {
 
   it("uses score labels (e.g. excellent, average)", () => {
     const winner = makeOption({ optionName: "X", totalScore: 8.0 });
-    const runnerUp = makeOption({ optionName: "Y", totalScore: 5.0, rank: 2, optionId: "opt-2" } as OptionResult & { optionName: string });
+    const runnerUp = makeOption({
+      optionName: "Y",
+      totalScore: 5.0,
+      rank: 2,
+      optionId: "opt-2",
+    } as OptionResult & { optionName: string });
     const results = makeResults([winner, runnerUp]);
 
     const text = generateWinnerExplanation(winner, DUMMY_DECISION, results);
@@ -163,7 +186,12 @@ describe("generateWinnerExplanation", () => {
       totalScore: 0,
       criterionScores: [],
     });
-    const runnerUp = makeOption({ optionName: "Other", totalScore: 0, rank: 2, optionId: "opt-2" } as OptionResult & { optionName: string });
+    const runnerUp = makeOption({
+      optionName: "Other",
+      totalScore: 0,
+      rank: 2,
+      optionId: "opt-2",
+    } as OptionResult & { optionName: string });
     const results = makeResults([winner, runnerUp]);
 
     const text = generateWinnerExplanation(winner, DUMMY_DECISION, results);

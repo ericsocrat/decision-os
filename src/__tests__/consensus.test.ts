@@ -461,9 +461,9 @@ describe("computeConsensus — edge-case branches", () => {
 
   it("throws for unknown algorithm ID", () => {
     const decision = simpleDecision();
-    expect(() =>
-      computeConsensus(decision, ["unknown-algo" as AlgorithmId]),
-    ).toThrow("Unknown algorithm: unknown-algo");
+    expect(() => computeConsensus(decision, ["unknown-algo" as AlgorithmId])).toThrow(
+      "Unknown algorithm: unknown-algo"
+    );
   });
 
   it("fills default rank (n) when option missing from algorithm result", () => {
@@ -494,7 +494,7 @@ describe("computeConsensus — edge-case branches", () => {
     const decision = makeDecision(
       [{ id: "only", name: "Only Option" }],
       [{ id: "c1", name: "Quality", weight: 100, type: "benefit" }],
-      { only: { c1: 7 } },
+      { only: { c1: 7 } }
     );
     const result = computeConsensus(decision);
 
@@ -522,9 +522,7 @@ describe("spearmanCorrelation — edge-case branches", () => {
   });
 
   it("throws for unequal-length vectors", () => {
-    expect(() => spearmanCorrelation([1, 2], [1])).toThrow(
-      "Rank vectors must have equal length",
-    );
+    expect(() => spearmanCorrelation([1, 2], [1])).toThrow("Rank vectors must have equal length");
   });
 });
 

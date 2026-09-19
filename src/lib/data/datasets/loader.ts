@@ -23,20 +23,14 @@ export interface CostOfLivingModule {
   readonly COST_OF_LIVING_DATA: readonly CityData[];
   readonly COUNTRY_INCOME_GROUP: Readonly<Record<string, string>>;
   readonly INCOME_GROUP_MULTIPLIERS: Readonly<Record<string, number>>;
-  readonly RANGES: Readonly<
-    Record<string, Readonly<{ min: number; max: number }>>
-  >;
+  readonly RANGES: Readonly<Record<string, Readonly<{ min: number; max: number }>>>;
   readonly METADATA: DatasetMetadata;
 }
 
 export interface TaxEfficiencyModule {
   readonly TAX_DATA: readonly CountryTaxData[];
-  readonly TAX_GROUP_DEFAULTS: Readonly<
-    Record<string, Omit<CountryTaxData, "country">>
-  >;
-  readonly TAX_RANGES: Readonly<
-    Record<string, Readonly<{ min: number; max: number }>>
-  >;
+  readonly TAX_GROUP_DEFAULTS: Readonly<Record<string, Omit<CountryTaxData, "country">>>;
+  readonly TAX_RANGES: Readonly<Record<string, Readonly<{ min: number; max: number }>>>;
   readonly METADATA: DatasetMetadata;
 }
 
@@ -58,10 +52,7 @@ export interface UniversityRankingsModule {
   readonly UNIVERSITY_DATA: readonly UniversityData[];
   readonly MAX_RANK: number;
   readonly METADATA: DatasetMetadata;
-  getUniversitiesInCity(
-    city: string,
-    country: string,
-  ): readonly UniversityData[];
+  getUniversitiesInCity(city: string, country: string): readonly UniversityData[];
   getUniversitiesInCountry(country: string): readonly UniversityData[];
 }
 
@@ -152,7 +143,7 @@ export async function loadAllMetadata(): Promise<
     DATASET_CATALOGUE.map(async (entry) => {
       const mod = await entry.load();
       return { id: entry.id, metadata: (mod as { METADATA: DatasetMetadata }).METADATA };
-    }),
+    })
   );
   return results;
 }

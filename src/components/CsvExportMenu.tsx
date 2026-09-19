@@ -120,25 +120,13 @@ export const CsvExportMenu = memo(function CsvExportMenu({
           role="menu"
           className="absolute right-0 z-50 mt-1 w-56 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg"
         >
-          <button
-            role="menuitem"
-            className={itemClass}
-            onClick={handleMatrix}
-          >
+          <button role="menuitem" className={itemClass} onClick={handleMatrix}>
             Decision Matrix
           </button>
-          <button
-            role="menuitem"
-            className={itemClass}
-            onClick={handleResults}
-          >
+          <button role="menuitem" className={itemClass} onClick={handleResults}>
             Results Summary
           </button>
-          <button
-            role="menuitem"
-            className={itemClass}
-            onClick={handleAll}
-          >
+          <button role="menuitem" className={itemClass} onClick={handleAll}>
             Export All
           </button>
         </div>

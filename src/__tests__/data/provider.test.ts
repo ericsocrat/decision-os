@@ -86,9 +86,7 @@ describe("DataProvider", () => {
   });
 
   it("supports() returns false for unknown category", () => {
-    expect(provider.supports({ ...baseQuery, category: "unknown" })).toBe(
-      false,
-    );
+    expect(provider.supports({ ...baseQuery, category: "unknown" })).toBe(false);
   });
 
   // ── fetch() + caching ─────────────────────────────────────────────

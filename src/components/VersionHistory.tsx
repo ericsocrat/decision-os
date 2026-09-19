@@ -27,12 +27,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useDecisionData, useActions } from "./DecisionProvider";
-import {
-  saveVersion,
-  getVersions,
-  deleteVersion,
-  diffVersions,
-} from "@/lib/version-history";
+import { saveVersion, getVersions, deleteVersion, diffVersions } from "@/lib/version-history";
 import type { DecisionVersion, VersionDiff } from "@/lib/types";
 import { formatRelativeTime } from "@/lib/utils";
 
@@ -129,7 +124,7 @@ export default function VersionHistory() {
       setVersions(getVersions(decision.id));
       setExpanded(null);
     },
-    [decision.id],
+    [decision.id]
   );
 
   // Restore a version
@@ -139,7 +134,7 @@ export default function VersionHistory() {
       setConfirmRestore(null);
       setVersions(getVersions(decision.id));
     },
-    [restoreVersion, decision.id],
+    [restoreVersion, decision.id]
   );
 
   // Compute diff for expanded version

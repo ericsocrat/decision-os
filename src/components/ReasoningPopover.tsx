@@ -83,7 +83,10 @@ export function ReasoningPopover({
           aria-label={`Reasoning for ${optionName} on ${criterionName}`}
           onKeyDown={handleKeyDown}
         >
-          <label htmlFor={`reasoning-${optionName}-${criterionName}`} className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+          <label
+            htmlFor={`reasoning-${optionName}-${criterionName}`}
+            className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+          >
             Why this score?
           </label>
           <textarea

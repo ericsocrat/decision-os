@@ -260,7 +260,14 @@ describe("computeCompositeConfidence", () => {
   it("produces low level with weak signals", () => {
     const d = lowConfidenceDecision();
     // Force very low algorithm agreement and structural quality
-    const weakConsensus = { overallAgreement: 0, rankings: [], algorithmResults: [], divergentOptions: [], pairwiseCorrelations: [], algorithmCount: 0 };
+    const weakConsensus = {
+      overallAgreement: 0,
+      rankings: [],
+      algorithmResults: [],
+      divergentOptions: [],
+      pairwiseCorrelations: [],
+      algorithmCount: 0,
+    };
     const weakQuality = { overallScore: 0, indicators: [], suggestions: [] };
     const result = computeCompositeConfidence(
       d,

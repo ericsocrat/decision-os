@@ -38,19 +38,15 @@ describe("PresenceAvatars", () => {
   });
 
   it("renders initials from single-word name", () => {
-    render(
-      <PresenceAvatars collaborators={[makeUser({ displayName: "Alice" })]} />,
-    );
+    render(<PresenceAvatars collaborators={[makeUser({ displayName: "Alice" })]} />);
     expect(screen.getByText("A")).toBeInTheDocument();
   });
 
   it("renders avatar image when avatarUrl is provided", () => {
     render(
       <PresenceAvatars
-        collaborators={[
-          makeUser({ avatarUrl: "https://example.com/avatar.png" }),
-        ]}
-      />,
+        collaborators={[makeUser({ avatarUrl: "https://example.com/avatar.png" })]}
+      />
     );
     const img = screen.getByAltText("Alice Smith");
     expect(img).toBeInTheDocument();
@@ -58,11 +54,7 @@ describe("PresenceAvatars", () => {
   });
 
   it("shows editing indicator dot when user is editing", () => {
-    render(
-      <PresenceAvatars
-        collaborators={[makeUser({ editingField: "title" })]}
-      />,
-    );
+    render(<PresenceAvatars collaborators={[makeUser({ editingField: "title" })]} />);
 
     const avatar = screen.getByRole("img", { name: /editing title/i });
     expect(avatar).toBeInTheDocument();
@@ -74,7 +66,7 @@ describe("PresenceAvatars", () => {
         userId: `u-${i}`,
         displayName: `User ${i}`,
         color: `#${String(i).padStart(6, "0")}`,
-      }),
+      })
     );
 
     render(<PresenceAvatars collaborators={users} />);
@@ -91,7 +83,7 @@ describe("PresenceAvatars", () => {
         userId: `u-${i}`,
         displayName: `User ${i}`,
         color: `#${String(i).padStart(6, "0")}`,
-      }),
+      })
     );
 
     render(<PresenceAvatars collaborators={users} />);
@@ -100,10 +92,7 @@ describe("PresenceAvatars", () => {
   });
 
   it("has proper aria-label on the group", () => {
-    const users = [
-      makeUser({ userId: "u-1" }),
-      makeUser({ userId: "u-2", displayName: "Bob" }),
-    ];
+    const users = [makeUser({ userId: "u-1" }), makeUser({ userId: "u-2", displayName: "Bob" })];
 
     render(<PresenceAvatars collaborators={users} />);
 
@@ -119,11 +108,7 @@ describe("PresenceAvatars", () => {
   });
 
   it("applies collaborator color as background", () => {
-    render(
-      <PresenceAvatars
-        collaborators={[makeUser({ color: "#ef4444" })]}
-      />,
-    );
+    render(<PresenceAvatars collaborators={[makeUser({ color: "#ef4444" })]} />);
 
     const avatar = screen.getByRole("img");
     expect(avatar).toHaveStyle({ backgroundColor: "#ef4444" });

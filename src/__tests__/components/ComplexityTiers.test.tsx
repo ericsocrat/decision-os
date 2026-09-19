@@ -65,7 +65,7 @@ describe("DecisionBuilder complexity tiers", { timeout: 15_000 }, () => {
 
   it("shows tier indicator with tier label", () => {
     renderWithProviders(
-      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />,
+      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />
     );
     const indicator = screen.getByTestId("tier-indicator");
     expect(indicator).toBeInTheDocument();
@@ -76,7 +76,7 @@ describe("DecisionBuilder complexity tiers", { timeout: 15_000 }, () => {
   it("shows Essential mode when scores are empty", () => {
     localStorage.setItem("decision-os:decisions", JSON.stringify([makeEssentialDecision()]));
     renderWithProviders(
-      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />,
+      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />
     );
     expect(screen.getByTestId("tier-indicator")).toHaveTextContent(/essential mode/i);
   });
@@ -84,10 +84,10 @@ describe("DecisionBuilder complexity tiers", { timeout: 15_000 }, () => {
   it("shows Expert mode when showAllFeatures is on", () => {
     localStorage.setItem(
       "decisionos:builder-tier-prefs",
-      JSON.stringify({ showAllFeatures: true, expertUnlocked: false }),
+      JSON.stringify({ showAllFeatures: true, expertUnlocked: false })
     );
     renderWithProviders(
-      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />,
+      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />
     );
     expect(screen.getByTestId("tier-indicator")).toHaveTextContent(/expert mode/i);
   });
@@ -97,10 +97,10 @@ describe("DecisionBuilder complexity tiers", { timeout: 15_000 }, () => {
     const d = DEMO_DECISION;
     localStorage.setItem(
       "decision-os:decisions",
-      JSON.stringify([d, { ...d, id: "d2" }, { ...d, id: "d3" }]),
+      JSON.stringify([d, { ...d, id: "d2" }, { ...d, id: "d3" }])
     );
     renderWithProviders(
-      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />,
+      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />
     );
     expect(screen.getByTestId("tier-indicator")).toHaveTextContent(/expert mode/i);
   });
@@ -109,14 +109,14 @@ describe("DecisionBuilder complexity tiers", { timeout: 15_000 }, () => {
 
   it("renders 'Show all features' button", () => {
     renderWithProviders(
-      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />,
+      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />
     );
     expect(screen.getByTestId("toggle-show-all")).toHaveTextContent(/show all features/i);
   });
 
   it("toggles to 'Auto tier' when clicked", async () => {
     const { user } = renderWithProviders(
-      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />,
+      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />
     );
     const btn = screen.getByTestId("toggle-show-all");
     expect(btn).toHaveTextContent(/show all features/i);
@@ -128,7 +128,7 @@ describe("DecisionBuilder complexity tiers", { timeout: 15_000 }, () => {
 
   it("persists toggle preference to localStorage", async () => {
     const { user } = renderWithProviders(
-      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />,
+      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />
     );
     await user.click(screen.getByTestId("toggle-show-all"));
     const raw = localStorage.getItem("decisionos:builder-tier-prefs");
@@ -141,7 +141,7 @@ describe("DecisionBuilder complexity tiers", { timeout: 15_000 }, () => {
   it("always shows core sections at essential tier", () => {
     localStorage.setItem("decision-os:decisions", JSON.stringify([makeEssentialDecision()]));
     renderWithProviders(
-      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />,
+      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />
     );
     expect(screen.getByText("Decision Details")).toBeInTheDocument();
     expect(screen.getByText("Options")).toBeInTheDocument();
@@ -152,7 +152,7 @@ describe("DecisionBuilder complexity tiers", { timeout: 15_000 }, () => {
   it("hides drag handles at essential tier", () => {
     localStorage.setItem("decision-os:decisions", JSON.stringify([makeEssentialDecision()]));
     const { container } = renderWithProviders(
-      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />,
+      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />
     );
     const dragButtons = container.querySelectorAll<HTMLButtonElement>('[aria-label*="Reorder"]');
     expect(dragButtons.length).toBeGreaterThan(0);
@@ -167,7 +167,7 @@ describe("DecisionBuilder complexity tiers", { timeout: 15_000 }, () => {
   it("shows BiasWarnings at intermediate tier", () => {
     // Demo data → intermediate tier (100% fill, 1 decision)
     renderWithProviders(
-      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />,
+      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />
     );
     // BiasWarnings renders even with no warnings (internal handling)
     // We check that the component is in the DOM by looking for its container
@@ -178,7 +178,7 @@ describe("DecisionBuilder complexity tiers", { timeout: 15_000 }, () => {
 
   it("hides AHP wizard button at intermediate tier", () => {
     renderWithProviders(
-      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />,
+      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />
     );
     // AHP requires expert tier
     expect(screen.queryByText(/derive weights with ahp wizard/i)).not.toBeInTheDocument();
@@ -189,10 +189,10 @@ describe("DecisionBuilder complexity tiers", { timeout: 15_000 }, () => {
   it("shows AHP wizard button at expert tier", () => {
     localStorage.setItem(
       "decisionos:builder-tier-prefs",
-      JSON.stringify({ showAllFeatures: true, expertUnlocked: false }),
+      JSON.stringify({ showAllFeatures: true, expertUnlocked: false })
     );
     renderWithProviders(
-      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />,
+      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />
     );
     // Demo data has 5 criteria → AHP available at expert
     expect(screen.getByText(/derive weights with ahp wizard/i)).toBeInTheDocument();
@@ -201,10 +201,10 @@ describe("DecisionBuilder complexity tiers", { timeout: 15_000 }, () => {
   it("shows drag handles at expert tier", () => {
     localStorage.setItem(
       "decisionos:builder-tier-prefs",
-      JSON.stringify({ showAllFeatures: true, expertUnlocked: false }),
+      JSON.stringify({ showAllFeatures: true, expertUnlocked: false })
     );
     renderWithProviders(
-      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />,
+      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />
     );
     const dragButtons = screen.getAllByRole("button", { name: /reorder/i });
     expect(dragButtons.length).toBeGreaterThan(0);
@@ -216,10 +216,10 @@ describe("DecisionBuilder complexity tiers", { timeout: 15_000 }, () => {
   it("shows score matrix detail components at expert tier", () => {
     localStorage.setItem(
       "decisionos:builder-tier-prefs",
-      JSON.stringify({ showAllFeatures: true, expertUnlocked: false }),
+      JSON.stringify({ showAllFeatures: true, expertUnlocked: false })
     );
     renderWithProviders(
-      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />,
+      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />
     );
     const grid = screen.getByRole("grid");
     // Expert tier should show ScoreProvenanceIndicator and ConfidenceIndicator
@@ -233,7 +233,7 @@ describe("DecisionBuilder complexity tiers", { timeout: 15_000 }, () => {
   it("reveals expert features when toggling 'Show all features' from essential", async () => {
     localStorage.setItem("decision-os:decisions", JSON.stringify([makeEssentialDecision()]));
     const { user, container } = renderWithProviders(
-      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />,
+      <DecisionBuilder validation={emptyValidation} completeness={defaultCompleteness} />
     );
     // Start at essential
     expect(screen.getByTestId("tier-indicator")).toHaveTextContent(/essential mode/i);

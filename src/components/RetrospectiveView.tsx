@@ -30,7 +30,14 @@ import { getOutcome } from "@/lib/outcome-tracking";
 // ---------------------------------------------------------------------------
 
 /** Unified event type across journal + outcome sources */
-type EventType = "creation" | "note" | "reasoning" | "outcome" | "retrospective" | "implementation" | "follow-up";
+type EventType =
+  | "creation"
+  | "note"
+  | "reasoning"
+  | "outcome"
+  | "retrospective"
+  | "implementation"
+  | "follow-up";
 
 interface TimelineItem {
   id: string;
@@ -45,17 +52,70 @@ interface TimelineItem {
 // Event type → style mapping
 // ---------------------------------------------------------------------------
 
-const EVENT_STYLES: Record<EventType, { icon: typeof Clock; color: string; bg: string; border: string; label: string }> = {
-  creation:       { icon: Clock,         color: "text-blue-600",   bg: "bg-blue-100 dark:bg-blue-900/30",   border: "border-blue-400", label: "Created" },
-  note:           { icon: FileText,      color: "text-gray-600",   bg: "bg-gray-100 dark:bg-gray-800",      border: "border-gray-400", label: "Note" },
-  reasoning:      { icon: Lightbulb,     color: "text-yellow-600", bg: "bg-yellow-100 dark:bg-yellow-900/30", border: "border-yellow-400", label: "Reasoning" },
-  outcome:        { icon: CheckCircle2,  color: "text-green-600",  bg: "bg-green-100 dark:bg-green-900/30",  border: "border-green-400", label: "Outcome" },
-  retrospective:  { icon: RotateCcw,     color: "text-purple-600", bg: "bg-purple-100 dark:bg-purple-900/30", border: "border-purple-400", label: "Retrospective" },
-  implementation: { icon: CheckCircle2,  color: "text-emerald-600", bg: "bg-emerald-100 dark:bg-emerald-900/30", border: "border-emerald-400", label: "Implemented" },
-  "follow-up":    { icon: RotateCcw,     color: "text-indigo-600", bg: "bg-indigo-100 dark:bg-indigo-900/30", border: "border-indigo-400", label: "Follow-up" },
+const EVENT_STYLES: Record<
+  EventType,
+  { icon: typeof Clock; color: string; bg: string; border: string; label: string }
+> = {
+  creation: {
+    icon: Clock,
+    color: "text-blue-600",
+    bg: "bg-blue-100 dark:bg-blue-900/30",
+    border: "border-blue-400",
+    label: "Created",
+  },
+  note: {
+    icon: FileText,
+    color: "text-gray-600",
+    bg: "bg-gray-100 dark:bg-gray-800",
+    border: "border-gray-400",
+    label: "Note",
+  },
+  reasoning: {
+    icon: Lightbulb,
+    color: "text-yellow-600",
+    bg: "bg-yellow-100 dark:bg-yellow-900/30",
+    border: "border-yellow-400",
+    label: "Reasoning",
+  },
+  outcome: {
+    icon: CheckCircle2,
+    color: "text-green-600",
+    bg: "bg-green-100 dark:bg-green-900/30",
+    border: "border-green-400",
+    label: "Outcome",
+  },
+  retrospective: {
+    icon: RotateCcw,
+    color: "text-purple-600",
+    bg: "bg-purple-100 dark:bg-purple-900/30",
+    border: "border-purple-400",
+    label: "Retrospective",
+  },
+  implementation: {
+    icon: CheckCircle2,
+    color: "text-emerald-600",
+    bg: "bg-emerald-100 dark:bg-emerald-900/30",
+    border: "border-emerald-400",
+    label: "Implemented",
+  },
+  "follow-up": {
+    icon: RotateCcw,
+    color: "text-indigo-600",
+    bg: "bg-indigo-100 dark:bg-indigo-900/30",
+    border: "border-indigo-400",
+    label: "Follow-up",
+  },
 };
 
-const ALL_EVENT_TYPES: EventType[] = ["creation", "note", "reasoning", "outcome", "retrospective", "implementation", "follow-up"];
+const ALL_EVENT_TYPES: EventType[] = [
+  "creation",
+  "note",
+  "reasoning",
+  "outcome",
+  "retrospective",
+  "implementation",
+  "follow-up",
+];
 
 // ---------------------------------------------------------------------------
 // Props
@@ -113,9 +173,7 @@ function buildTimeline(decision: Decision): TimelineItem[] {
   }
 
   // Sort chronologically
-  return items.sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-  );
+  return items.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
 
 // ---------------------------------------------------------------------------
@@ -163,20 +221,12 @@ interface TimelineContentProps {
 
 function TimelineContent({ item, expanded, onToggle, isLong }: Readonly<TimelineContentProps>) {
   if (!isLong) {
-    return (
-      <p className="text-sm text-gray-700 dark:text-gray-300">
-        {item.content}
-      </p>
-    );
+    return <p className="text-sm text-gray-700 dark:text-gray-300">{item.content}</p>;
   }
 
   if (expanded) {
     return (
-      <button
-        onClick={onToggle}
-        className="text-left w-full"
-        aria-label="Collapse entry"
-      >
+      <button onClick={onToggle} className="text-left w-full" aria-label="Collapse entry">
         <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
           {item.content}
         </p>
@@ -189,14 +239,8 @@ function TimelineContent({ item, expanded, onToggle, isLong }: Readonly<Timeline
   }
 
   return (
-    <button
-      onClick={onToggle}
-      className="text-left w-full"
-      aria-label="Expand entry"
-    >
-      <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
-        {item.content}
-      </p>
+    <button onClick={onToggle} className="text-left w-full" aria-label="Expand entry">
+      <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{item.content}</p>
       <span className="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-0.5 mt-0.5">
         <ChevronRight className="h-3 w-3" />
         Show more
@@ -218,7 +262,7 @@ export function RetrospectiveView({ decision }: Readonly<RetrospectiveViewProps>
 
   const filteredTimeline = useMemo(
     () => timeline.filter((item) => activeFilters.has(item.type)),
-    [timeline, activeFilters],
+    [timeline, activeFilters]
   );
 
   const toggleFilter = (type: EventType) => {
@@ -360,7 +404,9 @@ export function RetrospectiveView({ decision }: Readonly<RetrospectiveViewProps>
                   <Icon className={`h-4 w-4 mt-0.5 shrink-0 ${style.color}`} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs font-semibold uppercase tracking-wide ${style.color}`}>
+                      <span
+                        className={`text-xs font-semibold uppercase tracking-wide ${style.color}`}
+                      >
                         {style.label}
                       </span>
                       <span className="text-xs text-gray-400 dark:text-gray-500">
@@ -403,7 +449,8 @@ export function RetrospectiveView({ decision }: Readonly<RetrospectiveViewProps>
       {/* Summary */}
       <div className="text-xs text-gray-400 dark:text-gray-500 pt-2 border-t border-gray-200 dark:border-gray-700">
         {filteredTimeline.length} event{filteredTimeline.length === 1 ? "" : "s"} shown
-        {filteredTimeline.length < timeline.length && ` (${timeline.length - filteredTimeline.length} filtered out)`}
+        {filteredTimeline.length < timeline.length &&
+          ` (${timeline.length - filteredTimeline.length} filtered out)`}
       </div>
     </section>
   );

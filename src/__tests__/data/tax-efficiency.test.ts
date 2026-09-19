@@ -39,18 +39,12 @@ describe("TaxEfficiencyProvider", () => {
 
   it("supports valid tax queries", () => {
     expect(provider.supports(query())).toBe(true);
-    expect(
-      provider.supports(query({ metric: "corporate-tax-rate" })),
-    ).toBe(true);
-    expect(
-      provider.supports(query({ metric: "tax-freedom-index" })),
-    ).toBe(true);
+    expect(provider.supports(query({ metric: "corporate-tax-rate" }))).toBe(true);
+    expect(provider.supports(query({ metric: "tax-freedom-index" }))).toBe(true);
   });
 
   it("rejects unsupported category", () => {
-    expect(provider.supports(query({ category: "cost-of-living" }))).toBe(
-      false,
-    );
+    expect(provider.supports(query({ category: "cost-of-living" }))).toBe(false);
   });
 
   it("rejects unknown metric", () => {
@@ -83,12 +77,8 @@ describe("TaxEfficiencyProvider", () => {
 
   it("does NOT invert tax-freedom-index (already higher = better)", async () => {
     // UAE has high freedom index (~92), Belgium low (~28)
-    const uae = await provider.fetch(
-      query({ country: "AE", metric: "tax-freedom-index" }),
-    );
-    const be = await provider.fetch(
-      query({ country: "BE", metric: "tax-freedom-index" }),
-    );
+    const uae = await provider.fetch(query({ country: "AE", metric: "tax-freedom-index" }));
+    const be = await provider.fetch(query({ country: "BE", metric: "tax-freedom-index" }));
 
     expect(uae).not.toBeNull();
     expect(be).not.toBeNull();
@@ -142,9 +132,7 @@ describe("TaxEfficiencyProvider", () => {
 
   it("returns null for unknown metric with estimation-eligible country", async () => {
     // MM is in income-group map → estimate() would fire, but metric is invalid
-    const result = await provider.fetch(
-      query({ country: "MM", metric: "nonsense" }),
-    );
+    const result = await provider.fetch(query({ country: "MM", metric: "nonsense" }));
     expect(result).toBeNull();
   });
 

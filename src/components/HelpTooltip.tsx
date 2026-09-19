@@ -7,13 +7,7 @@
  * with a plain-language explanation from HELP_REGISTRY.
  */
 
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { HELP_REGISTRY, type HelpTopic } from "@/lib/help-content";
 
@@ -43,9 +37,7 @@ function computePosition(trigger: HTMLElement): TooltipPosition {
   const placement: "bottom" | "top" = spaceBelow < 0 ? "top" : "bottom";
 
   const top =
-    placement === "bottom"
-      ? rect.bottom + GAP + window.scrollY
-      : rect.top - GAP + window.scrollY;
+    placement === "bottom" ? rect.bottom + GAP + window.scrollY : rect.top - GAP + window.scrollY;
 
   const rawLeft = rect.left + rect.width / 2 + window.scrollX;
   const left = Math.max(12, Math.min(rawLeft, window.innerWidth - 12));
@@ -73,7 +65,9 @@ export function HelpTooltip({ topic, children }: HelpTooltipProps) {
   // ---------- open helper ----------
   const doOpen = useCallback(() => {
     if (closeActive) closeActive();
-    const pos = triggerRef.current ? computePosition(triggerRef.current) : { top: 0, left: 0, placement: "bottom" as const };
+    const pos = triggerRef.current
+      ? computePosition(triggerRef.current)
+      : { top: 0, left: 0, placement: "bottom" as const };
     setState(pos);
     closeActive = doClose;
   }, [doClose]);
@@ -140,7 +134,7 @@ export function HelpTooltip({ topic, children }: HelpTooltipProps) {
         <p className="font-semibold mb-0.5 text-blue-300">{entry.term}</p>
         <p className="leading-relaxed text-gray-200">{entry.short}</p>
       </div>,
-      document.body,
+      document.body
     );
 
   return (

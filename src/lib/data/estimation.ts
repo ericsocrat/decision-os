@@ -52,10 +52,38 @@ interface IncomeGroupMedians {
 }
 
 const INCOME_GROUP_MEDIANS: Readonly<Record<string, IncomeGroupMedians>> = {
-  HIC: { safety: 68, healthcare: 78, climate: 55, infrastructure: 78, costOfLiving: 70, university: 65 },
-  UMC: { safety: 50, healthcare: 55, climate: 55, infrastructure: 52, costOfLiving: 42, university: 35 },
-  LMC: { safety: 40, healthcare: 38, climate: 50, infrastructure: 35, costOfLiving: 28, university: 18 },
-  LIC: { safety: 32, healthcare: 25, climate: 52, infrastructure: 22, costOfLiving: 18, university: 8 },
+  HIC: {
+    safety: 68,
+    healthcare: 78,
+    climate: 55,
+    infrastructure: 78,
+    costOfLiving: 70,
+    university: 65,
+  },
+  UMC: {
+    safety: 50,
+    healthcare: 55,
+    climate: 55,
+    infrastructure: 52,
+    costOfLiving: 42,
+    university: 35,
+  },
+  LMC: {
+    safety: 40,
+    healthcare: 38,
+    climate: 50,
+    infrastructure: 35,
+    costOfLiving: 28,
+    university: 18,
+  },
+  LIC: {
+    safety: 32,
+    healthcare: 25,
+    climate: 52,
+    infrastructure: 22,
+    costOfLiving: 18,
+    university: 8,
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -80,7 +108,7 @@ const CATEGORY_TO_QOL_FIELD: Readonly<Record<string, keyof RegionalAverage>> = {
  */
 export function estimateFromIncomeGroup(
   country: string,
-  category: string,
+  category: string
 ): EstimationResult | null {
   const group = COUNTRY_INCOME_GROUP[country.toUpperCase()];
   if (!group) return null;
@@ -98,10 +126,7 @@ export function estimateFromIncomeGroup(
  * Estimate a normalised score (0–100) for a country using regional averages.
  * Returns null if the country has no known region.
  */
-export function estimateFromRegion(
-  country: string,
-  category: string,
-): EstimationResult | null {
+export function estimateFromRegion(country: string, category: string): EstimationResult | null {
   const region = COUNTRY_REGION[country.toUpperCase()];
   if (!region) return null;
 
@@ -127,10 +152,7 @@ export function estimateFromRegion(
  * Falls back to whichever single strategy is available.
  * Confidence is capped at 0.5.
  */
-export function bestEstimate(
-  country: string,
-  category: string,
-): EstimationResult | null {
+export function bestEstimate(country: string, category: string): EstimationResult | null {
   const incomeResult = estimateFromIncomeGroup(country, category);
   const regionResult = estimateFromRegion(country, category);
 
@@ -150,7 +172,7 @@ export function bestEstimate(
 export function estimationToDataPoint(
   result: EstimationResult,
   source: string,
-  unit: string,
+  unit: string
 ): DataPoint {
   return {
     value: Math.round(result.value * 100) / 100,
@@ -167,17 +189,13 @@ export function estimationToDataPoint(
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-function compositeEstimate(
-  income: EstimationResult,
-  regional: EstimationResult,
-): EstimationResult {
+function compositeEstimate(income: EstimationResult, regional: EstimationResult): EstimationResult {
   const regionalWeight = 0.6;
   const incomeWeight = 0.4;
-  const value =
-    regional.value * regionalWeight + income.value * incomeWeight;
+  const value = regional.value * regionalWeight + income.value * incomeWeight;
   const confidence = Math.min(
     regional.confidence * regionalWeight + income.confidence * incomeWeight + 0.05,
-    0.5,
+    0.5
   );
 
   return {
@@ -187,10 +205,7 @@ function compositeEstimate(
   };
 }
 
-function pickIncomeGroupValue(
-  medians: IncomeGroupMedians,
-  category: string,
-): number | null {
+function pickIncomeGroupValue(medians: IncomeGroupMedians, category: string): number | null {
   switch (category) {
     case "safety":
       return medians.safety;

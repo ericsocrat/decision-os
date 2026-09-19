@@ -49,22 +49,22 @@ export interface AHPResult {
  * Index 0 is unused; RI[n] gives the value for an n×n matrix.
  */
 const RANDOM_INDEX: readonly number[] = [
-  0,     // 0 (unused)
-  0,     // 1
-  0,     // 2
-  0.58,  // 3
-  0.9,   // 4
-  1.12,  // 5
-  1.24,  // 6
-  1.32,  // 7
-  1.41,  // 8
-  1.45,  // 9
-  1.49,  // 10
-  1.51,  // 11
-  1.48,  // 12
-  1.56,  // 13
-  1.57,  // 14
-  1.59,  // 15
+  0, // 0 (unused)
+  0, // 1
+  0, // 2
+  0.58, // 3
+  0.9, // 4
+  1.12, // 5
+  1.24, // 6
+  1.32, // 7
+  1.41, // 8
+  1.45, // 9
+  1.49, // 10
+  1.51, // 11
+  1.48, // 12
+  1.56, // 13
+  1.57, // 14
+  1.59, // 15
 ];
 
 /** Maximum number of power-method iterations. */
@@ -85,7 +85,7 @@ const CONVERGENCE_EPSILON = 1e-8;
  */
 export function buildPairwiseMatrix(
   criterionIds: readonly string[],
-  comparisons: readonly PairwiseComparison[],
+  comparisons: readonly PairwiseComparison[]
 ): PairwiseMatrix {
   const n = criterionIds.length;
   const indexMap = new Map(criterionIds.map((id, i) => [id, i]));
@@ -190,7 +190,7 @@ export function consistencyIndex(matrix: PairwiseMatrix, weights: readonly numbe
 export function consistencyRatio(matrix: PairwiseMatrix, weights: readonly number[]): number {
   const n = matrix.length;
   if (n <= 2) return 0;
-  const ri = n < RANDOM_INDEX.length ? RANDOM_INDEX[n] : RANDOM_INDEX.at(-1) ?? 1.59;
+  const ri = n < RANDOM_INDEX.length ? RANDOM_INDEX[n] : (RANDOM_INDEX.at(-1) ?? 1.59);
   if (ri === 0) return 0;
   return consistencyIndex(matrix, weights) / ri;
 }
@@ -239,7 +239,7 @@ export function weightsTo100(weights: readonly number[]): number[] {
  */
 export function computeAHP(
   criterionIds: readonly string[],
-  comparisons: readonly PairwiseComparison[],
+  comparisons: readonly PairwiseComparison[]
 ): AHPResult {
   const matrix = buildPairwiseMatrix(criterionIds, comparisons);
   const weights = deriveWeights(matrix);
@@ -269,7 +269,7 @@ export function pairCount(n: number): number {
  * Generate all unique pairs of criterion ids in stable order.
  */
 export function generatePairs(
-  criterionIds: readonly string[],
+  criterionIds: readonly string[]
 ): readonly { a: string; b: string }[] {
   const pairs: { a: string; b: string }[] = [];
   for (let i = 0; i < criterionIds.length; i++) {
@@ -288,15 +288,24 @@ export function saatyLabel(value: number): string {
   if (abs <= 1) return "Equal";
   const rounded = Math.round(abs);
   switch (rounded) {
-    case 2: return "Slightly more";
-    case 3: return "Moderately more";
-    case 4: return "Moderate-to-strong";
-    case 5: return "Strongly more";
-    case 6: return "Strong-to-very-strong";
-    case 7: return "Very strongly more";
-    case 8: return "Very-to-extremely strong";
-    case 9: return "Extremely more";
-    default: return "Equal";
+    case 2:
+      return "Slightly more";
+    case 3:
+      return "Moderately more";
+    case 4:
+      return "Moderate-to-strong";
+    case 5:
+      return "Strongly more";
+    case 6:
+      return "Strong-to-very-strong";
+    case 7:
+      return "Very strongly more";
+    case 8:
+      return "Very-to-extremely strong";
+    case 9:
+      return "Extremely more";
+    default:
+      return "Equal";
   }
 }
 
@@ -364,7 +373,7 @@ const MAX_COMPARISONS_WARN = 100;
  */
 export function ahpLocalPriorities(
   optionIds: readonly string[],
-  comparisons: readonly PairwiseComparison[],
+  comparisons: readonly PairwiseComparison[]
 ): { priorities: number[]; cr: number; isConsistent: boolean } {
   const matrix = buildPairwiseMatrix(optionIds, comparisons);
   const weights = deriveWeights(matrix);
@@ -380,7 +389,7 @@ export function ahpLocalPriorities(
  */
 export function ahpGlobalPriorities(
   localPriorities: readonly (readonly number[])[],
-  weights: readonly number[],
+  weights: readonly number[]
 ): number[] {
   if (localPriorities.length === 0 || weights.length === 0) return [];
   const numOptions = localPriorities[0].length;
@@ -407,15 +416,14 @@ export function ahpGlobalPriorities(
 export function ahpFullAnalysis(
   criterionIds: readonly string[],
   optionIds: readonly string[],
-  comparisons: AHPComparisons,
+  comparisons: AHPComparisons
 ): AHPFullResult {
   // Level 1: criterion weights
   const critResult = computeAHP(criterionIds, comparisons.criteriaComparisons);
 
   // Size warning
   const totalComparisons =
-    pairCount(criterionIds.length) +
-    criterionIds.length * pairCount(optionIds.length);
+    pairCount(criterionIds.length) + criterionIds.length * pairCount(optionIds.length);
   const sizeWarning =
     totalComparisons > MAX_COMPARISONS_WARN
       ? `Large problem: ${totalComparisons} total comparisons required. Consider reducing options or criteria.`
@@ -436,7 +444,7 @@ export function ahpFullAnalysis(
   // Synthesis
   const globals = ahpGlobalPriorities(
     localPriorities.map((lp) => lp.optionPriorities),
-    critResult.weights,
+    critResult.weights
   );
 
   // Rankings
@@ -446,8 +454,7 @@ export function ahpFullAnalysis(
     .map((entry, idx) => ({ ...entry, rank: idx + 1 }));
 
   const overallConsistent =
-    critResult.isConsistent &&
-    localPriorities.every((lp) => lp.isConsistent);
+    critResult.isConsistent && localPriorities.every((lp) => lp.isConsistent);
 
   return {
     criterionWeights: critResult.weights,

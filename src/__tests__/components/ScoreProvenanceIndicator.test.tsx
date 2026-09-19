@@ -21,16 +21,12 @@ import {
 
 describe("ScoreProvenanceIndicator", () => {
   it("renders nothing for undefined metadata", () => {
-    const { container } = render(
-      <ScoreProvenanceIndicator metadata={undefined} />,
-    );
+    const { container } = render(<ScoreProvenanceIndicator metadata={undefined} />);
     expect(container.innerHTML).toBe("");
   });
 
   it("renders nothing for manual provenance", () => {
-    const { container } = render(
-      <ScoreProvenanceIndicator metadata={createManualMetadata()} />,
-    );
+    const { container } = render(<ScoreProvenanceIndicator metadata={createManualMetadata()} />);
     expect(container.innerHTML).toBe("");
   });
 
@@ -63,7 +59,7 @@ describe("ScoreProvenanceIndicator", () => {
         metadata={overridden}
         canRestore={true}
         onRestore={() => undefined}
-      />,
+      />
     );
 
     const restoreBtn = screen.getByLabelText(/Restore enriched value/);
@@ -78,7 +74,7 @@ describe("ScoreProvenanceIndicator", () => {
         metadata={overridden}
         canRestore={false}
         onRestore={() => undefined}
-      />,
+      />
     );
 
     expect(screen.queryByLabelText(/Restore enriched value/)).not.toBeInTheDocument();
@@ -91,11 +87,7 @@ describe("ScoreProvenanceIndicator", () => {
     const overridden = createOverrideMetadata(enriched);
 
     render(
-      <ScoreProvenanceIndicator
-        metadata={overridden}
-        canRestore={true}
-        onRestore={onRestore}
-      />,
+      <ScoreProvenanceIndicator metadata={overridden} canRestore={true} onRestore={onRestore} />
     );
 
     await user.click(screen.getByLabelText(/Restore enriched value/));

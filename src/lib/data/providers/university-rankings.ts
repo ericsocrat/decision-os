@@ -72,9 +72,7 @@ export class UniversityRankingsProvider extends DataProvider {
   readonly categories = ["university"] as const;
 
   supports(query: DataQuery): boolean {
-    return (
-      query.category === "university" && ALL_METRICS.includes(query.metric)
-    );
+    return query.category === "university" && ALL_METRICS.includes(query.metric);
   }
 
   protected async fetchData(query: DataQuery): Promise<DataPoint | null> {
@@ -112,10 +110,9 @@ export class UniversityRankingsProvider extends DataProvider {
     universities: readonly UniversityData[],
     metric: string,
     confidence: number,
-    tier: 2 | 3,
+    tier: 2 | 3
   ): DataPoint | null {
-    const source =
-      tier === 2 ? this.name : `${this.name} (country estimate)`;
+    const source = tier === 2 ? this.name : `${this.name} (country estimate)`;
 
     // City-university-density: count of universities in dataset
     if (metric === "city-university-density") {
@@ -175,9 +172,7 @@ export class UniversityRankingsProvider extends DataProvider {
   }
 
   /** Find the highest-ranked (lowest rank number) university. */
-  private pickBest(
-    universities: readonly UniversityData[],
-  ): UniversityData {
+  private pickBest(universities: readonly UniversityData[]): UniversityData {
     let best = universities[0];
     for (const u of universities) {
       if (u.overallRank < best.overallRank) {

@@ -84,10 +84,9 @@ describe("useBiasDetection", () => {
 
   it("resets dismissals when decision data changes", () => {
     const decision1 = makeDecision();
-    const { result, rerender } = renderHook(
-      ({ decision }) => useBiasDetection(decision),
-      { initialProps: { decision: decision1 } }
-    );
+    const { result, rerender } = renderHook(({ decision }) => useBiasDetection(decision), {
+      initialProps: { decision: decision1 },
+    });
 
     act(() => {
       vi.advanceTimersByTime(600);
@@ -102,7 +101,10 @@ describe("useBiasDetection", () => {
 
       // Change the decision data (different scores = different hash)
       const decision2 = makeDecision({
-        scores: { ...decision1.scores, [decision1.options[0].id]: { [decision1.criteria[0].id]: 1 } },
+        scores: {
+          ...decision1.scores,
+          [decision1.options[0].id]: { [decision1.criteria[0].id]: 1 },
+        },
       });
       rerender({ decision: decision2 });
 
@@ -117,10 +119,9 @@ describe("useBiasDetection", () => {
 
   it("debounces rapid decision changes", () => {
     const decision1 = makeDecision();
-    const { result, rerender } = renderHook(
-      ({ decision }) => useBiasDetection(decision),
-      { initialProps: { decision: decision1 } }
-    );
+    const { result, rerender } = renderHook(({ decision }) => useBiasDetection(decision), {
+      initialProps: { decision: decision1 },
+    });
 
     // Simulate rapid changes
     for (let i = 0; i < 5; i++) {

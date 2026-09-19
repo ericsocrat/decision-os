@@ -15,11 +15,29 @@ import { describe, it, expect } from "vitest";
 // Direct dataset imports (for coverage / integrity checks)
 // ---------------------------------------------------------------------------
 
-import { COST_OF_LIVING_DATA, RANGES, METADATA as COL_METADATA } from "@/lib/data/datasets/cost-of-living";
+import {
+  COST_OF_LIVING_DATA,
+  RANGES,
+  METADATA as COL_METADATA,
+} from "@/lib/data/datasets/cost-of-living";
 import { TAX_DATA, TAX_RANGES, METADATA as TAX_METADATA } from "@/lib/data/datasets/tax-efficiency";
-import { QUALITY_OF_LIFE_DATA, METADATA as QOL_METADATA, REGIONAL_AVERAGES, COUNTRY_REGION } from "@/lib/data/datasets/quality-of-life";
-import { COUNTRY_RISK_DATA, METADATA as RISK_METADATA, WGI_MIN, WGI_MAX } from "@/lib/data/datasets/country-risk";
-import { UNIVERSITY_DATA, METADATA as UNI_METADATA, MAX_RANK } from "@/lib/data/datasets/university-rankings";
+import {
+  QUALITY_OF_LIFE_DATA,
+  METADATA as QOL_METADATA,
+  REGIONAL_AVERAGES,
+  COUNTRY_REGION,
+} from "@/lib/data/datasets/quality-of-life";
+import {
+  COUNTRY_RISK_DATA,
+  METADATA as RISK_METADATA,
+  WGI_MIN,
+  WGI_MAX,
+} from "@/lib/data/datasets/country-risk";
+import {
+  UNIVERSITY_DATA,
+  METADATA as UNI_METADATA,
+  MAX_RANK,
+} from "@/lib/data/datasets/university-rankings";
 import type { DatasetMetadata } from "@/lib/data/datasets/metadata";
 
 // ---------------------------------------------------------------------------
@@ -75,17 +93,14 @@ describe("dataset metadata", () => {
     ["university-rankings", UNI_METADATA],
   ];
 
-  it.each(allMetadata)(
-    "%s metadata has all required fields",
-    (_id, meta) => {
-      expect(meta.name).toBeTruthy();
-      expect(meta.source).toBeTruthy();
-      expect(meta.updated).toMatch(/^\d{4}-Q[1-4]$/);
-      expect(meta.version).toBeGreaterThanOrEqual(1);
-      expect(meta.recordCount).toBeGreaterThan(0);
-      expect(meta.coverage).toBeTruthy();
-    },
-  );
+  it.each(allMetadata)("%s metadata has all required fields", (_id, meta) => {
+    expect(meta.name).toBeTruthy();
+    expect(meta.source).toBeTruthy();
+    expect(meta.updated).toMatch(/^\d{4}-Q[1-4]$/);
+    expect(meta.version).toBeGreaterThanOrEqual(1);
+    expect(meta.recordCount).toBeGreaterThan(0);
+    expect(meta.coverage).toBeTruthy();
+  });
 
   it("cost-of-living recordCount matches actual data length", () => {
     expect(COL_METADATA.recordCount).toBe(COST_OF_LIVING_DATA.length);
@@ -137,9 +152,7 @@ describe("dataset structural integrity", () => {
   });
 
   it("tax-efficiency TAX_RANGES are computed correctly", () => {
-    expect(TAX_RANGES.taxFreedomIndex.max).toBeGreaterThan(
-      TAX_RANGES.taxFreedomIndex.min,
-    );
+    expect(TAX_RANGES.taxFreedomIndex.max).toBeGreaterThan(TAX_RANGES.taxFreedomIndex.min);
   });
 
   it("quality-of-life entries have valid fields", () => {
@@ -174,16 +187,12 @@ describe("dataset structural integrity", () => {
   });
 
   it("no duplicate cities in cost-of-living dataset", () => {
-    const keys = COST_OF_LIVING_DATA.map(
-      (c) => `${c.city.toLowerCase()}|${c.country}`,
-    );
+    const keys = COST_OF_LIVING_DATA.map((c) => `${c.city.toLowerCase()}|${c.country}`);
     expect(new Set(keys).size).toBe(keys.length);
   });
 
   it("no duplicate cities in quality-of-life dataset", () => {
-    const keys = QUALITY_OF_LIFE_DATA.map(
-      (c) => `${c.city.toLowerCase()}|${c.country}`,
-    );
+    const keys = QUALITY_OF_LIFE_DATA.map((c) => `${c.city.toLowerCase()}|${c.country}`);
     expect(new Set(keys).size).toBe(keys.length);
   });
 

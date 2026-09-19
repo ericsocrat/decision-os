@@ -8,9 +8,7 @@ import { KeyboardShortcutsModal, formatKey } from "@/components/KeyboardShortcut
 
 describe("KeyboardShortcutsModal", () => {
   it("renders nothing when closed", () => {
-    const { container } = render(
-      <KeyboardShortcutsModal open={false} onClose={vi.fn()} />
-    );
+    const { container } = render(<KeyboardShortcutsModal open={false} onClose={vi.fn()} />);
     expect(container.innerHTML).toBe("");
   });
 
@@ -60,9 +58,7 @@ describe("KeyboardShortcutsModal", () => {
   });
 
   it("renders kbd elements for shortcut keys", () => {
-    const { container } = render(
-      <KeyboardShortcutsModal open={true} onClose={vi.fn()} />
-    );
+    const { container } = render(<KeyboardShortcutsModal open={true} onClose={vi.fn()} />);
     const kbds = container.querySelectorAll("kbd");
     expect(kbds.length).toBeGreaterThan(0);
     // Check one specific shortcut key

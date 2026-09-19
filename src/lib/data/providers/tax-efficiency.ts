@@ -13,11 +13,7 @@
 
 import { DataProvider } from "../provider";
 import type { DataPoint, DataQuery } from "../provider";
-import {
-  TAX_DATA,
-  TAX_GROUP_DEFAULTS,
-  TAX_RANGES,
-} from "../datasets/tax-efficiency";
+import { TAX_DATA, TAX_GROUP_DEFAULTS, TAX_RANGES } from "../datasets/tax-efficiency";
 import type { CountryTaxData } from "../datasets/tax-efficiency";
 import { COUNTRY_INCOME_GROUP } from "../datasets/cost-of-living";
 
@@ -63,9 +59,7 @@ export class TaxEfficiencyProvider extends DataProvider {
   readonly categories = ["tax"] as const;
 
   supports(query: DataQuery): boolean {
-    return (
-      query.category === "tax" && SUPPORTED_METRICS.includes(query.metric)
-    );
+    return query.category === "tax" && SUPPORTED_METRICS.includes(query.metric);
   }
 
   protected async fetchData(query: DataQuery): Promise<DataPoint | null> {
@@ -105,13 +99,7 @@ export class TaxEfficiencyProvider extends DataProvider {
       ...defaults,
     };
 
-    return this.buildPoint(
-      entry,
-      query.metric,
-      3,
-      0.35,
-      `${this.name} (estimated)`,
-    );
+    return this.buildPoint(entry, query.metric, 3, 0.35, `${this.name} (estimated)`);
   }
 
   // ── Shared builder ──────────────────────────────────────────────
@@ -121,7 +109,7 @@ export class TaxEfficiencyProvider extends DataProvider {
     metric: string,
     tier: 1 | 2 | 3,
     confidence: number,
-    source: string,
+    source: string
   ): DataPoint | null {
     const field = METRIC_TO_FIELD[metric];
     if (field === undefined) return null;

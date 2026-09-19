@@ -82,9 +82,8 @@ export const DecisionCard = memo(function DecisionCard({
 
       {/* Stats row */}
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-        {card.optionCount} option{card.optionCount !== 1 ? "s" : ""} ·{" "}
-        {card.criterionCount} criteri{card.criterionCount !== 1 ? "a" : "on"} ·{" "}
-        Updated {formatRelativeTime(card.updatedAt)}
+        {card.optionCount} option{card.optionCount !== 1 ? "s" : ""} · {card.criterionCount} criteri
+        {card.criterionCount !== 1 ? "a" : "on"} · Updated {formatRelativeTime(card.updatedAt)}
       </p>
 
       {/* Winner info (when scored/winner) */}

@@ -59,7 +59,7 @@ function persistVersions(decisionId: string, versions: DecisionVersion[]): void 
 export async function saveVersion(
   decision: Decision,
   label?: string,
-  trigger: "manual" | "auto" = "manual",
+  trigger: "manual" | "auto" = "manual"
 ): Promise<DecisionVersion | null> {
   const hash = await snapshotDecision(decision);
   const versions = loadVersions(decision.id);
@@ -189,7 +189,9 @@ export function diffVersions(older: Decision, newer: Decision): VersionDiff {
   const oldCriteriaMap = new Map(older.criteria.map((c) => [c.name, c]));
   const newCriteriaMap = new Map(newer.criteria.map((c) => [c.name, c]));
 
-  const addedCriteria = newer.criteria.filter((c) => !oldCriteriaMap.has(c.name)).map((c) => c.name);
+  const addedCriteria = newer.criteria
+    .filter((c) => !oldCriteriaMap.has(c.name))
+    .map((c) => c.name);
   const removedCriteria = older.criteria
     .filter((c) => !newCriteriaMap.has(c.name))
     .map((c) => c.name);

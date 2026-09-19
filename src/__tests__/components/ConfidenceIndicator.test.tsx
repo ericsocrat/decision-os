@@ -20,16 +20,12 @@ import {
 
 describe("ConfidenceIndicator", () => {
   it("renders nothing for undefined metadata", () => {
-    const { container } = render(
-      <ConfidenceIndicator metadata={undefined} />,
-    );
+    const { container } = render(<ConfidenceIndicator metadata={undefined} />);
     expect(container.innerHTML).toBe("");
   });
 
   it("renders nothing for manual provenance", () => {
-    const { container } = render(
-      <ConfidenceIndicator metadata={createManualMetadata()} />,
-    );
+    const { container } = render(<ConfidenceIndicator metadata={createManualMetadata()} />);
     expect(container.innerHTML).toBe("");
   });
 

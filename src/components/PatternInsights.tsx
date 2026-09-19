@@ -8,14 +8,7 @@
 "use client";
 
 import { useMemo } from "react";
-import {
-  TrendingUp,
-  Scale,
-  Target,
-  Repeat,
-  Brain,
-  Info,
-} from "lucide-react";
+import { TrendingUp, Scale, Target, Repeat, Brain, Info } from "lucide-react";
 import type { Decision } from "@/lib/types";
 import { getDecisions } from "@/lib/storage";
 import { detectPatterns, MIN_DECISIONS } from "@/lib/patterns";
@@ -76,9 +69,7 @@ function PatternCard({ pattern }: Readonly<PatternCardProps>) {
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <Icon className={`h-5 w-5 shrink-0 ${style.color}`} />
-          <h4 className={`font-semibold text-sm ${style.color}`}>
-            {pattern.title}
-          </h4>
+          <h4 className={`font-semibold text-sm ${style.color}`}>{pattern.title}</h4>
         </div>
         <span
           className="text-xs font-medium text-gray-500 dark:text-gray-400 tabular-nums"
@@ -88,9 +79,7 @@ function PatternCard({ pattern }: Readonly<PatternCardProps>) {
         </span>
       </div>
 
-      <p className="text-sm text-gray-700 dark:text-gray-300">
-        {pattern.description}
-      </p>
+      <p className="text-sm text-gray-700 dark:text-gray-300">{pattern.description}</p>
 
       {pattern.evidence.length > 0 && (
         <ul className="space-y-0.5 text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -118,8 +107,8 @@ export function PatternInsights({ decision }: Readonly<PatternInsightsProps>) {
   const patterns = useMemo(() => {
     const allDecisions = getDecisions();
     return detectPatterns(allDecisions);
-  // We include decision.id so patterns refresh when switching decisions
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // We include decision.id so patterns refresh when switching decisions
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decision.id]);
 
   // ── Not enough data ─────────────────────────────────────────────────
@@ -149,9 +138,7 @@ export function PatternInsights({ decision }: Readonly<PatternInsightsProps>) {
     >
       <div className="flex items-center gap-2">
         <Brain className="h-5 w-5 text-purple-600" />
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Decision Patterns
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Decision Patterns</h3>
         <span className="rounded-full bg-purple-100 dark:bg-purple-900/30 px-2 py-0.5 text-xs font-medium text-purple-700 dark:text-purple-300">
           {patterns.length}
         </span>
@@ -160,7 +147,8 @@ export function PatternInsights({ decision }: Readonly<PatternInsightsProps>) {
       <div className="flex items-start gap-2 rounded-md bg-gray-50 dark:bg-gray-800/50 p-3 text-xs text-gray-500 dark:text-gray-400">
         <Info className="h-4 w-4 shrink-0 mt-0.5 text-gray-400" />
         <span>
-          These patterns are detected from your decision history. Higher confidence means stronger evidence.
+          These patterns are detected from your decision history. Higher confidence means stronger
+          evidence.
         </span>
       </div>
 

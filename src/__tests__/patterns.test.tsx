@@ -26,7 +26,9 @@ function makeDecision(overrides: Partial<Decision> & { id: string }): Decision {
   };
 }
 
-function makeOutcome(overrides: Partial<DecisionOutcome> & { decisionId: string }): DecisionOutcome {
+function makeOutcome(
+  overrides: Partial<DecisionOutcome> & { decisionId: string }
+): DecisionOutcome {
   return {
     chosenOptionId: "o1",
     chosenOptionName: "Option A",
@@ -52,8 +54,14 @@ describe("detectPatterns", () => {
 
   it("detects central tendency bias when most scores are 4-6", () => {
     const midScores = {
-      o1: { c1: { value: 5, confidence: "high" as const }, c2: { value: 5, confidence: "high" as const } },
-      o2: { c1: { value: 5, confidence: "high" as const }, c2: { value: 5, confidence: "high" as const } },
+      o1: {
+        c1: { value: 5, confidence: "high" as const },
+        c2: { value: 5, confidence: "high" as const },
+      },
+      o2: {
+        c1: { value: 5, confidence: "high" as const },
+        c2: { value: 5, confidence: "high" as const },
+      },
     };
 
     const decisions = [
@@ -71,8 +79,14 @@ describe("detectPatterns", () => {
 
   it("does not detect central tendency when scores are spread", () => {
     const spreadScores = {
-      o1: { c1: { value: 1, confidence: "high" as const }, c2: { value: 10, confidence: "high" as const } },
-      o2: { c1: { value: 2, confidence: "high" as const }, c2: { value: 9, confidence: "high" as const } },
+      o1: {
+        c1: { value: 1, confidence: "high" as const },
+        c2: { value: 10, confidence: "high" as const },
+      },
+      o2: {
+        c1: { value: 2, confidence: "high" as const },
+        c2: { value: 9, confidence: "high" as const },
+      },
     };
 
     const decisions = [
@@ -88,8 +102,14 @@ describe("detectPatterns", () => {
 
   it("detects first-option anchoring", () => {
     const anchoredScores = {
-      o1: { c1: { value: 9, confidence: "high" as const }, c2: { value: 9, confidence: "high" as const } },
-      o2: { c1: { value: 3, confidence: "high" as const }, c2: { value: 3, confidence: "high" as const } },
+      o1: {
+        c1: { value: 9, confidence: "high" as const },
+        c2: { value: 9, confidence: "high" as const },
+      },
+      o2: {
+        c1: { value: 3, confidence: "high" as const },
+        c2: { value: 3, confidence: "high" as const },
+      },
     };
 
     const decisions = [
@@ -106,9 +126,27 @@ describe("detectPatterns", () => {
 
   it("detects weight preference when same criterion is always heaviest", () => {
     const decisions = [
-      makeDecision({ id: "d1", criteria: [{ id: "c1", name: "Safety", weight: 100, type: "benefit" }, { id: "c2", name: "Cost", weight: 30, type: "cost" }] }),
-      makeDecision({ id: "d2", criteria: [{ id: "c1", name: "Safety", weight: 90, type: "benefit" }, { id: "c2", name: "Fun", weight: 40, type: "benefit" }] }),
-      makeDecision({ id: "d3", criteria: [{ id: "c1", name: "Safety", weight: 80, type: "benefit" }, { id: "c2", name: "Innovation", weight: 50, type: "benefit" }] }),
+      makeDecision({
+        id: "d1",
+        criteria: [
+          { id: "c1", name: "Safety", weight: 100, type: "benefit" },
+          { id: "c2", name: "Cost", weight: 30, type: "cost" },
+        ],
+      }),
+      makeDecision({
+        id: "d2",
+        criteria: [
+          { id: "c1", name: "Safety", weight: 90, type: "benefit" },
+          { id: "c2", name: "Fun", weight: 40, type: "benefit" },
+        ],
+      }),
+      makeDecision({
+        id: "d3",
+        criteria: [
+          { id: "c1", name: "Safety", weight: 80, type: "benefit" },
+          { id: "c2", name: "Innovation", weight: 50, type: "benefit" },
+        ],
+      }),
     ];
 
     const patterns = detectPatterns(decisions);
@@ -137,9 +175,27 @@ describe("detectPatterns", () => {
 
   it("detects criterion reuse across decisions", () => {
     const decisions = [
-      makeDecision({ id: "d1", criteria: [{ id: "c1", name: "Quality", weight: 50, type: "benefit" }, { id: "c2", name: "Cost", weight: 50, type: "cost" }] }),
-      makeDecision({ id: "d2", criteria: [{ id: "c1", name: "Quality", weight: 60, type: "benefit" }, { id: "c2", name: "Speed", weight: 40, type: "benefit" }] }),
-      makeDecision({ id: "d3", criteria: [{ id: "c1", name: "Quality", weight: 70, type: "benefit" }, { id: "c2", name: "Risk", weight: 30, type: "benefit" }] }),
+      makeDecision({
+        id: "d1",
+        criteria: [
+          { id: "c1", name: "Quality", weight: 50, type: "benefit" },
+          { id: "c2", name: "Cost", weight: 50, type: "cost" },
+        ],
+      }),
+      makeDecision({
+        id: "d2",
+        criteria: [
+          { id: "c1", name: "Quality", weight: 60, type: "benefit" },
+          { id: "c2", name: "Speed", weight: 40, type: "benefit" },
+        ],
+      }),
+      makeDecision({
+        id: "d3",
+        criteria: [
+          { id: "c1", name: "Quality", weight: 70, type: "benefit" },
+          { id: "c2", name: "Risk", weight: 30, type: "benefit" },
+        ],
+      }),
     ];
 
     const patterns = detectPatterns(decisions);
@@ -150,8 +206,14 @@ describe("detectPatterns", () => {
 
   it("includes evidence strings in patterns", () => {
     const midScores = {
-      o1: { c1: { value: 5, confidence: "high" as const }, c2: { value: 5, confidence: "high" as const } },
-      o2: { c1: { value: 5, confidence: "high" as const }, c2: { value: 5, confidence: "high" as const } },
+      o1: {
+        c1: { value: 5, confidence: "high" as const },
+        c2: { value: 5, confidence: "high" as const },
+      },
+      o2: {
+        c1: { value: 5, confidence: "high" as const },
+        c2: { value: 5, confidence: "high" as const },
+      },
     };
     const decisions = [
       makeDecision({ id: "d1", scores: midScores }),
@@ -167,8 +229,14 @@ describe("detectPatterns", () => {
 
   it("returns patterns with valid confidence between 0 and 1", () => {
     const midScores = {
-      o1: { c1: { value: 5, confidence: "high" as const }, c2: { value: 5, confidence: "high" as const } },
-      o2: { c1: { value: 5, confidence: "high" as const }, c2: { value: 5, confidence: "high" as const } },
+      o1: {
+        c1: { value: 5, confidence: "high" as const },
+        c2: { value: 5, confidence: "high" as const },
+      },
+      o2: {
+        c1: { value: 5, confidence: "high" as const },
+        c2: { value: 5, confidence: "high" as const },
+      },
     };
     const decisions = [
       makeDecision({ id: "d1", scores: midScores }),
@@ -220,8 +288,14 @@ describe("PatternInsights component", () => {
 
   it("renders pattern cards when patterns are detected", () => {
     const midScores = {
-      o1: { c1: { value: 5, confidence: "high" as const }, c2: { value: 5, confidence: "high" as const } },
-      o2: { c1: { value: 5, confidence: "high" as const }, c2: { value: 5, confidence: "high" as const } },
+      o1: {
+        c1: { value: 5, confidence: "high" as const },
+        c2: { value: 5, confidence: "high" as const },
+      },
+      o2: {
+        c1: { value: 5, confidence: "high" as const },
+        c2: { value: 5, confidence: "high" as const },
+      },
     };
     const decisions = [
       makeDecision({ id: "d1", scores: midScores }),
@@ -238,8 +312,14 @@ describe("PatternInsights component", () => {
 
   it("renders the heading with pattern count badge", () => {
     const midScores = {
-      o1: { c1: { value: 5, confidence: "high" as const }, c2: { value: 5, confidence: "high" as const } },
-      o2: { c1: { value: 5, confidence: "high" as const }, c2: { value: 5, confidence: "high" as const } },
+      o1: {
+        c1: { value: 5, confidence: "high" as const },
+        c2: { value: 5, confidence: "high" as const },
+      },
+      o2: {
+        c1: { value: 5, confidence: "high" as const },
+        c2: { value: 5, confidence: "high" as const },
+      },
     };
     const decisions = [
       makeDecision({ id: "d1", scores: midScores }),
@@ -292,12 +372,24 @@ describe("detectPatterns — edge cases", () => {
   it("does not detect anchoring when ratio is below threshold", () => {
     // First option NOT highest in 2 of 3 decisions (ratio < 0.7)
     const lowFirstScores = {
-      o1: { c1: { value: 2, confidence: "high" as const }, c2: { value: 2, confidence: "high" as const } },
-      o2: { c1: { value: 9, confidence: "high" as const }, c2: { value: 9, confidence: "high" as const } },
+      o1: {
+        c1: { value: 2, confidence: "high" as const },
+        c2: { value: 2, confidence: "high" as const },
+      },
+      o2: {
+        c1: { value: 9, confidence: "high" as const },
+        c2: { value: 9, confidence: "high" as const },
+      },
     };
     const highFirstScores = {
-      o1: { c1: { value: 9, confidence: "high" as const }, c2: { value: 9, confidence: "high" as const } },
-      o2: { c1: { value: 2, confidence: "high" as const }, c2: { value: 2, confidence: "high" as const } },
+      o1: {
+        c1: { value: 9, confidence: "high" as const },
+        c2: { value: 9, confidence: "high" as const },
+      },
+      o2: {
+        c1: { value: 2, confidence: "high" as const },
+        c2: { value: 2, confidence: "high" as const },
+      },
     };
     const decisions = [
       makeDecision({ id: "d1", scores: lowFirstScores }),
@@ -449,19 +541,28 @@ describe("detectPatterns — edge cases", () => {
         id: "d1",
         scores: {
           // o1 has no scores, o2 has scores
-          o2: { c1: { value: 8, confidence: "high" as const }, c2: { value: 8, confidence: "high" as const } },
+          o2: {
+            c1: { value: 8, confidence: "high" as const },
+            c2: { value: 8, confidence: "high" as const },
+          },
         },
       }),
       makeDecision({
         id: "d2",
         scores: {
-          o2: { c1: { value: 8, confidence: "high" as const }, c2: { value: 8, confidence: "high" as const } },
+          o2: {
+            c1: { value: 8, confidence: "high" as const },
+            c2: { value: 8, confidence: "high" as const },
+          },
         },
       }),
       makeDecision({
         id: "d3",
         scores: {
-          o2: { c1: { value: 8, confidence: "high" as const }, c2: { value: 8, confidence: "high" as const } },
+          o2: {
+            c1: { value: 8, confidence: "high" as const },
+            c2: { value: 8, confidence: "high" as const },
+          },
         },
       }),
     ];
@@ -482,9 +583,7 @@ describe("detectPatterns — edge cases", () => {
       makeOutcome({ decisionId: "d3", predictedScore: 4, outcomeRating: 9 }),
     ];
     const patterns = detectPatterns(decisions, outcomes);
-    const conservative = patterns.find(
-      (p) => p.title === "Consistently Conservative Predictions",
-    );
+    const conservative = patterns.find((p) => p.title === "Consistently Conservative Predictions");
     expect(conservative).toBeDefined();
   });
 
@@ -500,9 +599,7 @@ describe("detectPatterns — edge cases", () => {
       makeOutcome({ decisionId: "d2", predictedScore: 5, outcomeRating: 8 }),
     ];
     const patterns = detectPatterns(decisions, outcomes);
-    const consistently = patterns.filter((p) =>
-      p.title.startsWith("Consistently"),
-    );
+    const consistently = patterns.filter((p) => p.title.startsWith("Consistently"));
     expect(consistently).toHaveLength(0);
   });
 });

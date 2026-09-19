@@ -15,11 +15,7 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import { getSupabase, isCloudEnabled } from "./supabase";
 import type { DecisionAction } from "./decision-reducer";
 import type { Decision } from "./types";
-import type {
-  PresenceUser,
-  BroadcastPayload,
-  RealtimeConfig,
-} from "./realtime-types";
+import type { PresenceUser, BroadcastPayload, RealtimeConfig } from "./realtime-types";
 import { DEFAULT_REALTIME_CONFIG, getCollaboratorColor } from "./realtime-types";
 
 // ---------------------------------------------------------------------------
@@ -49,7 +45,7 @@ export function joinDecisionChannel(
   decisionId: string,
   userId: string,
   userMeta: { displayName: string; avatarUrl: string },
-  config: Partial<RealtimeConfig> = {},
+  config: Partial<RealtimeConfig> = {}
 ): RealtimeChannel | null {
   if (!isCloudEnabled()) return null;
   const sb = getSupabase();
@@ -265,7 +261,7 @@ export function getPresenceState(): PresenceUser[] {
  * @returns An unsubscribe function.
  */
 export function onRemoteAction(
-  callback: (action: DecisionAction, senderId: string) => void,
+  callback: (action: DecisionAction, senderId: string) => void
 ): () => void {
   _remoteActionCallbacks.push(callback);
   return () => {
@@ -277,9 +273,7 @@ export function onRemoteAction(
  * Register a callback for presence changes.
  * @returns An unsubscribe function.
  */
-export function onPresenceChange(
-  callback: (users: PresenceUser[]) => void,
-): () => void {
+export function onPresenceChange(callback: (users: PresenceUser[]) => void): () => void {
   _presenceCallbacks.push(callback);
   return () => {
     _presenceCallbacks = _presenceCallbacks.filter((cb) => cb !== callback);
@@ -290,9 +284,7 @@ export function onPresenceChange(
  * Register a callback for snapshot broadcasts (from other users).
  * @returns An unsubscribe function.
  */
-export function onSnapshot(
-  callback: (decision: Decision, senderId: string) => void,
-): () => void {
+export function onSnapshot(callback: (decision: Decision, senderId: string) => void): () => void {
   _snapshotCallbacks.push(callback);
   return () => {
     _snapshotCallbacks = _snapshotCallbacks.filter((cb) => cb !== callback);
@@ -303,9 +295,7 @@ export function onSnapshot(
  * Register a callback for snapshot requests (from late joiners).
  * @returns An unsubscribe function.
  */
-export function onSnapshotRequest(
-  callback: (senderId: string) => void,
-): () => void {
+export function onSnapshotRequest(callback: (senderId: string) => void): () => void {
   _snapshotRequestCallbacks.push(callback);
   return () => {
     _snapshotRequestCallbacks = _snapshotRequestCallbacks.filter((cb) => cb !== callback);

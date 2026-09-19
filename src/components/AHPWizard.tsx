@@ -8,21 +8,9 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import {
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  AlertTriangle,
-  Scale,
-  X,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, AlertTriangle, Scale, X } from "lucide-react";
 import { useDecisionData, useActions } from "./DecisionProvider";
-import {
-  computeAHP,
-  generatePairs,
-  pairCount,
-  saatyLabel,
-} from "@/lib/ahp";
+import { computeAHP, generatePairs, pairCount, saatyLabel } from "@/lib/ahp";
 import type { PairwiseComparison } from "@/lib/ahp";
 
 // ---------------------------------------------------------------------------
@@ -39,9 +27,23 @@ interface AHPWizardProps {
 
 /** Discrete stops: [1/9, 1/8, …, 1/2, 1, 2, …, 9] mapped to a 0–16 range. */
 const SLIDER_STOPS = [
-  1 / 9, 1 / 8, 1 / 7, 1 / 6, 1 / 5, 1 / 4, 1 / 3, 1 / 2,
+  1 / 9,
+  1 / 8,
+  1 / 7,
+  1 / 6,
+  1 / 5,
+  1 / 4,
+  1 / 3,
+  1 / 2,
   1,
-  2, 3, 4, 5, 6, 7, 8, 9,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
 ] as const;
 
 function sliderIndexToValue(index: number): number {
@@ -90,10 +92,7 @@ export function AHPWizard({ onClose }: Readonly<AHPWizardProps>) {
   const { decision } = useDecisionData();
   const { updateCriterion } = useActions();
 
-  const criterionIds = useMemo(
-    () => decision.criteria.map((c) => c.id),
-    [decision.criteria],
-  );
+  const criterionIds = useMemo(() => decision.criteria.map((c) => c.id), [decision.criteria]);
 
   const criterionNames = useMemo(() => {
     const map = new Map<string, string>();
@@ -126,14 +125,11 @@ export function AHPWizard({ onClose }: Readonly<AHPWizardProps>) {
         criterionB: p.b,
         value: values.get(`${p.a}::${p.b}`) ?? 1,
       })),
-    [pairs, values],
+    [pairs, values]
   );
 
   // Compute AHP result on every change
-  const result = useMemo(
-    () => computeAHP(criterionIds, comparisons),
-    [criterionIds, comparisons],
-  );
+  const result = useMemo(() => computeAHP(criterionIds, comparisons), [criterionIds, comparisons]);
 
   // Current pair for the step view
   const currentPair = pairs[currentStep] as { a: string; b: string } | undefined;
@@ -150,7 +146,7 @@ export function AHPWizard({ onClose }: Readonly<AHPWizardProps>) {
         return next;
       });
     },
-    [currentKey],
+    [currentKey]
   );
 
   const handleApply = useCallback(() => {
@@ -261,12 +257,14 @@ export function AHPWizard({ onClose }: Readonly<AHPWizardProps>) {
               {formatComparisonValue(currentValue)} — {saatyLabel(currentValue)}
               {currentValue > 1 && (
                 <span className="text-xs text-gray-400 dark:text-gray-500">
-                  {" "}({criterionNames.get(currentPair.a)})
+                  {" "}
+                  ({criterionNames.get(currentPair.a)})
                 </span>
               )}
               {currentValue < 1 && (
                 <span className="text-xs text-gray-400 dark:text-gray-500">
-                  {" "}({criterionNames.get(currentPair.b)})
+                  {" "}
+                  ({criterionNames.get(currentPair.b)})
                 </span>
               )}
             </p>

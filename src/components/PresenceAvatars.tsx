@@ -65,11 +65,7 @@ function AvatarCircle({
       >
         {hasAvatar ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={user.avatarUrl}
-            alt={user.displayName}
-            className="h-full w-full object-cover"
-          />
+          <img src={user.avatarUrl} alt={user.displayName} className="h-full w-full object-cover" />
         ) : (
           getInitials(user.displayName)
         )}
